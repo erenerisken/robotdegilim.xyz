@@ -27,8 +27,31 @@ export class Controls extends React.Component{
             semester: 0,
             alertMsg: "",
             errorDept: false,
-            errorSemester: false
+            errorSemester: false,
+            selectedCourses: [
+                {
+                    code: 5710213,
+                    sections: []
+                },
+                {
+                    code: 5710213,
+                    sections: []
+                },
+                {
+                    code: 5710140,
+                    sections: []
+                },
+            ]
         }
+    }
+
+    getCourseByCode(code){
+        for (let i = 0; i<exampleCourses.length; i++){
+            if (exampleCourses[i].code === code){
+                return exampleCourses[i];
+            }
+        }
+        return null;
     }
 
     renderSemesterSelections(n){
@@ -55,7 +78,11 @@ export class Controls extends React.Component{
     handleAlertClose(){
         this.setState({alertMsg: ""});
     }
-
+    handleDeleteCourse(i){
+        const newSelectedCourses = this.state.selectedCourses.slice(0);
+        newSelectedCourses[i] = null;
+        this.setState({selectedCourses: newSelectedCourses});
+    }
     render() {
         return (
             <div className={"control-wrapper"}>
@@ -122,12 +149,13 @@ export class Controls extends React.Component{
                     </div>
                 </div>
                 <Divider />
-                <CourseCard course={exampleCourses[0]} />
-                <CourseCard course={exampleCourses[0]} />
-                <CourseCard course={exampleCourses[0]} />
-                <CourseCard course={exampleCourses[0]} />
-                <CourseCard course={exampleCourses[0]} />
-                <CourseCard course={exampleCourses[0]} />
+                {this.state.selectedCourses.map((c, i) => {
+                    return (
+                        c !== null?
+                        <CourseCard course={this.getCourseByCode(c.code)}
+                                    onDelete={() => this.handleDeleteCourse(i)}/> : null
+                    );
+                })}
             </div>
         )
     }

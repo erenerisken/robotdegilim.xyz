@@ -84,7 +84,7 @@ export class CourseCard extends React.Component {
         return (
             <div className={"course-card"}>
                 <div className={"course-row"}>
-                    <IconButton size={"small"} onClick={() => this.props.handleDelete()}>
+                    <IconButton size={"small"} onClick={() => this.props.onDelete()}>
                         <DeleteIcon fontSize={"inherit"} />
                     </IconButton>
                     <Accordion>
