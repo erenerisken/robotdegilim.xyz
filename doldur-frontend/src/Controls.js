@@ -7,7 +7,8 @@ import {
     FormHelperText,
     MenuItem,
     InputLabel,
-    Snackbar
+    Snackbar,
+    Divider
 } from "@material-ui/core";
 import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
@@ -111,6 +112,7 @@ export class Controls extends React.Component{
                         </Button>
                     </div>
                 </div>
+                <Divider />
             </div>
         )
     }
