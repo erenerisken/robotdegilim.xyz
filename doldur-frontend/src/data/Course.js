@@ -74,6 +74,7 @@ export const exampleCourses = [
                         endMin: 30
                     },
                     {
+                        classroom: "BMB-5",
                         day: 2,
                         startHour: 15,
                         startMin: 40,
