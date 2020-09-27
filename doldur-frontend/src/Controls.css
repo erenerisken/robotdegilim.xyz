@@ -1,0 +1,10 @@
+.control-wrapper {
+    border-style: groove;
+    margin: 6pt;
+    width: 40%;
+}
+.control-row {
+    display: inline-flex;
+    width: 100%;
+    padding: 6pt;
+}

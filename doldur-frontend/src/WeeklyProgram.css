@@ -1,0 +1,14 @@
+.scheduler-wrapper {
+    margin: 6pt;
+    width: 60%;
+    border-style: groove;
+}
+
+.dayscale-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.dayscale-label {
+    width: 14.27%;
+}
