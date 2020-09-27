@@ -1,16 +1,15 @@
-.control-wrapper {
+.course-card {
     border-style: groove;
     margin: 6pt;
-    width: fit-content;
 }
-.control-row {
+.course-row {
     display: inline-flex;
     width: 100%;
 }
-.textfield-wrapper {
-    margin: 6pt;
-}
-.centered-row {
+.course-centered-row {
     text-align: center;
+    width: 100%;
+}
+.course-details {
     width: 100%;
 }

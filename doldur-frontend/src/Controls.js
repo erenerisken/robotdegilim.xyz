@@ -13,6 +13,9 @@ import {
 import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
 
+import {exampleCourses} from "./data/Course";
+import {CourseCard} from "./CourseCard";
+
 import "./Controls.css"
 
 export class Controls extends React.Component{
@@ -113,6 +116,18 @@ export class Controls extends React.Component{
                     </div>
                 </div>
                 <Divider />
+                <div className={"control-row"}>
+                    <div className={"centered-row"}>
+                        Added Courses
+                    </div>
+                </div>
+                <Divider />
+                <CourseCard course={exampleCourses[0]} />
+                <CourseCard course={exampleCourses[0]} />
+                <CourseCard course={exampleCourses[0]} />
+                <CourseCard course={exampleCourses[0]} />
+                <CourseCard course={exampleCourses[0]} />
+                <CourseCard course={exampleCourses[0]} />
             </div>
         )
     }
