@@ -1,10 +1,12 @@
 .control-wrapper {
     border-style: groove;
     margin: 6pt;
-    width: 40%;
+    width: fit-content;
 }
 .control-row {
     display: inline-flex;
     width: 100%;
-    padding: 6pt;
+}
+.textfield-wrapper {
+    margin: 6pt;
 }
