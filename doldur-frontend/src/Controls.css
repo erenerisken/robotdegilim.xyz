@@ -10,6 +10,10 @@
 .textfield-wrapper {
     margin: 6pt;
 }
+.control-button {
+    margin-left: 8pt;
+    margin-top: 14pt;
+}
 .centered-row {
     text-align: center;
     width: 100%;

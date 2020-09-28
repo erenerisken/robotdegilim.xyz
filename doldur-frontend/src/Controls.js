@@ -12,6 +12,7 @@ import {
 } from "@material-ui/core";
 import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
+import EventAvailableIcon from '@material-ui/icons/EventAvailable';
 
 import {exampleCourses} from "./data/Course";
 import {CourseCard} from "./CourseCard";
@@ -132,13 +133,22 @@ export class Controls extends React.Component{
                             <FormHelperText>Ex: 2nd year Fall semester -> 3</FormHelperText>
                         </FormControl>
                     </div>
-                    <div className={"textfield-wrapper"}>
+                    <div className={"control-button"}>
                         <Button
                             variant={"contained"}
                             color={"secondary"}
                             startIcon={<AddIcon />}
                             onClick={() => this.handleAddMustCourse()}>
                             Add Must Courses
+                        </Button>
+                    </div>
+                    <div className={"control-button"}>
+                        <Button
+                            variant={"contained"}
+                            color={"primary"}
+                            startIcon={<EventAvailableIcon />}
+                            onClick={() => console.log("Scheduling...")}>
+                            Schedule
                         </Button>
                     </div>
                 </div>

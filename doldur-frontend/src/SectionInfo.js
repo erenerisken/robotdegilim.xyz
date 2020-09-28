@@ -11,6 +11,13 @@ export class SectionInfo extends React.Component {
     formatTime(t){
         return t > 9 ? t.toString() : "0" + t.toString();
     }
+    getDepartmentCriteria(){
+        let ret = "";
+        for (let i = 0; i<this.props.sectionDetails.dept.length; i++){
+            ret += this.props.sectionDetails.dept[i] + " ";
+        }
+        return ret;
+    }
     renderTimes(){
         const times = Array(0);
         // eslint-disable-next-line
@@ -41,6 +48,9 @@ export class SectionInfo extends React.Component {
                 </div>
                 <div className={"section-row"}>
                     {"Surname: " + this.props.sectionDetails.surnameStart + "-" + this.props.sectionDetails.surnameEnd}
+                </div>
+                <div className={"section-row"}>
+                    {"Department: " + this.getDepartmentCriteria()}
                 </div>
                 <div className={"section-row"}>
                     {this.renderTimes()}
