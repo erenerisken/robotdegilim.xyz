@@ -1,0 +1,10 @@
+.add-course-wrapper {
+    border-style: groove;
+    margin: 6pt;
+    padding: 6pt;
+    text-align: left;
+}
+.add-course-row {
+    display: inline-flex;
+    width: 100%;
+}

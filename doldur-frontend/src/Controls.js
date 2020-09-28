@@ -14,8 +14,9 @@ import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
 import EventAvailableIcon from '@material-ui/icons/EventAvailable';
 
-import {exampleCourses} from "./data/Course";
+import {getAllCourses} from "./data/Course";
 import {CourseCard} from "./CourseCard";
+import {AddCourseWidget} from "./AddCourseWidget";
 
 import "./Controls.css"
 
@@ -29,27 +30,15 @@ export class Controls extends React.Component{
             alertMsg: "",
             errorDept: false,
             errorSemester: false,
-            selectedCourses: [
-                {
-                    code: 5710213,
-                    sections: []
-                },
-                {
-                    code: 5710213,
-                    sections: []
-                },
-                {
-                    code: 5710140,
-                    sections: []
-                },
-            ]
+            selectedCourses: [],
+            allCourses: getAllCourses()
         }
     }
 
     getCourseByCode(code){
-        for (let i = 0; i<exampleCourses.length; i++){
-            if (exampleCourses[i].code === code){
-                return exampleCourses[i];
+        for (let i = 0; i<this.state.allCourses.length; i++){
+            if (this.state.allCourses[i].code === code){
+                return this.state.allCourses[i];
             }
         }
         return null;
@@ -82,6 +71,11 @@ export class Controls extends React.Component{
     handleDeleteCourse(i){
         const newSelectedCourses = this.state.selectedCourses.slice(0);
         newSelectedCourses[i] = null;
+        this.setState({selectedCourses: newSelectedCourses});
+    }
+    handleAddCourse(c){
+        const newSelectedCourses = this.state.selectedCourses.slice(0);
+        newSelectedCourses.push({code: c.code, sections: []});
         this.setState({selectedCourses: newSelectedCourses});
     }
     render() {
@@ -166,6 +160,9 @@ export class Controls extends React.Component{
                                     onDelete={() => this.handleDeleteCourse(i)}/> : null
                     );
                 })}
+                <AddCourseWidget
+                    courses={this.state.allCourses}
+                    onCourseAdd={c => this.handleAddCourse(c)}/>
             </div>
         )
     }

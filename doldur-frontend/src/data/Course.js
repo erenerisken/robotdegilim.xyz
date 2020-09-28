@@ -1,4 +1,4 @@
-export const exampleCourses = [
+const exampleCourses = [
     {
         code: 5710213,
         abbreviation: "CENG213",
@@ -86,3 +86,7 @@ export const exampleCourses = [
         ]
     }
 ]
+
+export function getAllCourses(){
+    return exampleCourses;
+}
