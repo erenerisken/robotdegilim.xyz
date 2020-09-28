@@ -1,0 +1,16 @@
+.settings-wrapper {
+    margin: 6pt;
+    padding: 3pt;
+}
+.settings-row {
+    display: inline-flex;
+    width: 100%;
+}
+.settings-accordion {
+    width: 100%;
+}
+.settings-typo {
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 6pt;
+}

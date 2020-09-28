@@ -17,6 +17,7 @@ import EventAvailableIcon from '@material-ui/icons/EventAvailable';
 import {getAllCourses} from "./data/Course";
 import {CourseCard} from "./CourseCard";
 import {AddCourseWidget} from "./AddCourseWidget";
+import {AdvancedSettings} from "./AdvancedSettings";
 
 import "./Controls.css"
 
@@ -31,7 +32,12 @@ export class Controls extends React.Component{
             errorDept: false,
             errorSemester: false,
             selectedCourses: [],
-            allCourses: getAllCourses()
+            allCourses: getAllCourses(),
+            settings: {
+                checkSurname: true,
+                checkDepartment: true,
+                checkCollision: true
+            }
         }
     }
 
@@ -77,6 +83,9 @@ export class Controls extends React.Component{
         const newSelectedCourses = this.state.selectedCourses.slice(0);
         newSelectedCourses.push({code: c.code, sections: []});
         this.setState({selectedCourses: newSelectedCourses});
+    }
+    handleChangeSettings(s){
+        this.setState({settings: s});
     }
     render() {
         return (
@@ -146,6 +155,7 @@ export class Controls extends React.Component{
                         </Button>
                     </div>
                 </div>
+                <AdvancedSettings settings={this.state.settings} onSettingsChange={s => this.handleChangeSettings(s)}/>
                 <Divider />
                 <div className={"control-row"}>
                     <div className={"centered-row"}>
