@@ -3,6 +3,7 @@ const exampleCourses = [
         code: 5710213,
         abbreviation: "CENG213",
         name: "Data Structures",
+        category: 0,
         sections: [
             {
                 instructor: "Yusuf Sahillioğlu",
@@ -58,6 +59,7 @@ const exampleCourses = [
         code: 5710140,
         abbreviation: "CENG140",
         name: "C Programming",
+        category: 1,
         sections: [
             {
                 instructor: "Göktürk Üçoluk",
@@ -89,4 +91,16 @@ const exampleCourses = [
 
 export function getAllCourses(){
     return exampleCourses;
+}
+export function getCourseByCategory(category){
+    if (category < 0){
+        return getAllCourses();
+    }
+    return getAllCourses().filter(c => c.category === category);
+}
+export function filterCourses(courses, category){
+    if (category < 0){
+        return courses;
+    }
+    return courses.filter(c => c.category === category);
 }

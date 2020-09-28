@@ -8,3 +8,7 @@
     display: inline-flex;
     width: 100%;
 }
+.category-select {
+    min-width: 120pt;
+    margin-right: 6pt;
+}
