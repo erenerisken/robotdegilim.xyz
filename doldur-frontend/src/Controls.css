@@ -6,7 +6,7 @@
 .control-mobile {
     border-style: groove;
     margin: 6pt;
-    width: 145%;
+    width: 100%;
 }
 .control-row {
     display: inline-flex;

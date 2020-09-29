@@ -41,6 +41,12 @@ export class Controls extends React.Component{
             }
         }
     }
+    componentDidMount() {
+        document.title = "Robot Değilim *-*";
+        if (isMobile){
+            document.body.style.zoom = "60%";
+        }
+    }
 
     getCourseByCode(code){
         for (let i = 0; i<this.state.allCourses.length; i++){
