@@ -40,7 +40,7 @@ export class AddCourseWidget extends React.Component {
                     <Autocomplete
                         options={filterCourses(this.props.courses, this.state.category)}
                         getOptionLabel={(option => option.abbreviation + ": " + option.name)}
-                        style={{width: "300pt"}}
+                        style={{width: "60%"}}
                         value={this.state.course}
                         renderInput={(params => <TextField {...params} label={"Course name"} variant={"outlined"}/>)}
                         onChange={(e, v) =>

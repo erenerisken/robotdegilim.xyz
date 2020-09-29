@@ -13,6 +13,7 @@ import {
 import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
 import EventAvailableIcon from '@material-ui/icons/EventAvailable';
+import {isMobile} from "react-device-detect";
 
 import {getAllCourses} from "./data/Course";
 import {CourseCard} from "./CourseCard";
@@ -89,7 +90,7 @@ export class Controls extends React.Component{
     }
     render() {
         return (
-            <div className={"control-wrapper"}>
+            <div className={isMobile ? "control-mobile" : "control-wrapper"}>
                 <Snackbar
                     open={this.state.alertMsg !== ""}
                     autoHideDuration={5000}

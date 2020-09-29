@@ -6,6 +6,7 @@ import {
     WeekView,
     Appointments,
 } from '@devexpress/dx-react-scheduler-material-ui';
+import {isMobile} from "react-device-detect";
 
 import "./WeeklyProgram.css"
 
@@ -45,7 +46,7 @@ export class WeeklyProgram extends React.Component{
 
     render() {
         return (
-            <div className={"scheduler-wrapper"}>
+            <div className={isMobile ? "scheduler-mobile" : "scheduler-wrapper"}>
                 <Paper>
                     <Scheduler
                         data={this.props.coursesToDisplay}

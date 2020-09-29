@@ -4,6 +4,12 @@
     border-style: groove;
 }
 
+.scheduler-mobile {
+    margin: 6pt;
+    width: 145%;
+    border-style: groove;
+}
+
 .dayscale-row {
     display: flex;
     flex-direction: row;
