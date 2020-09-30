@@ -38,6 +38,7 @@ export class AddCourseWidget extends React.Component {
                         </Select>
                     </FormControl>
                     <Autocomplete
+                        className={"add-course-name"}
                         options={filterCourses(this.props.courses, this.state.category)}
                         getOptionLabel={(option => option.abbreviation + ": " + option.name)}
                         style={{width: "60%"}}

@@ -75,21 +75,25 @@ export class CourseCard extends React.Component {
     renderSectionDetails(){
         const ret = Array(0);
         for (let i = 0; i<this.props.course.sections.length; i++){
-            ret.push(<SectionInfo sectionNo={i+1} sectionDetails={this.props.course.sections[i]}/>)
+            ret.push(<SectionInfo
+                sectionNo={i+1}
+                sectionDetails={this.props.course.sections[i]}
+                color={this.props.color}
+            />);
         }
         return ret;
     }
 
     render() {
         return (
-            <div className={"course-card"}>
+            <div className={"course-card"} style={{background: this.props.color.main}}>
                 <div className={"course-row"}>
                     <IconButton size={"small"} onClick={() => this.props.onDelete()}>
-                        <DeleteIcon fontSize={"inherit"} color={"secondary"}/>
+                        <DeleteIcon fontSize={"inherit"}/>
                     </IconButton>
-                    <Accordion>
+                    <Accordion style={{background: this.props.color.main}}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={"panel1a-content"}>
-                            <Typography>
+                            <Typography style={{color: this.props.color.text}}>
                                 {this.props.course.abbreviation + ": " + this.props.course.name}
                             </Typography>
                         </AccordionSummary>

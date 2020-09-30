@@ -3,6 +3,7 @@
     margin: 6pt;
     padding: 6pt;
     text-align: left;
+    background: aliceblue;
 }
 .add-course-row {
     display: inline-flex;
@@ -11,4 +12,10 @@
 .category-select {
     min-width: 90%;
     margin-right: 6pt;
+}
+.category-form{
+    background: #FFFFFF;
+}
+.add-course-name {
+    background: #FFFFFF;
 }

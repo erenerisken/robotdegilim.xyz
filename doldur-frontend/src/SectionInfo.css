@@ -1,6 +1,5 @@
 .section-info {
     border-style: groove;
-    background: aliceblue;
     text-align: left;
     padding: 6pt;
     margin: 3pt;
@@ -19,5 +18,4 @@
     border-style: groove;
     margin: 3pt;
     width: fit-content;
-    background: cornsilk;
 }

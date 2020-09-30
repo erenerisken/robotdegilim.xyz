@@ -19,6 +19,7 @@ import {getAllCourses} from "./data/Course";
 import {CourseCard} from "./CourseCard";
 import {AddCourseWidget} from "./AddCourseWidget";
 import {AdvancedSettings} from "./AdvancedSettings";
+import {Colorset} from "./Colorset";
 
 import "./Controls.css"
 
@@ -38,7 +39,8 @@ export class Controls extends React.Component{
                 checkSurname: true,
                 checkDepartment: true,
                 checkCollision: true
-            }
+            },
+            colorset: new Colorset()
         }
     }
     componentDidMount() {
@@ -88,7 +90,11 @@ export class Controls extends React.Component{
     }
     handleAddCourse(c){
         const newSelectedCourses = this.state.selectedCourses.slice(0);
-        newSelectedCourses.push({code: c.code, sections: []});
+        newSelectedCourses.push({
+            code: c.code,
+            sections: [],
+            color: this.state.colorset.getNextColor()
+        });
         this.setState({selectedCourses: newSelectedCourses});
     }
     handleChangeSettings(s){
@@ -174,7 +180,8 @@ export class Controls extends React.Component{
                     return (
                         c !== null?
                         <CourseCard course={this.getCourseByCode(c.code)}
-                                    onDelete={() => this.handleDeleteCourse(i)}/> : null
+                                    onDelete={() => this.handleDeleteCourse(i)}
+                                    color={c.color}/> : null
                     );
                 })}
                 <AddCourseWidget

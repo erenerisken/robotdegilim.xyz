@@ -23,7 +23,7 @@ export class SectionInfo extends React.Component {
         // eslint-disable-next-line
         this.props.sectionDetails.lectureTimes.map(t => {
             times.push(
-                <div className={"section-date"}>
+                <div className={"section-date"} style={{background: this.props.color.ternary}}>
                     <div className={"time-row"}>
                         {this.days[t.day] + " " + t.startHour + "." + this.formatTime(t.startMin) + "-" +
                             t.endHour + "." + this.formatTime(t.endMin)
@@ -38,7 +38,7 @@ export class SectionInfo extends React.Component {
     }
     render() {
         return (
-            <div className={"section-info"}>
+            <div className={"section-info"} style={{background: this.props.color.secondary}}>
                 <div>
                     {"Section " + this.props.sectionNo}
                 </div>
