@@ -44,16 +44,29 @@ const example_course = {
 
 }
 
+const exampleScenario = {
+    sections: [
+        {
+            code: 5710140,
+            section: 2
+        },
+        {
+            code: 5710213,
+            section: 1
+        }
+    ]
+}
+
 // 
 // 
 // 
 // 
 // returns array of code + sections
-function compute_schedule(surname, department, grade, courses) {
+function compute_schedule(surname, department, grade, courses, callback) {
     apply_criteria(surname, department, grade, courses)
 
     
 
-
+//  callback(scenario)
 
 }

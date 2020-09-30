@@ -40,6 +40,7 @@ export class Controls extends React.Component{
                 checkDepartment: true,
                 checkCollision: true
             },
+            scenarios: [],
             colorset: new Colorset()
         }
     }
@@ -99,6 +100,14 @@ export class Controls extends React.Component{
     }
     handleChangeSettings(s){
         this.setState({settings: s});
+    }
+    handleNewScenarioFound(s){
+        const newScenarios = this.state.scenarios.slice(0);
+        newScenarios.push(s);
+        this.setState({scenarios: newScenarios});
+    }
+    handleScheduleBegin(){
+
     }
     render() {
         return (
@@ -163,7 +172,7 @@ export class Controls extends React.Component{
                             variant={"contained"}
                             color={"primary"}
                             startIcon={<EventAvailableIcon />}
-                            onClick={() => console.log("Scheduling...")}>
+                            onClick={() => this.handleScheduleBegin()}>
                             Schedule
                         </Button>
                     </div>
