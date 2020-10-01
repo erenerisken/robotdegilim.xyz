@@ -2,9 +2,32 @@ function apply_criteria(surname, department, grade, courses) {
 
 }
 
+function lectures_intersect(lt1, lt2) {
+    if (lt1.day != lt2.day                      // Different Days
+        || lt1.startHour > lt2.endHour          // L1 starts after L2 ends by hour
+        || lt2.startHour > lt1.endHour          // L2 starts after L1 ends by hour
+        || (lt1.startHour == lt2.endHour        // L1 starts after L2 ends by min
+            && lt1.startMinute > lt2.endMinute)
+        || (lt2.startHour == lt1.endHour        // L2 starts after L1 ends by min
+            && lt2.startMinute > lt1.endMinute)
+            ) {
+        return false;
+    }
+    return true;
+}
 
-function check_collision(course1, course2) {
-    
+function check_collision(section1, section2) {
+    const s1_lt = section1.lectureTimes;
+    const s2_lt = section2.lectureTimes;
+
+    for (var i = 0 ; i < s1_lt.length ; i++) {
+        for (var j = 0 ; j < s2_lt.length ; j++) {
+            if(lectures_intersect(s1_lt[i], s2_lt[j]) == true) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 const example_course = {
