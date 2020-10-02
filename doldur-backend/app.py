@@ -21,8 +21,6 @@ with open("data.json","r") as f:
     semester_courses  = json.load(f)
 with open("musts.json","r") as f:
     musts = json.load(f)
-with open("nte.json","r") as f:
-    nte = json.load(f)
 
 class Courses(Resource):
     def get(self):

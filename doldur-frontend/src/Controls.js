@@ -102,6 +102,9 @@ export class Controls extends React.Component{
         this.setState({settings: s});
     }
     handleNewScenarioFound(s){
+        if(s === null){
+            clearTimeout(this.timer);
+        }
         const newScenarios = this.state.scenarios.slice(0);
         newScenarios.push(s);
         this.setState({scenarios: newScenarios});
