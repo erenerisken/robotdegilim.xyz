@@ -1,5 +1,42 @@
-function apply_criteria(surname, department, grade, courses) {
+function apply_criteria_courses(surname, department, grade, courses) {
+    for (var i = 0 ; i < courses.length ; i++) {
+        apply_criteria_sections(surname, department, grade, courses[i]);
+        if(courses[i].sections.length() == 0) {
+            // Drop Course
+            courses.splice(i, 1);
+            i--;
+        }
+    }
+}
 
+function surnameCheck(surname, course_surname_start, course_surname_end) {
+    return ((course_surname_start <= surname) && (surname <= course_surname_end));
+}
+function departmentCheck(department, dept_list) {
+    for(var i = 0 ; i < dept_list.length ; i++) {
+        if(department == dept_list[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+function apply_criteria_sections(surname, department, grade, course) {
+    for(var i = 0 ; i < course.sections.length ; i++) {
+        if(check_surname == true) {
+            if(surnameCheck(surname, course.sections[i].surnameStart, course.sections[i].surnameEnd) == false) {
+                // Drop section
+                course.sections.splice(i, 1);
+                i--;
+            }
+        }
+        if(check_department == true) {
+            if(departmentCheck(department, course.sections[i].dept) == false) {
+                // Drop section
+                course.sections.splice(i, 1);
+                i--;
+            }
+        }
+    }
 }
 
 function lectures_intersect(lt1, lt2) {
@@ -86,10 +123,29 @@ const exampleScenario = {
 // 
 // returns array of code + sections
 function compute_schedule(surname, department, grade, courses, callback) {
-    apply_criteria(surname, department, grade, courses)
+    apply_criteria(surname, department, grade, courses);
 
+    scenario = recursive_computation(courses, 0, [], callback);
     
+    callback(scenario)
+}
 
-//  callback(scenario)
-
+function recursive_computation(courses, depth, scenario) {
+    if(depth == courses.length) {
+        return scenario;
+    }
+    for(var i = 0 ; i < courses[depth].sections.length ; i++) {
+        var collision = false;
+        for(var j = 0 ; j < scenario.length ; j++) {
+            if(check_collision(courses[depth].sections[i], scenario[j]) == true) {
+                collision = true;
+            }
+        }
+        if(collision == false) {
+            scenario.push(courses[depth].sections[i]);
+            recursive_computation(courses, depth + 1, scenario);
+            scenario.pop();
+        }
+        
+    }
 }
