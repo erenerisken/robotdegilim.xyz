@@ -1,3 +1,5 @@
+
+
 function apply_criteria_courses(surname, department, grade, courses) {
     for (var i = 0 ; i < courses.length ; i++) {
         apply_criteria_sections(surname, department, grade, courses[i]);
@@ -125,14 +127,15 @@ const exampleScenario = {
 function compute_schedule(surname, department, grade, courses, callback) {
     apply_criteria(surname, department, grade, courses);
 
-    scenario = recursive_computation(courses, 0, [], callback);
-    
-    callback(scenario)
+    scenarios = [];
+    recursive_computation(courses, 0, [], scenarios);
+
+    callback(scenarios)
 }
 
-function recursive_computation(courses, depth, scenario) {
+function recursive_computation(courses, depth, scenario, scenarios) {
     if(depth == courses.length) {
-        return scenario;
+        scenarios.push(scenario.slice(0));
     }
     for(var i = 0 ; i < courses[depth].sections.length ; i++) {
         var collision = false;
@@ -143,7 +146,7 @@ function recursive_computation(courses, depth, scenario) {
         }
         if(collision == false) {
             scenario.push(courses[depth].sections[i]);
-            recursive_computation(courses, depth + 1, scenario);
+            recursive_computation(courses, depth + 1, scenario, scenarios);
             scenario.pop();
         }
         
