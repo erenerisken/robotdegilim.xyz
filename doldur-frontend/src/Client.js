@@ -3,6 +3,11 @@ import axios from "axios";
 export class Client{
     constructor() {
         this.coursesUrl = "https:\\robotdegilim.xyz/courses";
+        this.mustUrl = "https:\\robotdegilim.xyz/musts?";
+    }
+    async getMusts(dept, semester){
+        const url = this.mustUrl + "dept="+dept+"&sem="+semester;
+        return (await axios.get(url)).data;
     }
     async getCourses(){
         const data = (await axios.get(this.coursesUrl)).data;

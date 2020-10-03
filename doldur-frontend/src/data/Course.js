@@ -123,6 +123,10 @@ export async function getAllCourses(){
     const client = new Client();
     return await client.getCourses();
 }
+export async function getMusts(dept, semester){
+    const client = new Client();
+    return client.getMusts(dept, semester);
+}
 export function getCourseByCategory(category){
     if (category < 0){
         return getAllCourses();

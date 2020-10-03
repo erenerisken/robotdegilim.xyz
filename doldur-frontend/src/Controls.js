@@ -15,7 +15,7 @@ import AddIcon from '@material-ui/icons/Add';
 import EventAvailableIcon from '@material-ui/icons/EventAvailable';
 import {isMobile} from "react-device-detect";
 
-import {getAllCourses} from "./data/Course";
+import {getAllCourses, getMusts} from "./data/Course";
 import {CourseCard} from "./CourseCard";
 import {AddCourseWidget} from "./AddCourseWidget";
 import {AdvancedSettings} from "./AdvancedSettings";
@@ -80,6 +80,14 @@ export class Controls extends React.Component{
             this.setState({alertMsg: "Please choose a semester", errorSemester: true});
             return;
         }
+        getMusts(this.state.department, this.state.semester).then(data => {
+            if (data !== undefined){
+                // eslint-disable-next-line
+                data.map(code => {
+                    this.handleAddCourse(this.getCourseByCode(code));
+                });
+            }
+        })
     }
 
     handleAlertClose(){
@@ -161,7 +169,7 @@ export class Controls extends React.Component{
                             value={this.state.surname}
                             inputProps={{ maxLength: 12 }}
                             variant={"outlined"}
-                            onChange={e => this.setState({surname: e.target.value})}
+                            onChange={e => this.setState({surname: e.target.value.toUpperCase()})}
                         />
                     </div>
                     <div className={"textfield-wrapper"}>
@@ -172,7 +180,7 @@ export class Controls extends React.Component{
                             value={this.state.department}
                             inputProps={{ maxLength: 12 }}
                             variant={"outlined"}
-                            onChange={e => this.setState({department: e.target.value})}
+                            onChange={e => this.setState({department: e.target.value.toUpperCase()})}
                         />
                     </div>
                 </div>
