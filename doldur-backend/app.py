@@ -45,6 +45,7 @@ class Course(Resource):
         return semester_courses[code]
         
 api.add_resource(Courses,'/courses')
+api.add_resource(Courses,'/robotdegilim.xyz/courses')
 api.add_resource(Must,'/musts')
 api.add_resource(Course,'/course')
 
