@@ -34,7 +34,7 @@ export class Controls extends React.Component{
             errorDept: false,
             errorSemester: false,
             selectedCourses: [],
-            allCourses: getAllCourses(),
+            allCourses: [],
             settings: {
                 checkSurname: true,
                 checkDepartment: true,
@@ -46,6 +46,7 @@ export class Controls extends React.Component{
     }
     componentDidMount() {
         document.title = "Robot Değilim *-*";
+        getAllCourses().then(data => this.setState({allCourses: data}));
         if (isMobile){
             document.body.style.zoom = "60%";
         }
