@@ -1,5 +1,3 @@
-
-
 function apply_criteria_courses(surname, department, grade, courses) {
     for (var i = 0 ; i < courses.length ; i++) {
         
@@ -129,7 +127,7 @@ function recursive_computation(courses, depth, scenario, scenarios) {
         if(collision == false) {
             scenario.push({
                 code: courses[depth].code,
-                section: i,
+                section: courses[depth].sections[i].sectionNumber,
             }
             );
             recursive_computation(courses, depth + 1, scenario, scenarios);
