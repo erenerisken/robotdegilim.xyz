@@ -137,9 +137,7 @@ export class Controls extends React.Component{
                     minYear: currentCourse.sections[i].minYear,
                     maxYear: currentCourse.sections[i].maxYear,
                     toggle: c.sections[i],
-                    dept: currentCourse.sections[i].dept,
-                    surnameStart: currentCourse.sections[i].surnameStart,
-                    surnameEnd: currentCourse.sections[i].surnameEnd,
+                    criteria: currentCourse.sections[i].criteria,
                     lectureTimes: Array(0)
                 };
                 currentCourse.sections[i].lectureTimes.map(t => sectionToPush.lectureTimes.push(t));
