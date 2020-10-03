@@ -89,11 +89,17 @@ export class Controls extends React.Component{
         newSelectedCourses[i] = null;
         this.setState({selectedCourses: newSelectedCourses});
     }
+    handleToggle(i, sections){
+        const newSelectedCourses = this.state.selectedCourses.slice(0);
+        newSelectedCourses[i].sections = sections;
+        this.setState({selectedCourses: newSelectedCourses});
+        console.log("Course " + i + " sections:" + sections);
+    }
     handleAddCourse(c){
         const newSelectedCourses = this.state.selectedCourses.slice(0);
         newSelectedCourses.push({
             code: c.code,
-            sections: [],
+            sections: Array(c.sections.length).fill(true),
             color: this.state.colorset.getNextColor()
         });
         this.setState({selectedCourses: newSelectedCourses});
@@ -101,16 +107,12 @@ export class Controls extends React.Component{
     handleChangeSettings(s){
         this.setState({settings: s});
     }
-    handleNewScenarioFound(s){
-        if(s === null){
-            clearTimeout(this.timer);
-        }
-        const newScenarios = this.state.scenarios.slice(0);
-        newScenarios.push(s);
-        this.setState({scenarios: newScenarios});
-    }
     handleScheduleBegin(){
+        const courseData = Array(0);
+        this.state.selectedCourses.map(c => {
+            const currentCourse = this.getCourseByCode(c.code);
 
+        });
     }
     render() {
         return (
@@ -193,6 +195,7 @@ export class Controls extends React.Component{
                         c !== null?
                         <CourseCard course={this.getCourseByCode(c.code)}
                                     onDelete={() => this.handleDeleteCourse(i)}
+                                    onToggle={sections => this.handleToggle(i, sections)}
                                     color={c.color}/> : null
                     );
                 })}
