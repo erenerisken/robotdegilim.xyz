@@ -134,6 +134,7 @@ export class Controls extends React.Component{
             };
             for(let i = 0; i<currentCourse.sections.length; i++){
                 const sectionToPush = {
+                    sectionNumber: i,
                     minYear: currentCourse.sections[i].minYear,
                     maxYear: currentCourse.sections[i].maxYear,
                     toggle: c.sections[i],
