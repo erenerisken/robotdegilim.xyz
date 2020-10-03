@@ -27,19 +27,33 @@ function departmentCheck(department, dept_list) {
 }
 function apply_criteria_sections(surname, department, grade, course) {
     for(var i = 0 ; i < course.sections.length ; i++) {
-        if(course.check_surname == true) {
-            if(surnameCheck(surname, course.sections[i].surnameStart, course.sections[i].surnameEnd) == false) {
-                // Drop section
-                course.sections.splice(i, 1);
-                i--;
+        var section_passed = false;
+        for(var j = 0 ; j < course.sections[i].criteria.length ; j++) {
+            criterion = course.section[i].criteria[j];
+            var dept_passed = false;
+            var surn_passed = false;
+            if(course.check_department == false) {
+                dept_passed = true;
+            } else {
+                if(criterion.dept == "ALL" || criterion.dept == department) {
+                    dept_passed = true;
+                }
+            }
+            if(course.check_surname == false) {
+                surn_passed = true;
+            } else {
+                if(surnameCheck(surname, criterion.surnameStart, criterion.surnameEnd) == true) {
+                    surn_passed = true;
+                }
+            }
+            
+            if(dept_passed == true && surn_passed == true) {
+                section_passed = true;
             }
         }
-        if(course.check_department == true) {
-            if(departmentCheck(department, course.sections[i].dept) == false) {
-                // Drop section
-                course.sections.splice(i, 1);
-                i--;
-            }
+        if(section_passed == false) {
+            course.sections.splice(i, 1);
+            i--;
         }
     }
     return course;
@@ -113,7 +127,11 @@ function recursive_computation(courses, depth, scenario, scenarios) {
             }
         }
         if(collision == false) {
-            scenario.push(courses[depth].sections[i]);
+            scenario.push({
+                code: courses[depth].code,
+                section: i,
+            }
+            );
             recursive_computation(courses, depth + 1, scenario, scenarios);
             scenario.pop();
         }
