@@ -109,10 +109,36 @@ export class Controls extends React.Component{
     }
     handleScheduleBegin(){
         const courseData = Array(0);
+        // eslint-disable-next-line
         this.state.selectedCourses.map(c => {
+            if (c === null){
+                return null;
+            }
             const currentCourse = this.getCourseByCode(c.code);
-
+            const courseToPush = {
+                code: c.code,
+                category: currentCourse.category,
+                checkSurname: this.state.settings.checkSurname,
+                checkCollision: this.state.settings.checkCollision,
+                checkDepartment: this.state.settings.checkDepartment,
+                sections: Array(0)
+            };
+            for(let i = 0; i<currentCourse.sections.length; i++){
+                const sectionToPush = {
+                    minYear: currentCourse.sections[i].minYear,
+                    maxYear: currentCourse.sections[i].maxYear,
+                    toggle: c.sections[i],
+                    dept: currentCourse.sections[i].dept,
+                    surnameStart: currentCourse.sections[i].surnameStart,
+                    surnameEnd: currentCourse.sections[i].surnameEnd,
+                    lectureTimes: Array(0)
+                };
+                currentCourse.sections[i].lectureTimes.map(t => sectionToPush.lectureTimes.push(t));
+                courseToPush.sections.push(sectionToPush);
+            }
+            courseData.push(courseToPush);
         });
+        console.log(courseData);
     }
     render() {
         return (

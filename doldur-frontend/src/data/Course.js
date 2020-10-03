@@ -10,6 +10,8 @@ const exampleCourses = [
                 dept: ["CENG", "EE"],
                 surnameStart: "AA",
                 surnameEnd: "FF",
+                minYear: 0,
+                maxYear: 0,
                 lectureTimes: [
                     {
                         classroom: "BMB-1",
@@ -31,9 +33,11 @@ const exampleCourses = [
             },
             {
                 instructor: "Cevat Şener",
-                dept: ["CENG", "EE"],
+                dept: ["CENG", "ME"],
                 surnameStart: "FG",
                 surnameEnd: "ZZ",
+                minYear: 0,
+                maxYear: 0,
                 lectureTimes: [
                     {
                         classroom: "U-3",
@@ -66,6 +70,8 @@ const exampleCourses = [
                 dept: ["CENG"],
                 surnameStart: "AA",
                 surnameEnd: "ZZ",
+                minYear: 0,
+                maxYear: 0,
                 lectureTimes: [
                     {
                         classroom: "BMB-1",
