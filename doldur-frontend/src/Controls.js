@@ -16,6 +16,7 @@ import EventAvailableIcon from '@material-ui/icons/EventAvailable';
 import {isMobile} from "react-device-detect";
 
 import {getAllCourses, getMusts} from "./data/Course";
+import {compute_schedule} from "./schedule";
 import {CourseCard} from "./CourseCard";
 import {AddCourseWidget} from "./AddCourseWidget";
 import {AdvancedSettings} from "./AdvancedSettings";
@@ -27,9 +28,9 @@ export class Controls extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            surname: "",
-            department: "",
-            semester: 0,
+            surname: "ER",
+            department: "CENG",
+            semester: 3,
             alertMsg: "",
             errorDept: false,
             errorSemester: false,
@@ -147,6 +148,13 @@ export class Controls extends React.Component{
             courseData.push(courseToPush);
         });
         console.log(courseData);
+        const calculatedSchedule = compute_schedule(
+            this.state.surname.slice(0,2),
+            this.state.department,
+            0,
+            courseData
+        );
+        console.log(calculatedSchedule);
     }
     render() {
         return (
