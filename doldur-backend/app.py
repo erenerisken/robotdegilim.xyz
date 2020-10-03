@@ -14,7 +14,9 @@ cors = CORS(app)
 
 parser = reqparse.RequestParser()
 
-
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
 
 
 with open("data.json","r") as f:
