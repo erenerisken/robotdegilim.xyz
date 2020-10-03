@@ -40,6 +40,14 @@ class Must(Resource):
         dept = args.get("dept")
         sem = request.args.get("sem")
         return musts[dept][sem]
+class Must2(Resource):
+    def get(self):
+        parser.add_argument("dept",type=str)
+        parser.add_argument("sem",type=str)
+        args = parser.parse_args()
+        dept = args.get("dept")
+        sem = request.args.get("sem")
+        return musts[dept][sem]
 
 class Course(Resource):
     def get(self):
@@ -51,6 +59,7 @@ class Course(Resource):
 api.add_resource(Courses,'/courses')
 api.add_resource(Courses2,'/robotdegilim.xyz/courses')
 api.add_resource(Must,'/musts')
+api.add_resource(Must2,'/robotdegilim.xyz/musts')
 api.add_resource(Course,'/course')
 
 if __name__ == '__main__':
