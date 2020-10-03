@@ -53,8 +53,8 @@ export class Client{
                 });
                 courseToPush.sections.push(sectionToPush);
             });
-            console.log(courseToPush);
-            console.log(data[code]);
+            //console.log(courseToPush);
+            //console.log(data[code]);
             courses.push(courseToPush);
         });
         return courses;
