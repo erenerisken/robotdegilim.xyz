@@ -15,17 +15,26 @@ const theme = createMuiTheme({
     }
 });
 
-function App() {
-  return (
-      <MuiThemeProvider theme={theme}>
-        <div className="App">
-            <div className={isMobile ? "column" : "row"}>
-                <WeeklyProgram coursesToDisplay={getCoursesToDisplay()}/>
-                <Controls />
+class App extends React.Component{
+    constructor(props) {
+        super(props);
+        this.state = {
+            scenarios: []
+        }
+    }
+    render() {
+        console.log(this.state.scenarios);
+        return (
+          <MuiThemeProvider theme={theme}>
+            <div className="App">
+                <div className={isMobile ? "column" : "row"}>
+                    <WeeklyProgram coursesToDisplay={getCoursesToDisplay()} scenarios={this.state.scenarios}/>
+                    <Controls onSchedule={s => this.setState({scenarios: s})}/>
+                </div>
             </div>
-        </div>
-      </MuiThemeProvider>
-  );
+          </MuiThemeProvider>
+      );
+  }
 }
 
 export default App;

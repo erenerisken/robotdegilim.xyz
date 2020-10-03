@@ -18,3 +18,7 @@
 .dayscale-label {
     width: 14.27%;
 }
+.program-row {
+    display: inline-flex;
+    width: 100%;
+}

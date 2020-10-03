@@ -1,6 +1,5 @@
 function apply_criteria_courses(surname, department, grade, courses) {
     for (var i = 0 ; i < courses.length ; i++) {
-        console.log(courses[i]);
         courses[i] = apply_criteria_sections(surname, department, grade, courses[i]);
 
         if(courses[i].sections.length === 0) {
@@ -57,14 +56,15 @@ function apply_criteria_sections(surname, department, grade, course) {
     return course;
 }
 
+
 function lectures_intersect(lt1, lt2) {
     if (lt1.day !== lt2.day                      // Different Days
         || lt1.startHour > lt2.endHour          // L1 starts after L2 ends by hour
         || lt2.startHour > lt1.endHour          // L2 starts after L1 ends by hour
         || (lt1.startHour === lt2.endHour        // L1 starts after L2 ends by min
-            && lt1.startMinute > lt2.endMinute)
+            && lt1.startMin > lt2.endMin)
         || (lt2.startHour === lt1.endHour        // L2 starts after L1 ends by min
-            && lt2.startMinute > lt1.endMinute)
+            && lt2.startMin > lt1.endMin)
             ) {
         return false;
     }
@@ -114,20 +114,27 @@ export function compute_schedule(surname, department, grade, courses) {
 
 function recursive_computation(courses, depth, scenario, scenarios) {
     if(depth === courses.length) {
-        scenarios.push(scenario.slice(0));
+        const scenarioToPosh = Array(0);
+        scenario.map(c => {
+            scenarioToPosh.push({
+                code: c.code,
+                section: c.section.sectionNumber
+            });
+        });
+        scenarios.push(scenarioToPosh);
         return;
     }
     for(var i = 0 ; i < courses[depth].sections.length ; i++) {
         var collision = false;
         for(var j = 0 ; j < scenario.length ; j++) {
-            if(check_collision(courses[depth].sections[i], scenario[j]) === true) {
+            if(check_collision(courses[depth].sections[i], scenario[j].section) === true) {
                 collision = true;
             }
         }
         if(collision === false) {
             scenario.push({
                 code: courses[depth].code,
-                section: courses[depth].sections[i].sectionNumber,
+                section: courses[depth].sections[i],
             }
             );
             recursive_computation(courses, depth + 1, scenario, scenarios);

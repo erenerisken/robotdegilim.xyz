@@ -56,7 +56,7 @@ export class CourseCard extends React.Component {
                             color={"primary"}
                         />
                     }
-                    label={i+1}
+                    label={this.props.course.sections[i].sectionNumber}
                 />);
         }
         return (

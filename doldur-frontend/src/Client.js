@@ -27,6 +27,7 @@ export class Client{
                 const s = data[code]["Sections"][sn];
                 const sectionToPush = {
                     instructor: s["i"][0],
+                    sectionNumber: sn,
                     criteria: Array(0),
                     minYear: 0,
                     maxYear: 0,

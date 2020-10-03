@@ -47,7 +47,7 @@ export class SectionInfo extends React.Component {
         return (
             <div className={"section-info"} style={{background: this.props.color.secondary}}>
                 <div>
-                    {"Section " + this.props.sectionNo}
+                    {"Section " + this.props.sectionDetails.sectionNumber}
                 </div>
                 <Divider />
                 <div className={"section-row"}>

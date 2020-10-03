@@ -30,10 +30,11 @@ export class AdvancedSettings extends React.Component {
         });
     }
     handleCollisionCheck(){
+        /*TODO*/
         this.props.onSettingsChange({
             checkSurname: this.props.settings.checkSurname,
             checkDepartment: this.props.settings.checkDepartment,
-            checkCollision: !this.props.settings.checkCollision
+            checkCollision: this.props.settings.checkCollision
         });
     }
 

@@ -28,12 +28,13 @@ export class Controls extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            surname: "ER",
-            department: "CENG",
-            semester: 3,
+            surname: "",
+            department: "",
+            semester: 0,
             alertMsg: "",
             errorDept: false,
             errorSemester: false,
+            errorSurname: false,
             selectedCourses: [],
             allCourses: [],
             settings: {
@@ -61,7 +62,25 @@ export class Controls extends React.Component{
         }
         return null;
     }
-
+    getSectionByNumber(c, n){
+        for (let i = 0; i<c.sections.length; i++){
+            if (c.sections[i].sectionNumber === n){
+                return c.sections[i];
+            }
+        }
+        return null;
+    }
+    getColorByCourseCode(code){
+        for (let i = 0; i<this.state.selectedCourses.length; i++){
+            if (this.state.selectedCourses[i] === null){
+                continue;
+            }
+            if(this.state.selectedCourses[i].code === code){
+                return this.state.selectedCourses[i].color;
+            }
+        }
+        return null;
+    }
     renderSemesterSelections(n){
         const ret = Array(0);
         ret.push(<MenuItem value={0}>---</MenuItem> )
@@ -72,7 +91,7 @@ export class Controls extends React.Component{
     }
 
     handleAddMustCourse(){
-        this.setState({alertMsg: "", errorDept: false, errorSemester: false});
+        this.setState({alertMsg: "", errorDept: false, errorSemester: false, errorSurname: false});
         if (this.state.department.length < 2){
             this.setState({alertMsg: "Please enter a correct department", errorDept: true});
             return;
@@ -117,7 +136,34 @@ export class Controls extends React.Component{
     handleChangeSettings(s){
         this.setState({settings: s});
     }
+    handleScheduleComplete(scenarios){
+        const scenariosToSubmit = Array(0);
+        scenarios.map(s => {
+            const scenarioToPush = Array(0);
+            s.map(c => {
+                const currentCourse = this.getCourseByCode(c.code);
+                const currentSection = this.getSectionByNumber(currentCourse, c.section);
+                const currentColor = this.getColorByCourseCode(c.code);
+                scenarioToPush.push({
+                    abbreviation: currentCourse.abbreviation,
+                    section: currentSection,
+                    color: currentColor
+                });
+            });
+            scenariosToSubmit.push(scenarioToPush);
+        });
+        this.props.onSchedule(scenariosToSubmit);
+    }
     handleScheduleBegin(){
+        this.setState({alertMsg: "", errorDept: false, errorSemester: false, errorSurname: false});
+        if (this.state.department.length < 2){
+            this.setState({alertMsg: "Please enter a correct department", errorDept: true});
+            return;
+        }
+        if (this.state.surname.length < 2 && this.state.settings.checkSurname){
+            this.setState({alertMsg: "Please enter at least 2 letters of your surname", errorSurname: true});
+            return;
+        }
         const courseData = Array(0);
         // eslint-disable-next-line
         this.state.selectedCourses.map(c => {
@@ -135,7 +181,7 @@ export class Controls extends React.Component{
             };
             for(let i = 0; i<currentCourse.sections.length; i++){
                 const sectionToPush = {
-                    sectionNumber: i,
+                    sectionNumber: currentCourse.sections[i].sectionNumber,
                     minYear: currentCourse.sections[i].minYear,
                     maxYear: currentCourse.sections[i].maxYear,
                     toggle: c.sections[i],
@@ -147,7 +193,6 @@ export class Controls extends React.Component{
             }
             courseData.push(courseToPush);
         });
-        console.log(courseData);
         const calculatedSchedule = compute_schedule(
             this.state.surname.slice(0,2),
             this.state.department,
@@ -155,6 +200,8 @@ export class Controls extends React.Component{
             courseData
         );
         console.log(calculatedSchedule);
+        this.setState({scenario: calculatedSchedule});
+        this.handleScheduleComplete(calculatedSchedule);
     }
     render() {
         return (
@@ -171,7 +218,8 @@ export class Controls extends React.Component{
                 <div className={"control-row"}>
                     <div className={"textfield-wrapper"}>
                         <TextField
-                            required
+                            required={this.state.settings.checkSurname}
+                            error={this.state.errorSurname}
                             label={"Surname"}
                             value={this.state.surname}
                             inputProps={{ maxLength: 12 }}

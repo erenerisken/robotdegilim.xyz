@@ -1,5 +1,6 @@
 import React from "react";
-import {Paper} from "@material-ui/core";
+import {Paper, IconButton} from "@material-ui/core";
+import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import {ViewState} from "@devexpress/dx-react-scheduler";
 import {
     Scheduler,
@@ -43,7 +44,12 @@ class DayScaleRow extends React.Component{
 }
 
 export class WeeklyProgram extends React.Component{
-
+    constructor(props) {
+        super(props);
+        this.state = {
+            currentScenario: 0
+        }
+    }
     render() {
         return (
             <div className={isMobile ? "scheduler-mobile" : "scheduler-wrapper"}>
@@ -63,6 +69,9 @@ export class WeeklyProgram extends React.Component{
                         <Appointments/>
                     </Scheduler>
                 </Paper>
+                <div className={"program-row"}>
+
+                </div>
             </div>
         );
     }
