@@ -28,6 +28,10 @@ class Courses(Resource):
     def get(self):
         return semester_courses
 
+class Courses2(Resource):
+    def get(self):
+        return semester_courses
+
 class Must(Resource):
     def get(self):
         parser.add_argument("dept",type=str)
@@ -45,7 +49,7 @@ class Course(Resource):
         return semester_courses[code]
         
 api.add_resource(Courses,'/courses')
-api.add_resource(Courses,'/robotdegilim.xyz/courses')
+api.add_resource(Courses2,'/robotdegilim.xyz/courses')
 api.add_resource(Must,'/musts')
 api.add_resource(Course,'/course')
 
