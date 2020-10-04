@@ -74,6 +74,7 @@ export class WeeklyProgram extends React.Component{
             c.section.lectureTimes.map(lt => {
                 for(let i = lt.startHour; i<lt.endHour; i++){
                     coursesToDisplay.push({
+                        type: "course",
                         title: c.abbreviation,
                         section: c.section.sectionNumber,
                         classroom: lt.classroom !== undefined ? lt.classroom : "-",

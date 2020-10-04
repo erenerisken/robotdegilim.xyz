@@ -35,4 +35,9 @@
 }
 .program-appointment {
     height: 100%;
+    text-align: center;
+}
+.program-text-container {
+    width: 100%;
+    margin: auto;
 }
