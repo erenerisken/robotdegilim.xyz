@@ -125,6 +125,9 @@ export class Controls extends React.Component{
         console.log("Course " + i + " sections:" + sections);
     }
     handleAddCourse(c){
+        if (c === null){
+            return;
+        }
         const newSelectedCourses = this.state.selectedCourses.slice(0);
         newSelectedCourses.push({
             code: c.code,

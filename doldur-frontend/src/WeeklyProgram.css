@@ -20,5 +20,19 @@
 }
 .program-row {
     display: inline-flex;
-    width: 100%;
+    width: fit-content;
+    height: fit-content;
+    margin-right: auto;
+    margin-left: auto;
+}
+.program-typo-wrapper {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.custom-appointment {
+    margin-left: 3pt;
+}
+.program-appointment {
+    height: 100%;
 }
