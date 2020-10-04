@@ -72,14 +72,16 @@ export class WeeklyProgram extends React.Component{
         scenario.map(c => {
             //console.log(c);
             c.section.lectureTimes.map(lt => {
-                coursesToDisplay.push({
-                    title: c.abbreviation,
-                    section: c.section.sectionNumber,
-                    classroom: lt.classroom !== undefined ? lt.classroom : "-",
-                    startDate: this.convertTime(lt.day, lt.startHour, lt.startMin),
-                    endDate: this.convertTime(lt.day, lt.endHour, lt.endMin),
-                    color: c.color
-                })
+                for(let i = lt.startHour; i<lt.endHour; i++){
+                    coursesToDisplay.push({
+                        title: c.abbreviation,
+                        section: c.section.sectionNumber,
+                        classroom: lt.classroom !== undefined ? lt.classroom : "-",
+                        startDate: this.convertTime(lt.day, i, lt.startMin),
+                        endDate: this.convertTime(lt.day, i+1, lt.endMin),
+                        color: c.color
+                    })
+                }
             });
         });
         return coursesToDisplay;
