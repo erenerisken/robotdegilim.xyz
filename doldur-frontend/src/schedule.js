@@ -1,6 +1,9 @@
-function apply_criteria_courses(surname, department, grade, courses) {
+
+
+function applyCriteriaCourses(surname, department, grade, courses) {
     for (var i = 0 ; i < courses.length ; i++) {
-        courses[i] = apply_criteria_sections(surname, department, grade, courses[i]);
+        
+        courses[i] = applyCriteriaSections(surname, department, grade, courses[i]);
 
         if(courses[i].sections.length === 0) {
             // Drop Course
@@ -11,44 +14,44 @@ function apply_criteria_courses(surname, department, grade, courses) {
     return courses;
 }
 
-function surnameCheck(surname, course_surname_start, course_surname_end) {
-    return ((course_surname_start <= surname) && (surname <= course_surname_end));
+function surnameCheck(surname, courseSurnameStart, courseSurnameEnd) {
+    return ((courseSurnameStart <= surname) && (surname <= courseSurnameEnd));
 }
-function departmentCheck(department, dept_list) {
-    for(var i = 0 ; i < dept_list.length ; i++) {
-        if(department === dept_list[i]) {
+function departmentCheck(department, deptList) {
+    for(var i = 0 ; i < deptList.length ; i++) {
+        if(department == deptList[i]) {
             return true;
         }
     }
     return false;
 }
-function apply_criteria_sections(surname, department, grade, course) {
+function applyCriteriaSections(surname, department, grade, course) {
     for(var i = 0 ; i < course.sections.length ; i++) {
-        var section_passed = false;
+        var sectionPassed = false;
         for(var j = 0 ; j < course.sections[i].criteria.length ; j++) {
-            let criterion = course.sections[i].criteria[j];
-            var dept_passed = false;
-            var surn_passed = false;
-            if(course.checkDepartment === false) {
-                dept_passed = true;
+            criterion = course.section[i].criteria[j];
+            var deptPassed = false;
+            var surnPassed = false;
+            if(course.checkDepartment == false) {
+                deptPassed = true;
             } else {
-                if(criterion.dept === "ALL" || criterion.dept === department) {
-                    dept_passed = true;
+                if(criterion.dept == "ALL" || criterion.dept == department) {
+                    deptPassed = true;
                 }
             }
-            if(course.checkSurname === false) {
-                surn_passed = true;
+            if(course.checkSurname == false) {
+                surnPassed = true;
             } else {
-                if(surnameCheck(surname, criterion.surnameStart, criterion.surnameEnd) === true) {
-                    surn_passed = true;
+                if(surnameCheck(surname, criterion.surnameStart, criterion.surnameEnd) == true) {
+                    surnPassed = true;
                 }
             }
             
-            if(dept_passed === true && surn_passed === true) {
-                section_passed = true;
+            if(deptPassed == true && surnPassed == true) {
+                sectionPassed = true;
             }
         }
-        if(section_passed === false) {
+        if(sectionPassed == false) {
             course.sections.splice(i, 1);
             i--;
         }
@@ -56,9 +59,8 @@ function apply_criteria_sections(surname, department, grade, course) {
     return course;
 }
 
-
-function lectures_intersect(lt1, lt2) {
-    if (lt1.day !== lt2.day                      // Different Days
+function lecturesIntersect(lt1, lt2) {
+    if (lt1.day != lt2.day                      // Different Days
         || lt1.startHour > lt2.endHour          // L1 starts after L2 ends by hour
         || lt2.startHour > lt1.endHour          // L2 starts after L1 ends by hour
         || (lt1.startHour === lt2.endHour        // L1 starts after L2 ends by min
@@ -71,13 +73,13 @@ function lectures_intersect(lt1, lt2) {
     return true;
 }
 
-function check_collision(section1, section2) {
-    const s1_lt = section1.lectureTimes;
-    const s2_lt = section2.lectureTimes;
+function checkCollision(section1, section2) {
+    const s1Lt = section1.lectureTimes;
+    const s2Lt = section2.lectureTimes;
 
-    for (var i = 0 ; i < s1_lt.length ; i++) {
-        for (var j = 0 ; j < s2_lt.length ; j++) {
-            if(lectures_intersect(s1_lt[i], s2_lt[j]) === true) {
+    for (var i = 0 ; i < s1Lt.length ; i++) {
+        for (var j = 0 ; j < s2Lt.length ; j++) {
+            if(lecturesIntersect(s1Lt[i], s2Lt[j]) == true) {
                 return true;
             }
         }
@@ -85,49 +87,30 @@ function check_collision(section1, section2) {
     return false;
 }
 
-const exampleScenario = {
-    sections: [
-        {
-            code: 5710140,
-            section: 2
-        },
-        {
-            code: 5710213,
-            section: 1
-        }
-    ]
-}
 
 // 
 // 
 // 
 // 
 // returns array of code + sections
-export function compute_schedule(surname, department, grade, courses) {
-    courses = apply_criteria_courses(surname, department, grade, courses);
+function computeSchedule(surname, department, grade, courses, callback) {
+    courses = applyCriteriaCourses(surname, department, grade, courses);
 
-    let scenarios = [];
-    recursive_computation(courses, 0, [], scenarios);
+    scenarios = [];
+    recursiveComputation(courses, 0, [], scenarios);
 
     return scenarios;
 }
 
-function recursive_computation(courses, depth, scenario, scenarios) {
-    if(depth === courses.length) {
-        const scenarioToPosh = Array(0);
-        scenario.map(c => {
-            scenarioToPosh.push({
-                code: c.code,
-                section: c.section.sectionNumber
-            });
-        });
-        scenarios.push(scenarioToPosh);
+function recursiveComputation(courses, depth, scenario, scenarios) {
+    if(depth == courses.length) {
+        scenarios.push(scenario.slice(0));
         return;
     }
     for(var i = 0 ; i < courses[depth].sections.length ; i++) {
         var collision = false;
         for(var j = 0 ; j < scenario.length ; j++) {
-            if(check_collision(courses[depth].sections[i], scenario[j].section) === true) {
+            if(checkCollision(courses[depth].sections[i], scenario[j]) == true) {
                 collision = true;
             }
         }
@@ -137,7 +120,7 @@ function recursive_computation(courses, depth, scenario, scenarios) {
                 section: courses[depth].sections[i],
             }
             );
-            recursive_computation(courses, depth + 1, scenario, scenarios);
+            recursiveComputation(courses, depth + 1, scenario, scenarios);
             scenario.pop();
         }
         
