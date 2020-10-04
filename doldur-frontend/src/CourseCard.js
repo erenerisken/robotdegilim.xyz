@@ -32,7 +32,9 @@ export class CourseCard extends React.Component {
     }
 
     toggleSections(){
-        this.setState({selectedSections: Array(this.state.sectionCount).fill(!this.state.selectedSections[0])});
+        const newSelectedSections = Array(this.state.sectionCount).fill(!this.state.selectedSections[0]);
+        this.setState({selectedSections: newSelectedSections});
+        this.handleToggle(newSelectedSections);
     }
 
     renderCheckBoxes() {
@@ -46,7 +48,7 @@ export class CourseCard extends React.Component {
                     control={
                         <Checkbox
                             checked={this.state.selectedSections[i]}
-                            onChange={e => {
+                            onChange={_ => {
                                     const newSelectedSections = this.state.selectedSections.slice(0);
                                     newSelectedSections[i] = !newSelectedSections[i];
                                     this.setState({selectedSections: newSelectedSections});
