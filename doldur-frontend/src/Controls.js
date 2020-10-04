@@ -107,7 +107,9 @@ export class Controls extends React.Component{
                     this.handleAddCourse(this.getCourseByCode(code));
                 });
             }
-        })
+        }).catch(_ => {
+            this.setState({alertMsg: "Must courses for your department are not available", errorDept: true});
+        });
     }
 
     handleAlertClose(){
