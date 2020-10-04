@@ -1,3 +1,5 @@
+import {Client} from "../Client";
+// eslint-disable-next-line
 const exampleCourses = [
     {
         code: 5710213,
@@ -7,9 +9,20 @@ const exampleCourses = [
         sections: [
             {
                 instructor: "Yusuf Sahillioğlu",
-                dept: ["CENG", "EE"],
-                surnameStart: "AA",
-                surnameEnd: "FF",
+                criteria: [
+                    {
+                        dept: "CENG",
+                        surnameStart: "AA",
+                        surnameEnd: "FF"
+                    },
+                    {
+                        dept: "EE",
+                        surnameStart: "AA",
+                        surnameEnd: "ZZ"
+                    }
+                ],
+                minYear: 0,
+                maxYear: 0,
                 lectureTimes: [
                     {
                         classroom: "BMB-1",
@@ -31,9 +44,20 @@ const exampleCourses = [
             },
             {
                 instructor: "Cevat Şener",
-                dept: ["CENG", "EE"],
-                surnameStart: "FG",
-                surnameEnd: "ZZ",
+                criteria: [
+                    {
+                        dept: "CENG",
+                        surnameStart: "FG",
+                        surnameEnd: "ZZ"
+                    },
+                    {
+                        dept: "ME",
+                        surnameStart: "AA",
+                        surnameEnd: "ZZ"
+                    }
+                ],
+                minYear: 0,
+                maxYear: 0,
                 lectureTimes: [
                     {
                         classroom: "U-3",
@@ -63,9 +87,15 @@ const exampleCourses = [
         sections: [
             {
                 instructor: "Göktürk Üçoluk",
-                dept: ["CENG"],
-                surnameStart: "AA",
-                surnameEnd: "ZZ",
+                criteria: [
+                    {
+                        dept: "CENG",
+                        surnameStart: "AA",
+                        surnameEnd: "ZZ"
+                    }
+                ],
+                minYear: 0,
+                maxYear: 0,
                 lectureTimes: [
                     {
                         classroom: "BMB-1",
@@ -89,8 +119,13 @@ const exampleCourses = [
     }
 ]
 
-export function getAllCourses(){
-    return exampleCourses;
+export async function getAllCourses(){
+    const client = new Client();
+    return await client.getCourses();
+}
+export async function getMusts(dept, semester){
+    const client = new Client();
+    return client.getMusts(dept, semester);
 }
 export function getCourseByCategory(category){
     if (category < 0){

@@ -36,22 +36,24 @@ export class SectionInfo extends React.Component {
         });
         return times;
     }
+    renderCriteria(c){
+        return (
+            <div className={"section-row"}>
+                {"Department: " + c.dept + " Surname: " + c.surnameStart + "-" + c.surnameEnd}
+            </div>
+        )
+    }
     render() {
         return (
             <div className={"section-info"} style={{background: this.props.color.secondary}}>
                 <div>
-                    {"Section " + this.props.sectionNo}
+                    {"Section " + this.props.sectionDetails.sectionNumber}
                 </div>
                 <Divider />
                 <div className={"section-row"}>
                     {"Instructor: " + this.props.sectionDetails.instructor}
                 </div>
-                <div className={"section-row"}>
-                    {"Surname: " + this.props.sectionDetails.surnameStart + "-" + this.props.sectionDetails.surnameEnd}
-                </div>
-                <div className={"section-row"}>
-                    {"Department: " + this.getDepartmentCriteria()}
-                </div>
+                {this.props.sectionDetails.criteria.map(c => this.renderCriteria(c))}
                 <div className={"section-row"}>
                     {this.renderTimes()}
                 </div>

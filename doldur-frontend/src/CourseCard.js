@@ -27,8 +27,8 @@ export class CourseCard extends React.Component {
         }
     }
 
-    handleToggle(){
-        /*TODO*/
+    handleToggle(sections){
+        this.props.onToggle(sections);
     }
 
     toggleSections(){
@@ -50,13 +50,13 @@ export class CourseCard extends React.Component {
                                     const newSelectedSections = this.state.selectedSections.slice(0);
                                     newSelectedSections[i] = !newSelectedSections[i];
                                     this.setState({selectedSections: newSelectedSections});
-                                    this.handleToggle();
+                                    this.handleToggle(newSelectedSections);
                                 }
                             }
                             color={"primary"}
                         />
                     }
-                    label={i+1}
+                    label={this.props.course.sections[i].sectionNumber}
                 />);
         }
         return (

@@ -5,7 +5,7 @@ function applyCriteriaCourses(surname, department, grade, courses) {
         
         courses[i] = applyCriteriaSections(surname, department, grade, courses[i]);
 
-        if(courses[i].sections.length == 0) {
+        if(courses[i].sections.length === 0) {
             // Drop Course
             courses.splice(i, 1);
             i--;
@@ -63,10 +63,10 @@ function lecturesIntersect(lt1, lt2) {
     if (lt1.day != lt2.day                      // Different Days
         || lt1.startHour > lt2.endHour          // L1 starts after L2 ends by hour
         || lt2.startHour > lt1.endHour          // L2 starts after L1 ends by hour
-        || (lt1.startHour == lt2.endHour        // L1 starts after L2 ends by min
-            && lt1.startMinute > lt2.endMinute)
-        || (lt2.startHour == lt1.endHour        // L2 starts after L1 ends by min
-            && lt2.startMinute > lt1.endMinute)
+        || (lt1.startHour === lt2.endHour        // L1 starts after L2 ends by min
+            && lt1.startMin > lt2.endMin)
+        || (lt2.startHour === lt1.endHour        // L2 starts after L1 ends by min
+            && lt2.startMin > lt1.endMin)
             ) {
         return false;
     }
@@ -99,7 +99,7 @@ function computeSchedule(surname, department, grade, courses, callback) {
     scenarios = [];
     recursiveComputation(courses, 0, [], scenarios);
 
-    callback(scenarios)
+    return scenarios;
 }
 
 function recursiveComputation(courses, depth, scenario, scenarios) {
@@ -114,10 +114,10 @@ function recursiveComputation(courses, depth, scenario, scenarios) {
                 collision = true;
             }
         }
-        if(collision == false) {
+        if(collision === false) {
             scenario.push({
                 code: courses[depth].code,
-                section: i,
+                section: courses[depth].sections[i],
             }
             );
             recursiveComputation(courses, depth + 1, scenario, scenarios);

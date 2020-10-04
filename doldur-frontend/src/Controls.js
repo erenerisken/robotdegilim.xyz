@@ -15,7 +15,8 @@ import AddIcon from '@material-ui/icons/Add';
 import EventAvailableIcon from '@material-ui/icons/EventAvailable';
 import {isMobile} from "react-device-detect";
 
-import {getAllCourses} from "./data/Course";
+import {getAllCourses, getMusts} from "./data/Course";
+import {compute_schedule} from "./schedule";
 import {CourseCard} from "./CourseCard";
 import {AddCourseWidget} from "./AddCourseWidget";
 import {AdvancedSettings} from "./AdvancedSettings";
@@ -33,8 +34,9 @@ export class Controls extends React.Component{
             alertMsg: "",
             errorDept: false,
             errorSemester: false,
+            errorSurname: false,
             selectedCourses: [],
-            allCourses: getAllCourses(),
+            allCourses: [],
             settings: {
                 checkSurname: true,
                 checkDepartment: true,
@@ -46,6 +48,7 @@ export class Controls extends React.Component{
     }
     componentDidMount() {
         document.title = "Robot Değilim *-*";
+        getAllCourses().then(data => this.setState({allCourses: data}));
         if (isMobile){
             document.body.style.zoom = "60%";
         }
@@ -59,7 +62,25 @@ export class Controls extends React.Component{
         }
         return null;
     }
-
+    getSectionByNumber(c, n){
+        for (let i = 0; i<c.sections.length; i++){
+            if (c.sections[i].sectionNumber === n){
+                return c.sections[i];
+            }
+        }
+        return null;
+    }
+    getColorByCourseCode(code){
+        for (let i = 0; i<this.state.selectedCourses.length; i++){
+            if (this.state.selectedCourses[i] === null){
+                continue;
+            }
+            if(this.state.selectedCourses[i].code === code){
+                return this.state.selectedCourses[i].color;
+            }
+        }
+        return null;
+    }
     renderSemesterSelections(n){
         const ret = Array(0);
         ret.push(<MenuItem value={0}>---</MenuItem> )
@@ -70,7 +91,7 @@ export class Controls extends React.Component{
     }
 
     handleAddMustCourse(){
-        this.setState({alertMsg: "", errorDept: false, errorSemester: false});
+        this.setState({alertMsg: "", errorDept: false, errorSemester: false, errorSurname: false});
         if (this.state.department.length < 2){
             this.setState({alertMsg: "Please enter a correct department", errorDept: true});
             return;
@@ -79,6 +100,14 @@ export class Controls extends React.Component{
             this.setState({alertMsg: "Please choose a semester", errorSemester: true});
             return;
         }
+        getMusts(this.state.department, this.state.semester).then(data => {
+            if (data !== undefined){
+                // eslint-disable-next-line
+                data.map(code => {
+                    this.handleAddCourse(this.getCourseByCode(code));
+                });
+            }
+        })
     }
 
     handleAlertClose(){
@@ -89,11 +118,20 @@ export class Controls extends React.Component{
         newSelectedCourses[i] = null;
         this.setState({selectedCourses: newSelectedCourses});
     }
+    handleToggle(i, sections){
+        const newSelectedCourses = this.state.selectedCourses.slice(0);
+        newSelectedCourses[i].sections = sections;
+        this.setState({selectedCourses: newSelectedCourses});
+        console.log("Course " + i + " sections:" + sections);
+    }
     handleAddCourse(c){
+        if (c === null){
+            return;
+        }
         const newSelectedCourses = this.state.selectedCourses.slice(0);
         newSelectedCourses.push({
             code: c.code,
-            sections: [],
+            sections: Array(c.sections.length).fill(true),
             color: this.state.colorset.getNextColor()
         });
         this.setState({selectedCourses: newSelectedCourses});
@@ -101,13 +139,73 @@ export class Controls extends React.Component{
     handleChangeSettings(s){
         this.setState({settings: s});
     }
-    handleNewScenarioFound(s){
-        const newScenarios = this.state.scenarios.slice(0);
-        newScenarios.push(s);
-        this.setState({scenarios: newScenarios});
+    handleScheduleComplete(scenarios){
+        const scenariosToSubmit = Array(0);
+        scenarios.map(s => {
+            const scenarioToPush = Array(0);
+            s.map(c => {
+                const currentCourse = this.getCourseByCode(c.code);
+                const currentSection = this.getSectionByNumber(currentCourse, c.section);
+                const currentColor = this.getColorByCourseCode(c.code);
+                scenarioToPush.push({
+                    abbreviation: currentCourse.abbreviation,
+                    section: currentSection,
+                    color: currentColor
+                });
+            });
+            scenariosToSubmit.push(scenarioToPush);
+        });
+        this.props.onSchedule(scenariosToSubmit);
     }
     handleScheduleBegin(){
-
+        this.setState({alertMsg: "", errorDept: false, errorSemester: false, errorSurname: false});
+        if (this.state.department.length < 2){
+            this.setState({alertMsg: "Please enter a correct department", errorDept: true});
+            return;
+        }
+        if (this.state.surname.length < 2 && this.state.settings.checkSurname){
+            this.setState({alertMsg: "Please enter at least 2 letters of your surname", errorSurname: true});
+            return;
+        }
+        const courseData = Array(0);
+        // eslint-disable-next-line
+        this.state.selectedCourses.map(c => {
+            if (c === null){
+                return null;
+            }
+            const currentCourse = this.getCourseByCode(c.code);
+            const courseToPush = {
+                code: c.code,
+                category: currentCourse.category,
+                checkSurname: this.state.settings.checkSurname,
+                checkCollision: this.state.settings.checkCollision,
+                checkDepartment: this.state.settings.checkDepartment,
+                sections: Array(0)
+            };
+            for(let i = 0; i<currentCourse.sections.length; i++){
+                const sectionToPush = {
+                    sectionNumber: currentCourse.sections[i].sectionNumber,
+                    minYear: currentCourse.sections[i].minYear,
+                    maxYear: currentCourse.sections[i].maxYear,
+                    toggle: c.sections[i],
+                    criteria: currentCourse.sections[i].criteria,
+                    lectureTimes: Array(0)
+                };
+                currentCourse.sections[i].lectureTimes.map(t => sectionToPush.lectureTimes.push(t));
+                courseToPush.sections.push(sectionToPush);
+            }
+            courseData.push(courseToPush);
+        });
+        //console.log(courseData);
+        const calculatedSchedule = compute_schedule(
+            this.state.surname.slice(0,2),
+            this.state.department,
+            0,
+            courseData
+        );
+        //console.log(calculatedSchedule);
+        this.setState({scenario: calculatedSchedule});
+        this.handleScheduleComplete(calculatedSchedule);
     }
     render() {
         return (
@@ -124,12 +222,13 @@ export class Controls extends React.Component{
                 <div className={"control-row"}>
                     <div className={"textfield-wrapper"}>
                         <TextField
-                            required
+                            required={this.state.settings.checkSurname}
+                            error={this.state.errorSurname}
                             label={"Surname"}
                             value={this.state.surname}
                             inputProps={{ maxLength: 12 }}
                             variant={"outlined"}
-                            onChange={e => this.setState({surname: e.target.value})}
+                            onChange={e => this.setState({surname: e.target.value.toUpperCase()})}
                         />
                     </div>
                     <div className={"textfield-wrapper"}>
@@ -140,7 +239,7 @@ export class Controls extends React.Component{
                             value={this.state.department}
                             inputProps={{ maxLength: 12 }}
                             variant={"outlined"}
-                            onChange={e => this.setState({department: e.target.value})}
+                            onChange={e => this.setState({department: e.target.value.toUpperCase()})}
                         />
                     </div>
                 </div>
@@ -190,6 +289,7 @@ export class Controls extends React.Component{
                         c !== null?
                         <CourseCard course={this.getCourseByCode(c.code)}
                                     onDelete={() => this.handleDeleteCourse(i)}
+                                    onToggle={sections => this.handleToggle(i, sections)}
                                     color={c.color}/> : null
                     );
                 })}
