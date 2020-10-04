@@ -126,6 +126,7 @@ for dept in dept_codes:
 			snode["c"] = [{"d": con[0], "s": con[1], "e": con[2]} for con in cons]
 			cnode["Sections"][snum] = snode
 		out[int(ccode)] = cnode
+	print("Department: ", str(dept))
 
 #before returning, add abbreviations
 json.dump(out, open(out_file, "w"))
