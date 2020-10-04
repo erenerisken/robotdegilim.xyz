@@ -19,8 +19,20 @@ class App extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            scenarios: []
+            scenarios: [],
+            dontFills: []
         }
+    }
+    handleDontFillAdd(startDate, endDate){
+        const newDontFills = this.state.dontFills.slice(0);
+        newDontFills.push({
+            startDate: startDate,
+            endDate: endDate
+        });
+        this.setState({dontFills: newDontFills});
+    }
+    handleDontFillDelete(startDate){
+        this.setState({dontFills: this.state.dontFills.filter(df => df.startDate !== startDate)});
     }
     render() {
         //console.log(this.state.scenarios);
@@ -28,7 +40,10 @@ class App extends React.Component{
           <MuiThemeProvider theme={theme}>
             <div className="App">
                 <div className={isMobile ? "column" : "row"}>
-                    <WeeklyProgram coursesToDisplay={getCoursesToDisplay()} scenarios={this.state.scenarios}/>
+                    <WeeklyProgram dontFills={this.state.dontFills}
+                                   scenarios={this.state.scenarios}
+                                   onDontFillAdd={(startDate, endDate) => this.handleDontFillAdd(startDate, endDate)}
+                                   onDontFillDelete={startDate => this.handleDontFillDelete(startDate)}/>
                     <Controls onSchedule={s => this.setState({scenarios: s})}/>
                 </div>
             </div>

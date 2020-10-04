@@ -41,3 +41,10 @@
     width: 100%;
     margin: auto;
 }
+.dont-fill-button {
+    margin-left: -10pt;
+}
+.program-title-dont-fill {
+    margin-top: auto;
+    margin-bottom: auto;
+}

@@ -1,5 +1,6 @@
 import React from "react";
 import {Paper, IconButton, Typography} from "@material-ui/core";
+import CloseIcon from '@material-ui/icons/Close';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
 import {ViewState} from "@devexpress/dx-react-scheduler";
@@ -59,16 +60,19 @@ export class WeeklyProgram extends React.Component{
             currentScenario: Math.min(this.props.scenarios.length-1, Math.max(0,
                 this.state.currentScenario + delta))});
     }
+    handleDontFillAdd(startDate, endDate){
+        this.props.onDontFillAdd(startDate, endDate);
+    }
     convertTime(day, hour, min){
         //example : '2021-02-20T09:40'
         return "2021-02-" + (14 + day) + "T" + (hour < 10 ? "0" : "") + hour + ":" + (min < 10 ? "0" : "") + min;
     }
     convertToEntry(){
-        if (this.props.scenarios.length <= 0){
+        /*if (this.props.scenarios.length <= 0){
             return [];
-        }
+        }*/
         const coursesToDisplay = Array(0);
-        const scenario = this.props.scenarios[this.state.currentScenario];
+        const scenario = this.props.scenarios.length > 0 ? this.props.scenarios[this.state.currentScenario] : [];
         scenario.map(c => {
             //console.log(c);
             c.section.lectureTimes.map(lt => {
@@ -85,6 +89,18 @@ export class WeeklyProgram extends React.Component{
                 }
             });
         });
+        this.props.dontFills.map(df => {
+            coursesToDisplay.push({
+                type: "dontFill",
+                title: "FULL",
+                color: {
+                    main: "#000000",
+                    text: "#FFFFFF"
+                },
+                startDate: df.startDate,
+                endDate: df.endDate
+            });
+        });
         return coursesToDisplay;
     }
     CustomAppointment({formatDate, ...restProps}){
@@ -97,15 +113,34 @@ export class WeeklyProgram extends React.Component{
             <Appointments.AppointmentContent data={data}
                                              {...restProps}
                                              className={"program-appointment"} style={{background: data.color.main}}>
-                <div className={"program-text-container"}>
-                    <div className={"program-title"} style={{color: data.color.text}}>
-                        {data.title + "/" + data.section}
-                    </div>
-                    <div className={"program-title"} style={{color: data.color.text}}>
-                        {data.classroom}
-                    </div>
-                </div>
+                {data.type === "course"?
+                    <div className={"program-text-container"}>
+                        <div className={"program-title"} style={{color: data.color.text}}>
+                            {data.title + "/" + data.section}
+                        </div>
+                        <div className={"program-title"} style={{color: data.color.text}}>
+                            {data.classroom}
+                        </div>
+                    </div> :
+                    <div className={"program-text-container"}>
+                        <div className={"program-row"}>
+                            <IconButton
+                                        onClick={() => this.props.onDontFillDelete(data.startDate)}>
+                                <CloseIcon className={"dont-fill-button"} fontSize={"small"} color={"secondary"}/>
+                            </IconButton>
+                            <div className={"program-title-dont-fill"} style={{color: data.color.text}}>
+                                {data.title}
+                            </div>
+                        </div>
+                    </div>}
             </Appointments.AppointmentContent>
+        )
+    }
+    TimeTableCell = ({startDate, endDate, onDontFillAdd, ...restProps}) => {
+        return (
+            <WeekView.TimeTableCell
+                                    {...restProps}
+                                    onClick={() => this.handleDontFillAdd(startDate, endDate)}/>
         )
     }
     render() {
@@ -126,6 +161,7 @@ export class WeeklyProgram extends React.Component{
                             cellDuration={60}
                             dayScaleRowComponent={DayScaleRow}
                             appointmentLayerComponent={this.CustomAppointment}
+                            timeTableCellComponent={this.TimeTableCell}
                         />
                         <Appointments appointmentContentComponent={this.AppointmentContent}/>
                     </Scheduler>
