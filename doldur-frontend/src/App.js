@@ -4,7 +4,6 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import {WeeklyProgram} from "./WeeklyProgram";
 import {Controls} from "./Controls";
 import {WelcomeDialog} from "./WelcomeDialog";
-import {getCoursesToDisplay} from "./CoursesToDisplay";
 
 import './App.css';
 

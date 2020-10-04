@@ -142,6 +142,10 @@ export class Controls extends React.Component{
         this.setState({settings: s});
     }
     handleScheduleComplete(scenarios){
+        if (scenarios.length <= 0){
+            console.log("Fail!");
+            this.setState({alertMsg: "There is no available schedule for this criteria."});
+        }
         const scenariosToSubmit = Array(0);
         scenarios.map(s => {
             const scenarioToPush = Array(0);
@@ -162,9 +166,6 @@ export class Controls extends React.Component{
     formatDf(df){
         //           0123456789012345
         //example : '2021-02-20T09:40'
-        const startDate = df.startDate.toString();
-        const endDate = df.endDate.toString();
-        console.log(startDate);
         return {
             day: df.startDate.getDay(),
             startHour: df.startDate.getHours(),
