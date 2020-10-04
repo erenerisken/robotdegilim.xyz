@@ -23,7 +23,7 @@ class App extends React.Component{
         }
     }
     render() {
-        console.log(this.state.scenarios);
+        //console.log(this.state.scenarios);
         return (
           <MuiThemeProvider theme={theme}>
             <div className="App">

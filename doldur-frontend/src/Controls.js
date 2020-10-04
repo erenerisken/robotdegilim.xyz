@@ -196,13 +196,14 @@ export class Controls extends React.Component{
             }
             courseData.push(courseToPush);
         });
+        //console.log(courseData);
         const calculatedSchedule = compute_schedule(
             this.state.surname.slice(0,2),
             this.state.department,
             0,
             courseData
         );
-        console.log(calculatedSchedule);
+        //console.log(calculatedSchedule);
         this.setState({scenario: calculatedSchedule});
         this.handleScheduleComplete(calculatedSchedule);
     }

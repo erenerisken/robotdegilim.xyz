@@ -107,7 +107,7 @@ export class WeeklyProgram extends React.Component{
     }
     render() {
         const data = this.convertToEntry();
-        console.log(data);
+        //console.log(data);
         return (
             <div className={isMobile ? "scheduler-mobile" : "scheduler-wrapper"}>
                 <Paper>
