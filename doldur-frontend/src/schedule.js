@@ -32,15 +32,18 @@ function surnameCheck(surname, course_surname_start, course_surname_end) {
         O : 18,
         Ö : 19,
         P : 20,
-        R : 21,
-        S : 22,
-        Ş : 23,
-        T : 24,
-        U : 25,
-        Ü : 26,
-        V : 27,
-        Y : 28,
-        Z : 29
+        Q : 21,
+        R : 22,
+        S : 23,
+        Ş : 24,
+        T : 25,
+        U : 26,
+        Ü : 27,
+        V : 28,
+        W : 29,
+        X : 30,
+        Y : 31,
+        Z : 32
     }
     
     var surFirstVal = alphabet[surname[0]];
