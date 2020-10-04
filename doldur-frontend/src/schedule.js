@@ -1,11 +1,10 @@
 function apply_criteria_courses(surname, department, grade, courses) {
-    for (var i = 0 ; i < courses.length ; i++) {
+    for (var i = courses.length - 1 ; i >= 0 ; i--) {
         courses[i] = apply_criteria_sections(surname, department, grade, courses[i]);
 
         if(courses[i].sections.length === 0) {
             // Drop Course
             courses.splice(i, 1);
-            i--;
         }
     }
     return courses;
@@ -23,34 +22,36 @@ function departmentCheck(department, dept_list) {
     return false;
 }
 function apply_criteria_sections(surname, department, grade, course) {
-    for(var i = 0 ; i < course.sections.length ; i++) {
+    for(var i = course.sections.length - 1; i >= 0 ; i--) {
         var section_passed = false;
-        for(var j = 0 ; j < course.sections[i].criteria.length ; j++) {
-            let criterion = course.sections[i].criteria[j];
-            var dept_passed = false;
-            var surn_passed = false;
-            if(course.checkDepartment === false) {
-                dept_passed = true;
-            } else {
-                if(criterion.dept === "ALL" || criterion.dept === department) {
+        if(course.sections[i].toggle === true) {
+            for(var j = 0 ; j < course.sections[i].criteria.length ; j++) {
+                let criterion = course.sections[i].criteria[j];
+                var dept_passed = false;
+                var surn_passed = false;
+                if(course.checkDepartment === false) {
                     dept_passed = true;
+                } else {
+                    if(criterion.dept === "ALL" || criterion.dept === department) {
+                        dept_passed = true;
+                    }
                 }
-            }
-            if(course.checkSurname === false) {
-                surn_passed = true;
-            } else {
-                if(surnameCheck(surname, criterion.surnameStart, criterion.surnameEnd) === true) {
+                if(course.checkSurname === false) {
                     surn_passed = true;
+                } else {
+                    if(surnameCheck(surname, criterion.surnameStart, criterion.surnameEnd) === true) {
+                        surn_passed = true;
+                    }
                 }
-            }
-            
-            if(dept_passed === true && surn_passed === true) {
-                section_passed = true;
+                
+                if(dept_passed === true && surn_passed === true) {
+                    section_passed = true;
+                }
             }
         }
-        if(section_passed === false || !course.sections[i].toggle) {
+        
+        if(section_passed === false) {
             course.sections.splice(i, 1);
-            i--;
         }
     }
     return course;
@@ -104,15 +105,17 @@ const exampleScenario = {
 // 
 // returns array of code + sections
 export function compute_schedule(surname, department, grade, courses) {
+    let courseNumber = courses.length;
+    console.log(courseNumber)
     courses = apply_criteria_courses(surname, department, grade, courses);
-
+    console.log(courseNumber)
     let scenarios = [];
-    recursive_computation(courses, 0, [], scenarios);
+    recursive_computation(courses, 0, [], scenarios, courseNumber);
 
     return scenarios;
 }
 
-function recursive_computation(courses, depth, scenario, scenarios) {
+function recursive_computation(courses, depth, scenario, scenarios, courseNumber) {
     if(depth === courses.length) {
         const scenarioToPosh = Array(0);
         scenario.map(c => {
@@ -121,7 +124,9 @@ function recursive_computation(courses, depth, scenario, scenarios) {
                 section: c.section.sectionNumber
             });
         });
-        scenarios.push(scenarioToPosh);
+        if(scenarioToPosh.length == courseNumber) {
+            scenarios.push(scenarioToPosh);
+        }
         return;
     }
     for(var i = 0 ; i < courses[depth].sections.length ; i++) {
@@ -137,7 +142,7 @@ function recursive_computation(courses, depth, scenario, scenarios) {
                 section: courses[depth].sections[i],
             }
             );
-            recursive_computation(courses, depth + 1, scenario, scenarios);
+            recursive_computation(courses, depth + 1, scenario, scenarios, courseNumber);
             scenario.pop();
         }
         
