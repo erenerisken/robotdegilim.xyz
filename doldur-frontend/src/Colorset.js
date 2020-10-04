@@ -37,7 +37,7 @@ export class Colorset{
                 textSection: "#FFFFFF"
             },
             {
-                main: "#F1951F",
+                main: "#FF8F00",
                 secondary: "#FFFFFF",
                 ternary: "#FFD39A",
                 text: "#000000",

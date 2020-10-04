@@ -48,7 +48,7 @@ function apply_criteria_sections(surname, department, grade, course) {
                 section_passed = true;
             }
         }
-        if(section_passed === false) {
+        if(section_passed === false || !course.sections[i].toggle) {
             course.sections.splice(i, 1);
             i--;
         }

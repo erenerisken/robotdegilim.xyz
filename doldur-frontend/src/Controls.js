@@ -206,6 +206,7 @@ export class Controls extends React.Component{
             courseData
         );
         //console.log(calculatedSchedule);
+        console.log(calculatedSchedule);
         this.setState({scenario: calculatedSchedule});
         this.handleScheduleComplete(calculatedSchedule);
     }
