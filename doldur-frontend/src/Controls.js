@@ -159,6 +159,20 @@ export class Controls extends React.Component{
         });
         this.props.onSchedule(scenariosToSubmit);
     }
+    formatDf(df){
+        //           0123456789012345
+        //example : '2021-02-20T09:40'
+        const startDate = df.startDate.toString();
+        const endDate = df.endDate.toString();
+        console.log(startDate);
+        return {
+            day: df.startDate.getDay(),
+            startHour: df.startDate.getHours(),
+            startMin: df.startDate.getMinutes(),
+            endHour: df.endDate.getHours(),
+            endMin: df.endDate.getMinutes() - 1
+        };
+    }
     handleScheduleBegin(){
         this.setState({alertMsg: "", errorDept: false, errorSemester: false, errorSurname: false});
         if (this.state.department.length < 2){
@@ -170,6 +184,7 @@ export class Controls extends React.Component{
             return;
         }
         const courseData = Array(0);
+        const dontFills = Array(0);
         // eslint-disable-next-line
         this.state.selectedCourses.map(c => {
             if (c === null){
@@ -198,12 +213,20 @@ export class Controls extends React.Component{
             }
             courseData.push(courseToPush);
         });
+        this.props.dontFills.map(df => {
+            const formattedDf = this.formatDf(df);
+            dontFills.push({
+                times: [formattedDf]
+            })
+        });
         //console.log(courseData);
+        console.log(dontFills);
         const calculatedSchedule = compute_schedule(
             this.state.surname.slice(0,2),
             this.state.department,
             0,
-            courseData
+            courseData,
+            dontFills
         );
         //console.log(calculatedSchedule);
         console.log(calculatedSchedule);

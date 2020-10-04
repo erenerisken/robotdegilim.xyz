@@ -44,7 +44,7 @@ class App extends React.Component{
                                    scenarios={this.state.scenarios}
                                    onDontFillAdd={(startDate, endDate) => this.handleDontFillAdd(startDate, endDate)}
                                    onDontFillDelete={startDate => this.handleDontFillDelete(startDate)}/>
-                    <Controls onSchedule={s => this.setState({scenarios: s})}/>
+                    <Controls onSchedule={s => this.setState({scenarios: s})} dontFills={this.state.dontFills}/>
                 </div>
             </div>
           </MuiThemeProvider>
