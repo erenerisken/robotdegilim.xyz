@@ -25,12 +25,17 @@ ccode_prog=re.compile("course.php\?prog=[0-9]*&course_code=([0-9]*)")
 out={}
 for dcode in prefixes:
 	text = get_curr(dcode)
-	print "hit %s" % prefixes[dcode]
 	raw_terms = [a.split("colspan")[0] for a in text.split("<table>")[1:]]
 	node = {}
 	for i, term in enumerate(raw_terms):
 		node[str(i+1)] = [code for code in ccode_prog.findall(term)]
+		a=0
+		while a < len(node[str(i+1)]):
+			if node[str(i+1)][a][:3] == "877" or node[str(i+1)][a][:3] == "387":
+				del node[str(i+1)][a]
+				a-=1
+			a+=1
+	print(node)
 	out[prefixes[dcode]] = node
 
 json.dump(out, open(out_file, "w"))
-print "wrote %d bytes to %s" % (os.path.getsize(out_file), out_file)
