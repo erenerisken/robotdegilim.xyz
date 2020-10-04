@@ -123,7 +123,8 @@ function recursive_computation(courses, dontFills, depth, scenario, scenarios, c
     for(var i = 0 ; i < courses[depth].sections.length ; i++) {
         var collision = false;
         for(var j = 0 ; j < scenario.length ; j++) {
-            if(check_collision(courses[depth].sections[i], scenario[j].section) === true) {
+            if(courses[depth].checkCollision == true 
+                && check_collision(courses[depth].sections[i], scenario[j].section) === true) {
                 collision = true;
             }
         }
