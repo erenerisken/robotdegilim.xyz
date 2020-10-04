@@ -29,14 +29,14 @@ function apply_criteria_sections(surname, department, grade, course) {
             let criterion = course.sections[i].criteria[j];
             var dept_passed = false;
             var surn_passed = false;
-            if(course.check_department === false) {
+            if(course.checkDepartment === false) {
                 dept_passed = true;
             } else {
                 if(criterion.dept === "ALL" || criterion.dept === department) {
                     dept_passed = true;
                 }
             }
-            if(course.check_surname === false) {
+            if(course.checkSurname === false) {
                 surn_passed = true;
             } else {
                 if(surnameCheck(surname, criterion.surnameStart, criterion.surnameEnd) === true) {
