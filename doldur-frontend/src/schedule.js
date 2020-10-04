@@ -11,7 +11,57 @@ function apply_criteria_courses(surname, department, grade, courses) {
 }
 
 function surnameCheck(surname, course_surname_start, course_surname_end) {
-    return ((course_surname_start <= surname) && (surname <= course_surname_end));
+    var alphabet = {
+        A : 1,
+        B : 2,
+        C : 3,
+        Ç : 4,
+        D : 5,
+        E : 6,
+        F : 7,
+        G : 8,
+        Ğ : 9,
+        H : 10,
+        I : 11,
+        İ : 12,
+        J : 13,
+        K : 14,
+        L : 15,
+        M : 16,
+        N : 17,
+        O : 18,
+        Ö : 19,
+        P : 20,
+        R : 21,
+        S : 22,
+        Ş : 23,
+        T : 24,
+        U : 25,
+        Ü : 26,
+        V : 27,
+        Y : 28,
+        Z : 29
+    }
+    
+    var surFirstVal = alphabet[surname[0]];
+    var surSecondVal = alphabet[surname[1]];
+    var surStartFirstVal = alphabet[course_surname_start[0]];
+    var surStartSecondVal = alphabet[course_surname_start[1]];
+    var surEndFirstVal = alphabet[course_surname_end[0]];
+    var surEndSecondVal = alphabet[course_surname_end[1]];
+
+    if(surStartFirstVal < surFirstVal && surFirstVal < surEndFirstVal) {
+        return true;
+    }
+    if((surStartFirstVal === surFirstVal && surFirstVal < surEndFirstVal)
+        && (surStartSecondVal <= surStartSecondVal)) {
+        return true;
+    }
+    if((surStartFirstVal < surFirstVal && surFirstVal === surEndFirstVal)
+        && (surSecondVal <= surEndSecondVal)) {
+        return true;
+    }
+    return false;
 }
 
 function apply_criteria_sections(surname, department, grade, course) {
