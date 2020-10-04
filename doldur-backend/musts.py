@@ -31,7 +31,7 @@ for dcode in prefixes:
 		node[str(i+1)] = [code for code in ccode_prog.findall(term)]
 		a=0
 		while a < len(node[str(i+1)]):
-			if node[str(i+1)][a][:3] == "877" or node[str(i+1)][a][:3] == "387":
+			if node[str(i+1)][a][:3] == "877" or node[str(i+1)][a][:3] == "387" or node[str(i+1)][a] == "9010100":
 				del node[str(i+1)][a]
 				a-=1
 			a+=1
