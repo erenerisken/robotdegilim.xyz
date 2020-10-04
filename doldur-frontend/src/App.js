@@ -3,6 +3,7 @@ import {isMobile} from "react-device-detect";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import {WeeklyProgram} from "./WeeklyProgram";
 import {Controls} from "./Controls";
+import {WelcomeDialog} from "./WelcomeDialog";
 import {getCoursesToDisplay} from "./CoursesToDisplay";
 
 import './App.css';
@@ -39,6 +40,7 @@ class App extends React.Component{
         return (
           <MuiThemeProvider theme={theme}>
             <div className="App">
+                <WelcomeDialog />
                 <div className={isMobile ? "column" : "row"}>
                     <WeeklyProgram dontFills={this.state.dontFills}
                                    scenarios={this.state.scenarios}
