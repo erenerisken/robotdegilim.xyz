@@ -210,6 +210,13 @@ export class Controls extends React.Component{
                     lectureTimes: Array(0)
                 };
                 currentCourse.sections[i].lectureTimes.map(t => sectionToPush.lectureTimes.push(t));
+                if (sectionToPush.criteria.length <= 0){
+                    sectionToPush.criteria = [{
+                        dept: "ALL",
+                        surnameStart: "AA",
+                        surnameEnd: "ZZ"
+                    }];
+                }
                 courseToPush.sections.push(sectionToPush);
             }
             courseData.push(courseToPush);
