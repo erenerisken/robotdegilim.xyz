@@ -13,6 +13,8 @@ import {
 } from '@devexpress/dx-react-scheduler-material-ui';
 import {isMobile} from "react-device-detect";
 
+import {ExportCalendar} from "./ExportCalendar";
+
 import "./WeeklyProgram.css"
 
 const currentDate = '2021-02-20';
@@ -157,6 +159,7 @@ export class WeeklyProgram extends React.Component{
             <div className={isMobile ? "scheduler-mobile" : "scheduler-wrapper"}>
                 <Paper>
                     <Scheduler
+                        id={"scheduler"}
                         data={data}
                     >
                         <ViewState
@@ -173,37 +176,42 @@ export class WeeklyProgram extends React.Component{
                         <Appointments appointmentContentComponent={this.AppointmentContent}/>
                     </Scheduler>
                 </Paper>
-                {this.props.scenarios.length > 0?
-                <div className={"program-row"}>
-                    <IconButton onClick={() => this.handleScenarioChange(-10)}>
-                        <FastRewindIcon fontSize={"small"} />
-                    </IconButton>
-                    <IconButton onClick={() => this.handleScenarioChange(-1)}>
-                        <KeyboardArrowLeftIcon fontSize={"small"} />
-                    </IconButton>
-                    <div className={"program-typo-wrapper"}>
-                        <Typography>
-                            {"Scenario "}
-                        </Typography>
-                    </div>
-                    <div className={"program-textfield-wrapper"}>
-                        <TextField className={"program-textfield"}
-                                   type={"number"}
-                                   value={this.state.currentScenario+1}
-                                   onChange={e => this.handleScenarioChangeAbsolute(parseInt(e.target.value))}/>
-                    </div>
-                    <div className={"program-typo-wrapper"}>
-                        <Typography>
-                            {" of " + this.props.scenarios.length}
-                        </Typography>
-                    </div>
-                    <IconButton onClick={() => this.handleScenarioChange(1)}>
-                        <KeyboardArrowRightIcon fontSize={"small"} />
-                    </IconButton>
-                    <IconButton onClick={() => this.handleScenarioChange(10)}>
-                        <FastForwardIcon fontSize={"small"} />
-                    </IconButton>
-                </div> : null}
+                <div className={"program-vertical"}>
+                    {this.props.scenarios.length > 0?
+                    <div className={"program-row"}>
+                        <IconButton onClick={() => this.handleScenarioChange(-10)}>
+                            <FastRewindIcon fontSize={"small"} />
+                        </IconButton>
+                        <IconButton onClick={() => this.handleScenarioChange(-1)}>
+                            <KeyboardArrowLeftIcon fontSize={"small"} />
+                        </IconButton>
+                        <div className={"program-typo-wrapper"}>
+                            <Typography>
+                                {"Scenario "}
+                            </Typography>
+                        </div>
+                        <div className={"program-textfield-wrapper"}>
+                            <TextField className={"program-textfield"}
+                                       type={"number"}
+                                       value={this.state.currentScenario+1}
+                                       onChange={e => this.handleScenarioChangeAbsolute(parseInt(e.target.value))}/>
+                        </div>
+                        <div className={"program-typo-wrapper"}>
+                            <Typography>
+                                {" of " + this.props.scenarios.length}
+                            </Typography>
+                        </div>
+                        <IconButton onClick={() => this.handleScenarioChange(1)}>
+                            <KeyboardArrowRightIcon fontSize={"small"} />
+                        </IconButton>
+                        <IconButton onClick={() => this.handleScenarioChange(10)}>
+                            <FastForwardIcon fontSize={"small"} />
+                        </IconButton>
+                    </div> : null}
+                    {this.props.scenarios.length > 0 ? <div className={"program-calendar-wrapper"}>
+                        <ExportCalendar events={data} />
+                    </div> : null}
+                </div>
             </div>
         );
     }
