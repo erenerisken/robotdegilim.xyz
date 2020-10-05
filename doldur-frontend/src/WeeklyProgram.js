@@ -13,6 +13,8 @@ import {
 } from '@devexpress/dx-react-scheduler-material-ui';
 import {isMobile} from "react-device-detect";
 
+import {ExportCalendar} from "./ExportCalendar";
+
 import "./WeeklyProgram.css"
 
 const currentDate = '2021-02-20';
@@ -203,6 +205,9 @@ export class WeeklyProgram extends React.Component{
                     <IconButton onClick={() => this.handleScenarioChange(10)}>
                         <FastForwardIcon fontSize={"small"} />
                     </IconButton>
+                </div> : null}
+                {this.props.scenarios.length > 0 ? <div className={"program-row"}>
+                    <ExportCalendar events={data} />
                 </div> : null}
             </div>
         );
