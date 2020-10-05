@@ -15,13 +15,14 @@ export class ExportCalendar extends React.Component{
     convertDay(date){
         //           0123456789012345
         //example : '2021-02-20T09:40'
+        //2020-10-15T16:30:00+03:00
         //console.log(date);
         //console.log(typeof date);
         const day = parseInt(date.slice(8, 10)) - 14;
         const hour = parseInt(date.slice(11, 13));
         const min = parseInt(date.slice(14));
         return "2020-10-" + (12 + day) + "T" +
-            (hour < 10 ? "0" : "") + hour + ":" + (min < 10 ? "0" : "") + min;
+            (hour < 10 ? "0" : "") + hour + ":" + (min < 10 ? "0" : "") + min + ":00+03:00";
     }
     convertEvents(){
         /*
