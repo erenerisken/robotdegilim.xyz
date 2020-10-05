@@ -101,6 +101,11 @@ export class CourseCard extends React.Component {
                         </AccordionSummary>
                         <AccordionDetails>
                             <div className={"course-details"}>
+                                <div className={"course-left-row"}>
+                                    <Typography style={{color: this.props.color.text}}>
+                                        {"Course code: " + this.props.course.code}
+                                    </Typography>
+                                </div>
                                 <Divider />
                                 <div className={"course-centered-row"}>
                                     <div>

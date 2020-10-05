@@ -10,6 +10,10 @@
     text-align: center;
     width: 100%;
 }
+.course-left-row {
+    text-align: left;
+    width: 100%;
+}
 .course-details {
     width: 100%;
 }

@@ -1,8 +1,10 @@
 import React from "react";
-import {Paper, IconButton, Typography} from "@material-ui/core";
+import {Paper, IconButton, Typography, TextField} from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
+import FastRewindIcon from '@material-ui/icons/FastRewind';
+import FastForwardIcon from '@material-ui/icons/FastForward';
 import {ViewState} from "@devexpress/dx-react-scheduler";
 import {
     Scheduler,
@@ -59,6 +61,11 @@ export class WeeklyProgram extends React.Component{
         this.setState({
             currentScenario: Math.min(this.props.scenarios.length-1, Math.max(0,
                 this.state.currentScenario + delta))});
+    }
+    handleScenarioChangeAbsolute(val){
+        const newCurrentScenario = isNaN(val) ? 1 : val;
+        this.setState({currentScenario: Math.min(this.props.scenarios.length-1, Math.max(0,
+                newCurrentScenario-1))});
     }
     handleDontFillAdd(startDate, endDate){
         this.props.onDontFillAdd(startDate, endDate);
@@ -168,16 +175,33 @@ export class WeeklyProgram extends React.Component{
                 </Paper>
                 {this.props.scenarios.length > 0?
                 <div className={"program-row"}>
+                    <IconButton onClick={() => this.handleScenarioChange(-10)}>
+                        <FastRewindIcon fontSize={"small"} />
+                    </IconButton>
                     <IconButton onClick={() => this.handleScenarioChange(-1)}>
                         <KeyboardArrowLeftIcon fontSize={"small"} />
                     </IconButton>
                     <div className={"program-typo-wrapper"}>
                         <Typography>
-                            {"Scenario " + (this.state.currentScenario+1) + " of " + this.props.scenarios.length}
+                            {"Scenario "}
+                        </Typography>
+                    </div>
+                    <div className={"program-textfield-wrapper"}>
+                        <TextField className={"program-textfield"}
+                                   type={"number"}
+                                   value={this.state.currentScenario+1}
+                                   onChange={e => this.handleScenarioChangeAbsolute(parseInt(e.target.value))}/>
+                    </div>
+                    <div className={"program-typo-wrapper"}>
+                        <Typography>
+                            {" of " + this.props.scenarios.length}
                         </Typography>
                     </div>
                     <IconButton onClick={() => this.handleScenarioChange(1)}>
                         <KeyboardArrowRightIcon fontSize={"small"} />
+                    </IconButton>
+                    <IconButton onClick={() => this.handleScenarioChange(10)}>
+                        <FastForwardIcon fontSize={"small"} />
                     </IconButton>
                 </div> : null}
             </div>

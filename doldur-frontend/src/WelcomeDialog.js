@@ -36,6 +36,9 @@ export class WelcomeDialog extends React.Component{
                         Alperen Keleş: alpkeles99@gmail.com
                         <br/>
                         Alp Eren Yılmaz: ylmz.alp.e@gmail.com
+                        <br/>
+                        <br/>
+                        doldur.xyz anısına! (Saygılar @baskinburak)
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

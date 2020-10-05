@@ -29,6 +29,19 @@
     margin-top: auto;
     margin-bottom: auto;
 }
+.program-textfield-wrapper {
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 6pt;
+    margin-right: 6pt;
+}
+
+.program-textfield {
+    width: 50pt;
+    text-align: center;
+    margin-left: 6pt;
+    margin-right: 6pt;
+}
 
 .custom-appointment {
     margin-left: 3pt;
