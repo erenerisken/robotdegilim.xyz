@@ -31,11 +31,16 @@ export class WelcomeDialog extends React.Component{
                         her türlü hata bildirimi bizim için çok faydalı olacaktır.
                         Fark ettiğiniz herhangi bir sıkıntıda lütfen bizle iletişime geçin.
                         <br/>
+                        <br/>
                         Eren Erişken: erenerisken@gmail.com
                         <br/>
                         Alperen Keleş: alpkeles99@gmail.com
                         <br/>
                         Alp Eren Yılmaz: ylmz.alp.e@gmail.com
+                        <br/>
+                        <br/>
+                        Önemli: Yeni özellik olarak eklenen Google Calendar export'u kullanmak için gelişmiş
+                        kısmından izin vermeniz gerekmektedir.
                         <br/>
                         <br/>
                         doldur.xyz anısına! (Saygılar @baskinburak)

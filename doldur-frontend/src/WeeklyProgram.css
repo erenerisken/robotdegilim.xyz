@@ -24,6 +24,7 @@
     height: fit-content;
     margin-right: auto;
     margin-left: auto;
+
 }
 .program-typo-wrapper {
     margin-top: auto;
@@ -60,4 +61,7 @@
 .program-title-dont-fill {
     margin-top: auto;
     margin-bottom: auto;
+}
+.program-vertical {
+
 }
