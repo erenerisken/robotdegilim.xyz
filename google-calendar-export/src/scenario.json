@@ -1,0 +1,92 @@
+{   
+    "l1": {
+        "summary": "ENG211/1",
+        "start": {
+            "dateTime": "2020-10-12T08:40:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "end": {
+            "dateTime": "2020-10-12T08:40:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "recurrence": [
+            "RRULE:FREQ=WEEKLY;COUNT=1"
+        ]
+    },
+
+    "l2": {
+        "summary": "MATH219/3",
+        "start": {
+            "dateTime": "2020-10-13T13:40:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "end": {
+            "dateTime": "2020-10-13T15:30:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "recurrence": [
+            "RRULE:FREQ=WEEKLY;COUNT=1"
+        ]
+    },
+
+    "l3": {
+        "summary": "EE281/3",
+        "start": {
+            "dateTime": "2020-10-13T15:40:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "end": {
+            "dateTime": "2020-10-13T17:30:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "recurrence": [
+            "RRULE:FREQ=WEEKLY;COUNT=1"
+        ]
+    },
+
+    "l4": {
+        "summary": "ENG211/1",
+        "start": {
+            "dateTime": "2020-10-14T14:40:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "end": {
+            "dateTime": "2020-10-14T15:30:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "recurrence": [
+            "RRULE:FREQ=WEEKLY;COUNT=1"
+        ]
+    },
+
+    "l5": {
+        "summary": "EE281/3",
+        "start": {
+            "dateTime": "2020-10-15T15:40:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "end": {
+            "dateTime": "2020-10-15T16:30:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "recurrence": [
+            "RRULE:FREQ=WEEKLY;COUNT=1"
+        ]
+    },
+
+    "l6": {
+        "summary": "MATH291/3",
+        "start": {
+            "dateTime": "2020-10-16T08:40:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "end": {
+            "dateTime": "2020-10-16T10:30:00+03:00",
+            "timeZone": "Turkey"
+        },
+        "recurrence": [
+            "RRULE:FREQ=WEEKLY;COUNT=1"
+        ]
+    }
+
+}
