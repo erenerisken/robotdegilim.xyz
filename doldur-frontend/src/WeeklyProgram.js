@@ -208,7 +208,7 @@ export class WeeklyProgram extends React.Component{
                             <FastForwardIcon fontSize={"small"} />
                         </IconButton>
                     </div> : null}
-                    {this.props.scenarios.length > 0 ? <div className={"program-calendar-wrapper"}>
+                    {this.props.scenarios.length > 0 && !isMobile ? <div className={"program-calendar-wrapper"}>
                         <ExportCalendar events={data} />
                     </div> : null}
                 </div>
