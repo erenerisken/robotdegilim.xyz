@@ -6,6 +6,14 @@ from flask_jwt import JWT, jwt_required, current_identity, _jwt_required
 import flask
 import json
 from functools import wraps
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(
+        schemes=["pbkdf2_sha256"],
+        default="pbkdf2_sha256",
+        pbkdf2_sha256__default_rounds=20
+)
+
 
 app = Flask(__name__, static_folder='./build', static_url_path='/')
 api = Api(app)
@@ -26,8 +34,8 @@ number_of_users = 2
 
 def authenticate(username,password):
     for i in users.keys():
-        if users[i]["username"] == username and users[i]["password"] == password:
-            return User(i,username,password)
+        if users[i]["username"] == username and pwd_context.verify(password, users[i]["password"]):
+            return User(i,username,users[i]["password"])
 
 
 def identity(payload):
@@ -86,7 +94,7 @@ class AddSchedule(Resource):
         args = parser.parse_args()
         schedule = args.get("schedule")
         users[current_identity["username"][0]]["schedule"] = schedule
-        return str(type(schedule))
+        return {"message":"Schedule is added"}, 200
 
 
 class SignUp(Resource):
@@ -107,9 +115,9 @@ class SignUp(Resource):
 
         global number_of_users
         number_of_users+=1
-        users[number_of_users] = {"username":username, "password":password,"schedule":[]}
+        users[number_of_users] = {"username":username, "password":pwd_context.encrypt(password),"schedule":[]}
 
-        return {'message': f'User {username} was created',}
+        return {'message': f'User {username} was created.'}
 
 class Courses(Resource):
     def get(self):
