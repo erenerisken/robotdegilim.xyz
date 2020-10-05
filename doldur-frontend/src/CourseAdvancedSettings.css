@@ -1,0 +1,15 @@
+.course-settings-wrapper {
+    margin: 6pt;
+}
+.course-settings-row {
+    display: inline-flex;
+    width: 100%;
+}
+.course-settings-accordion {
+    width: 100%;
+}
+.course-settings-typo {
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 6pt;
+}

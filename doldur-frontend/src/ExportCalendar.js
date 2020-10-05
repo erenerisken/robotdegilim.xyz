@@ -68,6 +68,7 @@ export class ExportCalendar extends React.Component{
 
     handleExport(){
         const events = this.convertEvents();
+        let popUped = false;
         events.map(e => console.log(e));
         gapi.load('client:auth2', () => {
             gapi.client.init({
@@ -84,7 +85,13 @@ export class ExportCalendar extends React.Component{
                         'calendarId': 'primary',
                         'resource': event,
                     });
-                    request.execute(e => console.log(e));
+                    request.execute(e => {
+                        console.log(e);
+                        if (e.htmlLink !== undefined && !popUped){
+                            popUped = true;
+                            window.open(e.htmlLink);
+                        }
+                    });
                 });
             });
         });

@@ -15,6 +15,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import {SectionInfo} from "./SectionInfo";
+import {CourseAdvancedSettings} from "./CourseAdvancedSettings";
 
 import "./CourseCard.css"
 
@@ -29,6 +30,9 @@ export class CourseCard extends React.Component {
 
     handleToggle(sections){
         this.props.onToggle(sections);
+    }
+    handleSettingsChange(settings){
+        this.props.onSettingsChange(settings);
     }
 
     toggleSections(){
@@ -115,6 +119,11 @@ export class CourseCard extends React.Component {
                                 <Divider />
                                 <div className={"course-row"}>
                                     {this.renderCheckBoxes()}
+                                </div>
+                                <div>
+                                    <CourseAdvancedSettings color={this.props.color}
+                                                            onSettingsChange={(s) => this.handleSettingsChange(s)}
+                                                            settings={this.props.settings}/>
                                 </div>
                                 <Divider />
                                 {this.renderSectionDetails()}

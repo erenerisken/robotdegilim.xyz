@@ -134,8 +134,18 @@ export class Controls extends React.Component{
         newSelectedCourses.push({
             code: c.code,
             sections: Array(c.sections.length).fill(true),
-            color: this.state.colorset.getNextColor()
+            color: this.state.colorset.getNextColor(),
+            settings: {
+                checkSurname: true,
+                checkDepartment: true,
+                checkCollision: true
+            }
         });
+        this.setState({selectedCourses: newSelectedCourses});
+    }
+    handleCourseSettings(i, s){
+        const newSelectedCourses = this.state.selectedCourses.slice(0);
+        newSelectedCourses[i].settings = s;
         this.setState({selectedCourses: newSelectedCourses});
     }
     handleChangeSettings(s){
@@ -195,9 +205,9 @@ export class Controls extends React.Component{
             const courseToPush = {
                 code: c.code,
                 category: currentCourse.category,
-                checkSurname: this.state.settings.checkSurname,
-                checkCollision: this.state.settings.checkCollision,
-                checkDepartment: this.state.settings.checkDepartment,
+                checkSurname: this.state.settings.checkSurname && c.settings.checkSurname,
+                checkCollision: this.state.settings.checkCollision && c.settings.checkCollision,
+                checkDepartment: this.state.settings.checkDepartment && c.settings.checkDepartment,
                 sections: Array(0)
             };
             for(let i = 0; i<currentCourse.sections.length; i++){
@@ -323,7 +333,9 @@ export class Controls extends React.Component{
                         <CourseCard course={this.getCourseByCode(c.code)}
                                     onDelete={() => this.handleDeleteCourse(i)}
                                     onToggle={sections => this.handleToggle(i, sections)}
-                                    color={c.color}/> : null
+                                    color={c.color}
+                                    settings={c.settings}
+                                    onSettingsChange={(s) => this.handleCourseSettings(i, s)}/> : null
                     );
                 })}
                 <AddCourseWidget

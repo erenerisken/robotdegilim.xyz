@@ -8,13 +8,12 @@ import {
     Checkbox,
     Divider
 } from "@material-ui/core";
-
-import "./AdvancedSettings.css"
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import TuneIcon from '@material-ui/icons/Tune';
 
-export class AdvancedSettings extends React.Component {
+import "./CourseAdvancedSettings.css"
 
+export class CourseAdvancedSettings extends React.Component{
     handleSurnameCheck(){
         this.props.onSettingsChange({
             checkSurname: !this.props.settings.checkSurname,
@@ -30,29 +29,29 @@ export class AdvancedSettings extends React.Component {
         });
     }
     handleCollisionCheck(){
+        /*TODO*/
         this.props.onSettingsChange({
             checkSurname: this.props.settings.checkSurname,
             checkDepartment: this.props.settings.checkDepartment,
-            checkCollision: !this.props.settings.checkCollision
+            checkCollision: this.props.settings.checkCollision
         });
     }
-
     render() {
         return (
             <div className={"course-settings-wrapper"}>
-                <Accordion style={{background: "aliceblue"}}>
+                <Accordion style={{background: this.props.color.secondary}}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={"panel1a-content"}>
                         <div className={"course-settings-row"}>
                             <TuneIcon color={"primary"} fontSize={"large"} />
-                            <div className={"course-settings-typo"}>
+                            <div className={"settings-typo"}>
                                 <Typography>Advanced Settings</Typography>
                             </div>
                         </div>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <div className={"course-settings-accordion"}>
+                        <div className={"settings-accordion"}>
                             <Divider />
-                            <div className={"course-settings-row"}>
+                            <div className={"settings-row"}>
                                 <FormControlLabel
                                     control={
                                         <Checkbox
@@ -77,6 +76,9 @@ export class AdvancedSettings extends React.Component {
                                             color={"primary"}
                                         />}
                                     label={"Check collision"}/>
+                            </div>
+                            <div style={{color: "#8E8E8E"}}>
+                                *Check collision will be enabled soon.
                             </div>
                         </div>
                     </AccordionDetails>
