@@ -104,7 +104,15 @@ export class Controls extends React.Component{
             if (data !== undefined){
                 // eslint-disable-next-line
                 data.map(code => {
-                    this.handleAddCourse(this.getCourseByCode(code));
+                    let exists = false;
+                    this.state.selectedCourses.map(c => {
+                        if (c !== null && c.code === code){
+                            exists = true;
+                        }
+                    });
+                    if (!exists){
+                        this.handleAddCourse(this.getCourseByCode(code));
+                    }
                 });
             }
         }).catch(_ => {

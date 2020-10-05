@@ -1,6 +1,7 @@
 .course-card {
     border-style: groove;
     margin: 6pt;
+    width: 98%;
 }
 .course-row {
     display: inline-flex;
@@ -15,5 +16,8 @@
     width: 100%;
 }
 .course-details {
+    width: 100%;
+}
+.course-accordion {
     width: 100%;
 }

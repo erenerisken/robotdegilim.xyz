@@ -97,7 +97,7 @@ export class CourseCard extends React.Component {
                     <IconButton size={"small"} onClick={() => this.props.onDelete()}>
                         <DeleteIcon fontSize={"inherit"}/>
                     </IconButton>
-                    <Accordion style={{background: this.props.color.main}}>
+                    <Accordion className={"course-accordion"} style={{background: this.props.color.main}}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={"panel1a-content"}>
                             <Typography style={{color: this.props.color.text}}>
                                 {this.props.course.abbreviation + ": " + this.props.course.name}
