@@ -16,6 +16,7 @@
     "axios": "^0.20.0",
     "gapi-script": "^1.0.2",
     "googleapis": "^60.0.1",
+    "html2canvas": "^1.0.0-rc.7",
     "react": "^16.13.1",
     "react-device-detect": "^1.13.1",
     "react-dom": "^16.13.1",
