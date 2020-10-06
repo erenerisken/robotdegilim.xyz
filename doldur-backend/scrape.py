@@ -113,6 +113,8 @@ for dept in dept_codes:
 		cnode["Course Name"] = deptify(ccode) + " - " + cname_prog.search(course_text).group(1)
 		cnode["Course Code"] = ccode
 		cnode["Sections"] = {}
+		if "SUMMER PRACTICE" in cnode["Course Name"]:
+			continue
 		times = time_prog.findall(course_text)
 		sects = sect_prog.findall(course_text)
 		for sect_match, time_match in zip(sects, times):
