@@ -81,7 +81,17 @@ export class WeeklyProgram extends React.Component{
             return [];
         }*/
         const coursesToDisplay = Array(0);
-        const scenario = this.props.scenarios.length > 0 ? this.props.scenarios[this.state.currentScenario] : [];
+        let scenario = Array(0);
+        let currentScenarioChanged = false;
+        if (this.props.scenarios.length > 0 && this.state.currentScenario >= this.props.scenarios.length){
+            this.setState({currentScenario: 0});
+            currentScenarioChanged = true;
+        }
+        scenario = currentScenarioChanged ? this.props.scenarios[0] :
+            this.props.scenarios[this.state.currentScenario];
+        if (this.props.scenarios.length === 0){
+            scenario = [];
+        }
         scenario.map(c => {
             //console.log(c);
             c.section.lectureTimes.map(lt => {
