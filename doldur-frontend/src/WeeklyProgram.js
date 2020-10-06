@@ -1,5 +1,5 @@
 import React from "react";
-import {Paper, IconButton, Typography, TextField} from "@material-ui/core";
+import {Paper, IconButton, Typography, TextField, Button} from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
@@ -16,6 +16,7 @@ import {isMobile} from "react-device-detect";
 import {ExportCalendar} from "./ExportCalendar";
 
 import "./WeeklyProgram.css"
+import html2canvas from 'html2canvas';
 
 const currentDate = '2021-02-20';
 
@@ -57,6 +58,24 @@ export class WeeklyProgram extends React.Component{
         this.state = {
             currentScenario: 0
         };
+    }
+
+
+    doCapture() {
+        window.scrollTo(0, 0);
+ 
+        // Convert the div to image (canvas)
+        html2canvas(document.getElementById("screenshot")).then(function (canvas) {
+    
+            // Get the image data as JPEG and 0.9 quality (0.0 - 1.0)
+            console.log(canvas.toDataURL("image/jpeg", 0.9));
+            const a = document.createElement('a');
+            document.body.appendChild(a);
+            a.href = canvas.toDataURL("image/jpeg", 0.9);
+            a.download = "schedule.jpeg";
+            a.click();
+            document.body.removeChild(a);
+        });
     }
 
     handleScenarioChange(delta){
@@ -167,25 +186,27 @@ export class WeeklyProgram extends React.Component{
         //console.log(data);
         return (
             <div className={isMobile ? "scheduler-mobile" : "scheduler-wrapper"}>
-                <Paper>
-                    <Scheduler
-                        id={"scheduler"}
-                        data={data}
-                    >
-                        <ViewState
-                            currentDate={currentDate}
-                        />
-                        <WeekView
-                            startDayHour={7.667}
-                            endDayHour={17.5}
-                            cellDuration={60}
-                            dayScaleRowComponent={DayScaleRow}
-                            appointmentLayerComponent={this.CustomAppointment}
-                            timeTableCellComponent={this.TimeTableCell}
-                        />
-                        <Appointments appointmentContentComponent={this.AppointmentContent}/>
-                    </Scheduler>
-                </Paper>
+                <div id="screenshot">
+                    <Paper>
+                        <Scheduler
+                            id={"scheduler"}
+                            data={data}
+                        >
+                            <ViewState
+                                currentDate={currentDate}
+                            />
+                            <WeekView
+                                startDayHour={7.667}
+                                endDayHour={17.5}
+                                cellDuration={60}
+                                dayScaleRowComponent={DayScaleRow}
+                                appointmentLayerComponent={this.CustomAppointment}
+                                timeTableCellComponent={this.TimeTableCell}
+                            />
+                            <Appointments appointmentContentComponent={this.AppointmentContent}/>
+                        </Scheduler>
+                    </Paper>
+                </div>
                 <div className={"program-vertical"}>
                     {this.props.scenarios.length > 0?
                     <div className={"program-row"}>
@@ -221,6 +242,12 @@ export class WeeklyProgram extends React.Component{
                     {this.props.scenarios.length > 0 && !isMobile ? <div className={"program-calendar-wrapper"}>
                         <ExportCalendar events={data} />
                     </div> : null}
+                    <Button
+                        color={"primary"}
+                        onClick={() => this.doCapture()}
+                        >
+                        Download Schedule
+                    </Button>
                 </div>
             </div>
         );
