@@ -150,9 +150,7 @@ function check_collision_df(section1, df) {
 // returns array of code + sections
 export function compute_schedule(surname, department, grade, courses, dontFills) {
     let courseNumber = courses.length;
-    console.log(courseNumber)
     courses = apply_criteria_courses(surname, department, grade, courses);
-    console.log(courseNumber)
     let scenarios = [];
     recursive_computation(courses, dontFills, 0, [], scenarios, courseNumber);
 
@@ -165,7 +163,7 @@ function recursive_computation(courses, dontFills, depth, scenario, scenarios, c
         scenario.map(c => {
             scenarioToPosh.push({
                 code: c.code,
-                section: c.section.sectionNumber
+                section: c.section.sectionNumber,
             });
         });
         if(scenarioToPosh.length == courseNumber) {
@@ -176,7 +174,7 @@ function recursive_computation(courses, dontFills, depth, scenario, scenarios, c
     for(var i = 0 ; i < courses[depth].sections.length ; i++) {
         var collision = false;
         for(var j = 0 ; j < scenario.length ; j++) {
-            if(courses[depth].checkCollision == true 
+            if(courses[depth].checkCollision == true && scenario[j].collision == true
                 && check_collision(courses[depth].sections[i], scenario[j].section) === true) {
                 collision = true;
             }
@@ -190,6 +188,7 @@ function recursive_computation(courses, dontFills, depth, scenario, scenarios, c
             scenario.push({
                 code: courses[depth].code,
                 section: courses[depth].sections[i],
+                collision: courses[depth].checkCollision
             }
             );
             recursive_computation(courses, dontFills, depth + 1, scenario, scenarios, courseNumber);
