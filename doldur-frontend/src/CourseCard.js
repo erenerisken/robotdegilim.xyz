@@ -23,7 +23,7 @@ export class CourseCard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedSections: Array(props.course.sections.length).fill(true),
+            selectedSections: this.props.sections.slice(0),
             sectionCount: props.course.sections.length
         }
     }

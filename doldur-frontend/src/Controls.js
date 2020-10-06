@@ -13,7 +13,10 @@ import {
 import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
 import EventAvailableIcon from '@material-ui/icons/EventAvailable';
+import SaveIcon from '@material-ui/icons/Save';
+import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import {isMobile} from "react-device-detect";
+import ls from "local-storage";
 
 import {getAllCourses, getMusts} from "./data/Course";
 import {compute_schedule} from "./schedule";
@@ -36,9 +39,21 @@ export class Controls extends React.Component{
             errorDept: false,
             errorSemester: false,
             errorSurname: false,
+            restoreAvailable: false,
+            restoredInfo: {
+                surname: "",
+                department: "",
+                semester: 0
+            },
             selectedCourses: [],
+            restoredCourses: [],
             allCourses: [],
             settings: {
+                checkSurname: true,
+                checkDepartment: true,
+                checkCollision: true
+            },
+            restoredSettings: {
                 checkSurname: true,
                 checkDepartment: true,
                 checkCollision: true
@@ -49,12 +64,49 @@ export class Controls extends React.Component{
     }
     componentDidMount() {
         document.title = "Robot Değilim *-*";
-        getAllCourses().then(data => this.setState({allCourses: data}));
+        getAllCourses().then(data => {
+            this.setState({allCourses: data});
+            this.restoreData();
+        });
         if (isMobile){
             document.body.style.zoom = "60%";
         }
     }
-
+    loadRestoredData(){
+        this.setState({
+            selectedCourses: this.state.restoredCourses,
+            settings: this.state.restoredSettings,
+            surname: this.state.restoredInfo.surname,
+            semester: this.state.restoredInfo.semester,
+            department: this.state.restoredInfo.department,
+        });
+    }
+    restoreData(){
+        const restoredCourses = ls.get("restoredCourses");
+        const restoredInfo = ls.get("restoredInfo");
+        const restoredSettings = ls.get("restoredSettings");
+        console.log(restoredCourses);
+        this.setState({
+            restoredCourses: restoredCourses !== null? restoredCourses : [],
+            restoredSettings: restoredSettings !== null? restoredSettings : {
+                checkSurname: true,
+                checkDepartment: true,
+                checkCollision: true
+            },
+            restoredInfo: restoredInfo !== null? {
+                surname: restoredInfo.surname,
+                department: restoredInfo.department,
+                semester: restoredInfo.semester
+            } : {
+                surname: "",
+                department: "",
+                semester: 0
+            },
+            restoreAvailable: restoredSettings !== null
+        });
+        console.log(restoredSettings);
+        console.log(restoredInfo);
+    }
     getCourseByCode(code){
         for (let i = 0; i<this.state.allCourses.length; i++){
             if (this.state.allCourses[i].code === code){
@@ -193,6 +245,15 @@ export class Controls extends React.Component{
             endMin: df.endDate.getMinutes() - 1
         };
     }
+    saveData(){
+        ls.set("restoredCourses", this.state.selectedCourses);
+        ls.set("restoredSettings", this.state.settings);
+        ls.set("restoredInfo", {
+            surname: this.state.surname,
+            department: this.state.department,
+            semester: this.state.semester
+        });
+    }
     handleScheduleBegin(){
         this.setState({alertMsg: "", errorDept: false, errorSemester: false, errorSurname: false});
         if (this.state.department.length < 2){
@@ -329,6 +390,22 @@ export class Controls extends React.Component{
                     </div>
                 </div>
                 <AdvancedSettings settings={this.state.settings} onSettingsChange={s => this.handleChangeSettings(s)}/>
+                <div className={"control-row"}>
+                    <Button variant={"contained"}
+                            color={"primary"}
+                            onClick={() => this.saveData()}
+                            startIcon={<SaveIcon />} style={{margin: "6pt"}}>
+                        Save
+                    </Button>
+                    {this.state.restoreAvailable ?
+                    <Button
+                        variant={"contained"}
+                        color={"primary"}
+                        onClick={() => this.loadRestoredData()}
+                        startIcon={<SaveAltIcon />} style={{margin: "6pt"}}>
+                        Load
+                    </Button> : null}
+                </div>
                 <Divider />
                 <div className={"control-row"}>
                     <div className={"centered-row"}>
@@ -344,6 +421,7 @@ export class Controls extends React.Component{
                                     onToggle={sections => this.handleToggle(i, sections)}
                                     color={c.color}
                                     settings={c.settings}
+                                    sections={c.sections}
                                     onSettingsChange={(s) => this.handleCourseSettings(i, s)}/> : null
                     );
                 })}
