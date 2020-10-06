@@ -19,6 +19,7 @@ import {getAllCourses, getMusts} from "./data/Course";
 import {compute_schedule} from "./schedule";
 import {CourseCard} from "./CourseCard";
 import {AddCourseWidget} from "./AddCourseWidget";
+import {AddDontFillWidget} from "./AddDontFillWidget";
 import {AdvancedSettings} from "./AdvancedSettings";
 import {Colorset} from "./Colorset";
 
@@ -349,6 +350,7 @@ export class Controls extends React.Component{
                 <AddCourseWidget
                     courses={this.state.allCourses}
                     onCourseAdd={c => this.handleAddCourse(c)}/>
+                <AddDontFillWidget />
             </div>
         )
     }
