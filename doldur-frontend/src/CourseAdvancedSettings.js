@@ -29,11 +29,10 @@ export class CourseAdvancedSettings extends React.Component{
         });
     }
     handleCollisionCheck(){
-        /*TODO*/
         this.props.onSettingsChange({
             checkSurname: this.props.settings.checkSurname,
             checkDepartment: this.props.settings.checkDepartment,
-            checkCollision: this.props.settings.checkCollision
+            checkCollision: !this.props.settings.checkCollision
         });
     }
     render() {
@@ -76,9 +75,6 @@ export class CourseAdvancedSettings extends React.Component{
                                             color={"primary"}
                                         />}
                                     label={"Check collision"}/>
-                            </div>
-                            <div style={{color: "#8E8E8E"}}>
-                                *Check collision will be enabled soon.
                             </div>
                         </div>
                     </AccordionDetails>
