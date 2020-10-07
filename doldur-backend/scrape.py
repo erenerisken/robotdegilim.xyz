@@ -110,7 +110,11 @@ for dept in dept_codes:
 	for ccode in course_codes:
 		cnode={}
 		course_text = get_course(ccode).content.decode("utf-8",errors="replace")
-		cnode["Course Name"] = deptify(ccode) + " - " + cname_prog.search(course_text).group(1)
+		try:
+			cnode["Course Name"] = deptify(ccode) + " - " + cname_prog.search(course_text).group(1)
+		except:
+			print(ccode)
+			continue		
 		cnode["Course Code"] = ccode
 		cnode["Sections"] = {}
 		if "SUMMER PRACTICE" in cnode["Course Name"]:
