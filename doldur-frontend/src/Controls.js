@@ -71,6 +71,10 @@ export class Controls extends React.Component{
         if (isMobile){
             document.body.style.zoom = "60%";
         }
+        else {
+            console.log(window.innerWidth);
+            console.log(((window.outerWidth - 10) / window.innerWidth) * 100);
+        }
     }
     loadRestoredData(){
         this.setState({
