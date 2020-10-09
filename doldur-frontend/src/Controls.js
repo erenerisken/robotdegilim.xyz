@@ -201,7 +201,7 @@ export class Controls extends React.Component{
                 checkSurname: true,
                 checkDepartment: true,
                 checkCollision: true,
-                disableCourse: true
+                disableCourse: false
             }
         });
         this.setState({selectedCourses: newSelectedCourses});

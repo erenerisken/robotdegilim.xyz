@@ -85,6 +85,14 @@ export class AddDontFillWidget extends React.Component{
             this.convertTime(this.state.day, this.state.endHour, this.state.endMin),
             this.state.description
         );
+        this.setState({
+            day: 0,
+            startHour: this.props.startHour,
+            startMin: this.props.startMin,
+            endHour: this.props.endHour,
+            endMin: this.props.endMin,
+            description: "FULL"
+        });
     }
     convertTime(day, hour, min){
         //example : '2021-02-20T09:40'
