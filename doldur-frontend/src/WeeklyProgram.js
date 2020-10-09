@@ -89,7 +89,7 @@ export class WeeklyProgram extends React.Component{
                 newCurrentScenario-1))});
     }
     handleDontFillAdd(startDate, endDate){
-        this.props.onDontFillAdd(startDate, endDate);
+        this.props.onDontFillAdd(startDate, endDate, "FULL");
     }
     convertTime(day, hour, min){
         //example : '2021-02-20T09:40'
@@ -130,7 +130,7 @@ export class WeeklyProgram extends React.Component{
         this.props.dontFills.map(df => {
             coursesToDisplay.push({
                 type: "dontFill",
-                title: "FULL",
+                title: df.description,
                 color: {
                     main: "#000000",
                     text: "#FFFFFF"

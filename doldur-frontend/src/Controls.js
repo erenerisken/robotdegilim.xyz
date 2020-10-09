@@ -91,7 +91,8 @@ export class Controls extends React.Component{
             restoredSettings: restoredSettings !== null? restoredSettings : {
                 checkSurname: true,
                 checkDepartment: true,
-                checkCollision: true
+                checkCollision: true,
+                disableCourse: false
             },
             restoredInfo: restoredInfo !== null? {
                 surname: restoredInfo.surname,
@@ -199,7 +200,8 @@ export class Controls extends React.Component{
             settings: {
                 checkSurname: true,
                 checkDepartment: true,
-                checkCollision: true
+                checkCollision: true,
+                disableCourse: true
             }
         });
         this.setState({selectedCourses: newSelectedCourses});
@@ -268,7 +270,7 @@ export class Controls extends React.Component{
         const dontFills = Array(0);
         // eslint-disable-next-line
         this.state.selectedCourses.map(c => {
-            if (c === null){
+            if (c === null || c.settings.disableCourse){
                 return null;
             }
             const currentCourse = this.getCourseByCode(c.code);
@@ -428,7 +430,12 @@ export class Controls extends React.Component{
                 <AddCourseWidget
                     courses={this.state.allCourses}
                     onCourseAdd={c => this.handleAddCourse(c)}/>
-                <AddDontFillWidget />
+                <AddDontFillWidget startHour={8}
+                                   startMin={40}
+                                   endHour={17}
+                                   endMin={30}
+                                   onDontFillAdd={(startDate, endDate, desc) =>
+                                    this.props.onDontFillAdd(startDate, endDate, desc)}/>
             </div>
         )
     }

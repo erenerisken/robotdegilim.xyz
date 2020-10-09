@@ -18,21 +18,32 @@ export class CourseAdvancedSettings extends React.Component{
         this.props.onSettingsChange({
             checkSurname: !this.props.settings.checkSurname,
             checkDepartment: this.props.settings.checkDepartment,
-            checkCollision: this.props.settings.checkCollision
+            checkCollision: this.props.settings.checkCollision,
+            disableCourse: this.props.settings.disableCourse,
         });
     }
     handleDepartmentCheck(){
         this.props.onSettingsChange({
             checkSurname: this.props.settings.checkSurname,
             checkDepartment: !this.props.settings.checkDepartment,
-            checkCollision: this.props.settings.checkCollision
+            checkCollision: this.props.settings.checkCollision,
+            disableCourse: this.props.settings.disableCourse,
         });
     }
     handleCollisionCheck(){
         this.props.onSettingsChange({
             checkSurname: this.props.settings.checkSurname,
             checkDepartment: this.props.settings.checkDepartment,
-            checkCollision: !this.props.settings.checkCollision
+            checkCollision: !this.props.settings.checkCollision,
+            disableCourse: this.props.settings.disableCourse,
+        });
+    }
+    handleDisableCourse(){
+        this.props.onSettingsChange({
+            checkSurname: this.props.settings.checkSurname,
+            checkDepartment: this.props.settings.checkDepartment,
+            checkCollision: this.props.settings.checkCollision,
+            disableCourse: !this.props.settings.disableCourse,
         });
     }
     render() {
@@ -75,6 +86,14 @@ export class CourseAdvancedSettings extends React.Component{
                                             color={"primary"}
                                         />}
                                     label={"Check collision"}/>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={this.props.settings.disableCourse}
+                                            onChange={() => this.handleDisableCourse()}
+                                            color={"primary"}
+                                        />}
+                                    label={"Disable course"}/>
                             </div>
                         </div>
                     </AccordionDetails>

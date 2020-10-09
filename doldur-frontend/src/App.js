@@ -23,11 +23,12 @@ class App extends React.Component{
             dontFills: []
         }
     }
-    handleDontFillAdd(startDate, endDate){
+    handleDontFillAdd(startDate, endDate, description){
         const newDontFills = this.state.dontFills.slice(0);
         newDontFills.push({
             startDate: startDate,
-            endDate: endDate
+            endDate: endDate,
+            description: description
         });
         this.setState({dontFills: newDontFills});
     }
@@ -43,9 +44,13 @@ class App extends React.Component{
                 <div className={isMobile ? "column" : "row"}>
                     <WeeklyProgram dontFills={this.state.dontFills}
                                    scenarios={this.state.scenarios}
-                                   onDontFillAdd={(startDate, endDate) => this.handleDontFillAdd(startDate, endDate)}
+                                   onDontFillAdd={(startDate, endDate, desc) =>
+                                       this.handleDontFillAdd(startDate, endDate, desc)}
                                    onDontFillDelete={startDate => this.handleDontFillDelete(startDate)}/>
-                    <Controls onSchedule={s => this.setState({scenarios: s})} dontFills={this.state.dontFills}/>
+                    <Controls onSchedule={s => this.setState({scenarios: s})}
+                              dontFills={this.state.dontFills}
+                              onDontFillAdd={(startDate, endDate, desc) =>
+                                  this.handleDontFillAdd(startDate, endDate, desc)}/>
                 </div>
             </div>
           </MuiThemeProvider>
