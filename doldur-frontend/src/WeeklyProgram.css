@@ -1,13 +1,11 @@
 .scheduler-wrapper {
     margin: 6pt;
     width: 60%;
-    border-style: groove;
 }
 
 .scheduler-mobile {
     margin: 6pt;
     width: 100%;
-    border-style: groove;
 }
 
 .dayscale-row {
@@ -64,4 +62,7 @@
 }
 .program-vertical {
 
+}
+.scheduler-border {
+    border-style: groove;
 }

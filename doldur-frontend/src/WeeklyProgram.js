@@ -4,6 +4,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
 import FastRewindIcon from '@material-ui/icons/FastRewind';
+import PhotoCameraIcon from '@material-ui/icons/PhotoCamera';
 import FastForwardIcon from '@material-ui/icons/FastForward';
 import {ViewState} from "@devexpress/dx-react-scheduler";
 import {
@@ -186,7 +187,7 @@ export class WeeklyProgram extends React.Component{
         //console.log(data);
         return (
             <div className={isMobile ? "scheduler-mobile" : "scheduler-wrapper"}>
-                <div id="screenshot">
+                <div id="screenshot" className={"scheduler-border"}>
                     <Paper>
                         <Scheduler
                             id={"scheduler"}
@@ -243,10 +244,13 @@ export class WeeklyProgram extends React.Component{
                         <ExportCalendar events={data} />
                     </div> : null}
                     <Button
+                        variant={"contained"}
                         color={"primary"}
+                        style={{margin: "6pt"}}
+                        startIcon={<PhotoCameraIcon />}
                         onClick={() => this.doCapture()}
                         >
-                        Download Schedule
+                        Save as image
                     </Button>
                 </div>
             </div>

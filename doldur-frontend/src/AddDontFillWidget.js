@@ -61,7 +61,7 @@ export class AddDontFillWidget extends React.Component{
 
     renderMinPick(val, onChange){
         const menuItems = Array(0);
-        for (let i = 0; i <= 59; i++){
+        for (let i = 0; i <= 59; i+=10){
             menuItems.push(<MenuItem value={i}>{i < 10 ? "0"+i : i}</MenuItem> );
         }
         return (

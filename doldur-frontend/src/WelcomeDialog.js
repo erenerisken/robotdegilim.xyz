@@ -27,9 +27,9 @@ export class WelcomeDialog extends React.Component{
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id={"alert-dialog-description"}>
-                        Siteyi ders seçimine yetiştirmek için hızlı bir şekilde yazdığımızdan,
-                        her türlü hata bildirimi bizim için çok faydalı olacaktır.
-                        Fark ettiğiniz herhangi bir sıkıntıda lütfen bizle iletişime geçin.
+                        Sitemize gösterdiğiniz yoğun ilgiden dolayı teşekkür ederiz!
+                        Gelen bildirimleriniz doğrultusunda geliştirmeler yapmaya devam ediyoruz.
+                        Her türlü görüş ve önerileriniz için bize yazabilirsiniz ^-^
                         <br/>
                         <br/>
                         Eren Erişken: erenerisken@gmail.com

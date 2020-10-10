@@ -2,6 +2,7 @@
     border-style: groove;
     margin: 6pt;
     width: fit-content;
+    height: fit-content;
 }
 .control-mobile {
     border-style: groove;

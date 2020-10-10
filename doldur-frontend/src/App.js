@@ -4,6 +4,7 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import {WeeklyProgram} from "./WeeklyProgram";
 import {Controls} from "./Controls";
 import {WelcomeDialog} from "./WelcomeDialog";
+import {Banner} from "./Banner";
 
 import './App.css';
 
@@ -40,6 +41,7 @@ class App extends React.Component{
         return (
           <MuiThemeProvider theme={theme}>
             <div className="App">
+                <Banner />
                 <WelcomeDialog />
                 <div className={isMobile ? "column" : "row"}>
                     <WeeklyProgram dontFills={this.state.dontFills}

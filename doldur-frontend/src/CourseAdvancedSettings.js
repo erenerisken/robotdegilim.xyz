@@ -95,6 +95,8 @@ export class CourseAdvancedSettings extends React.Component{
                                         />}
                                     label={"Disable course"}/>
                             </div>
+                            <Divider />
+                            
                         </div>
                     </AccordionDetails>
                 </Accordion>
