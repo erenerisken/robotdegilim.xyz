@@ -14,6 +14,7 @@ import {
 import DeleteIcon from '@material-ui/icons/Delete';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
+import {Colorset} from "./Colorset";
 import {SectionInfo} from "./SectionInfo";
 import {CourseAdvancedSettings} from "./CourseAdvancedSettings";
 
@@ -24,7 +25,8 @@ export class CourseCard extends React.Component {
         super(props);
         this.state = {
             selectedSections: this.props.sections.slice(0),
-            sectionCount: props.course.sections.length
+            sectionCount: props.course.sections.length,
+            colorset: new Colorset()
         }
     }
 
@@ -34,7 +36,9 @@ export class CourseCard extends React.Component {
     handleSettingsChange(settings){
         this.props.onSettingsChange(settings);
     }
-
+    handleColorChange(){
+        this.props.onColorChange(this.state.colorset.getNextColor());
+    }
     toggleSections(){
         const newSelectedSections = Array(this.state.sectionCount).fill(!this.state.selectedSections[0]);
         this.setState({selectedSections: newSelectedSections});
@@ -97,11 +101,14 @@ export class CourseCard extends React.Component {
                     <IconButton size={"small"} onClick={() => this.props.onDelete()}>
                         <DeleteIcon fontSize={"inherit"}/>
                     </IconButton>
-                    <Accordion className={"course-accordion"} style={{background: this.props.color.main}}>
+                    <Accordion className={"course-accordion"}
+                               style={{background: this.props.color.main, width: "100%"}}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={"panel1a-content"}>
-                            <Typography style={{color: this.props.color.text}}>
-                                {this.props.course.abbreviation + ": " + this.props.course.name}
-                            </Typography>
+                            <div className={"course-row"}>
+                                <Typography style={{color: this.props.color.text}}>
+                                    {this.props.course.abbreviation + ": " + this.props.course.name}
+                                </Typography>
+                            </div>
                         </AccordionSummary>
                         <AccordionDetails>
                             <div className={"course-details"}>
@@ -123,6 +130,7 @@ export class CourseCard extends React.Component {
                                 <div>
                                     <CourseAdvancedSettings color={this.props.color}
                                                             onSettingsChange={(s) => this.handleSettingsChange(s)}
+                                                            onColorChange={() => this.handleColorChange()}
                                                             settings={this.props.settings}/>
                                 </div>
                                 <Divider />

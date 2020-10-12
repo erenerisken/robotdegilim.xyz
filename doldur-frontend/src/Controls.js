@@ -216,6 +216,11 @@ export class Controls extends React.Component{
         newSelectedCourses[i].settings = s;
         this.setState({selectedCourses: newSelectedCourses});
     }
+    handleCourseColor(i, c){
+        const newSelectedCourses = this.state.selectedCourses.slice(0);
+        newSelectedCourses[i].color = c;
+        this.setState({selectedCourses: newSelectedCourses});
+    }
     handleChangeSettings(s){
         this.setState({settings: s});
     }
@@ -429,7 +434,8 @@ export class Controls extends React.Component{
                                     color={c.color}
                                     settings={c.settings}
                                     sections={c.sections}
-                                    onSettingsChange={(s) => this.handleCourseSettings(i, s)}/> : null
+                                    onSettingsChange={(s) => this.handleCourseSettings(i, s)}
+                                    onColorChange={(c) => this.handleCourseColor(i, c)}/> : null
                     );
                 })}
                 <AddCourseWidget

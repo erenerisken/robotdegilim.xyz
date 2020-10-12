@@ -6,9 +6,11 @@ import {
     Typography,
     FormControlLabel,
     Checkbox,
-    Divider
+    Divider,
+    Button
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import PaletteIcon from '@material-ui/icons/Palette';
 import TuneIcon from '@material-ui/icons/Tune';
 
 import "./CourseAdvancedSettings.css"
@@ -96,7 +98,15 @@ export class CourseAdvancedSettings extends React.Component{
                                     label={"Disable course"}/>
                             </div>
                             <Divider />
-                            
+                            <div className={"settings-row"}>
+                                <Button variant={"contained"}
+                                        color={"primary"}
+                                        startIcon={<PaletteIcon />}
+                                        style={{marginTop: "6pt"}}
+                                        onClick={() => this.props.onColorChange()}>
+                                    Change Color
+                                </Button>
+                            </div>
                         </div>
                     </AccordionDetails>
                 </Accordion>
