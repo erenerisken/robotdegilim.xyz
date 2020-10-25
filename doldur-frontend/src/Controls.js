@@ -425,19 +425,21 @@ export class Controls extends React.Component{
                     </div>
                 </div>
                 <Divider />
-                {this.state.selectedCourses.map((c, i) => {
-                    return (
-                        c !== null?
-                        <CourseCard course={this.getCourseByCode(c.code)}
-                                    onDelete={() => this.handleDeleteCourse(i)}
-                                    onToggle={sections => this.handleToggle(i, sections)}
-                                    color={c.color}
-                                    settings={c.settings}
-                                    sections={c.sections}
-                                    onSettingsChange={(s) => this.handleCourseSettings(i, s)}
-                                    onColorChange={(c) => this.handleCourseColor(i, c)}/> : null
-                    );
-                })}
+                <div className={"control-courses"}>
+                    {this.state.selectedCourses.map((c, i) => {
+                        return (
+                            c !== null?
+                            <CourseCard course={this.getCourseByCode(c.code)}
+                                        onDelete={() => this.handleDeleteCourse(i)}
+                                        onToggle={sections => this.handleToggle(i, sections)}
+                                        color={c.color}
+                                        settings={c.settings}
+                                        sections={c.sections}
+                                        onSettingsChange={(s) => this.handleCourseSettings(i, s)}
+                                        onColorChange={(c) => this.handleCourseColor(i, c)}/> : null
+                        );
+                    })}
+                </div>
                 <AddCourseWidget
                     courses={this.state.allCourses}
                     onCourseAdd={c => this.handleAddCourse(c)}/>

@@ -42,12 +42,6 @@ class DayScaleRow extends React.Component{
                 <div className={"dayscale-label"}>
                     Fri
                 </div>
-                <div className={"dayscale-label"}>
-                    Sat
-                </div>
-                <div className={"dayscale-label"}>
-                    Sun
-                </div>
             </div>
         )
     }
@@ -176,6 +170,9 @@ export class WeeklyProgram extends React.Component{
         )
     }
     TimeTableCell = ({startDate, endDate, onDontFillAdd, ...restProps}) => {
+        if (startDate.getDay() > 4){
+            return <WeekView.TimeTableCell {...restProps} style={{width: "0"}}/>
+        }
         return (
             <WeekView.TimeTableCell
                                     {...restProps}

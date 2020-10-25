@@ -134,7 +134,9 @@ export class CourseCard extends React.Component {
                                                             settings={this.props.settings}/>
                                 </div>
                                 <Divider />
-                                {this.renderSectionDetails()}
+                                <div className={"course-sections"}>
+                                    {this.renderSectionDetails()}
+                                </div>
                             </div>
                         </AccordionDetails>
                     </Accordion>
