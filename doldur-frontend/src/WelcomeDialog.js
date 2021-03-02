@@ -27,23 +27,12 @@ export class WelcomeDialog extends React.Component{
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id={"alert-dialog-description"}>
-                        Sitemize gösterdiğiniz yoğun ilgiden dolayı teşekkür ederiz!
-                        Gelen bildirimleriniz doğrultusunda geliştirmeler yapmaya devam ediyoruz.
-                        Her türlü görüş ve önerileriniz için bize yazabilirsiniz ^-^
+                        Nasıl ders çakışmasına bu site gibi bir çözüm bulduysak, diğer sorunlara da beraber çözüm bulabiliriz.
+                        Uzaktan eğitimin sorunlarına çözüm bulmak için gelin, siz de fikirlerinizi anketi doldurarak,
+                        doldurtarak bizimle paylaşın.
                         <br/>
                         <br/>
-                        Eren Erişken: erenerisken@gmail.com
-                        <br/>
-                        Alperen Keleş: alpkeles99@gmail.com
-                        <br/>
-                        Alp Eren Yılmaz: ylmz.alp.e@gmail.com
-                        <br/>
-                        <br/>
-                        Önemli: Yeni özellik olarak eklenen Google Calendar export'u kullanmak için gelişmiş
-                        kısmından izin vermeniz gerekmektedir.
-                        <br/>
-                        <br/>
-                        doldur.xyz anısına! (Saygılar @baskinburak)
+                        Anket Linki : <a href={"https://forms.gle/B72tScNCGypExQN3A"}>https://forms.gle/B72tScNCGypExQN3A</a>
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
