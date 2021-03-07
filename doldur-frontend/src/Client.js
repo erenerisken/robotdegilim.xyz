@@ -2,12 +2,13 @@ import axios from "axios";
 
 export class Client{
     constructor() {
-        this.coursesUrl = "https:\\robotdegilim.xyz/courses";
-        this.mustUrl = "https:\\robotdegilim.xyz/musts?";
+        this.coursesUrl = "https://beta.robotdegilim.xyz/data.json";
+        this.mustUrl = "https://beta.robotdegilim.xyz/musts.json";
     }
     async getMusts(dept, semester){
-        const url = this.mustUrl + "dept="+dept+"&sem="+semester;
-        return (await axios.get(url)).data;
+        const data = (await axios.get(this.mustUrl)).data;
+        console.log(data);
+        return data[dept][semester.toString()];
     }
     async getCourses(){
         const data = (await axios.get(this.coursesUrl)).data;
