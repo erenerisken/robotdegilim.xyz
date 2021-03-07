@@ -26,7 +26,9 @@ export class CourseCard extends React.Component {
         this.state = {
             selectedSections: this.props.sections.slice(0),
             sectionCount: props.course.sections.length,
-            colorset: new Colorset()
+            colorset: new Colorset(),
+
+            expanded: false,
         }
     }
 
@@ -83,6 +85,10 @@ export class CourseCard extends React.Component {
     }
 
     renderSectionDetails(){
+        if (!this.state.expanded) {
+            return [];
+        }
+
         const ret = Array(0);
         for (let i = 0; i<this.props.course.sections.length; i++){
             ret.push(<SectionInfo
@@ -102,7 +108,9 @@ export class CourseCard extends React.Component {
                         <DeleteIcon fontSize={"inherit"}/>
                     </IconButton>
                     <Accordion className={"course-accordion"}
-                               style={{background: this.props.color.main, width: "100%"}}>
+                               style={{background: this.props.color.main, width: "100%"}}
+                               onChange={() => this.setState({expanded: !this.state.expanded})}
+                    >
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={"panel1a-content"}>
                             <div className={"course-row"}>
                                 <Typography style={{color: this.props.color.text}}>

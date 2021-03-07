@@ -21,7 +21,9 @@ class App extends React.Component{
         super(props);
         this.state = {
             scenarios: [],
-            dontFills: []
+            dontFills: [],
+
+            loaded: false,
         }
     }
     handleDontFillAdd(startDate, endDate, description){
@@ -36,13 +38,16 @@ class App extends React.Component{
     handleDontFillDelete(startDate){
         this.setState({dontFills: this.state.dontFills.filter(df => df.startDate !== startDate)});
     }
+    handleLoadingCompleted() {
+        this.setState({loaded: true});
+    }
     render() {
         //console.log(this.state.scenarios);
         return (
           <MuiThemeProvider theme={theme}>
             <div className="App">
                 <Banner />
-                <WelcomeDialog />
+                { this.state.loaded ? <WelcomeDialog /> : null }
                 <div className={isMobile ? "column" : "row"}>
                     <WeeklyProgram dontFills={this.state.dontFills}
                                    scenarios={this.state.scenarios}
@@ -52,7 +57,9 @@ class App extends React.Component{
                     <Controls onSchedule={s => this.setState({scenarios: s})}
                               dontFills={this.state.dontFills}
                               onDontFillAdd={(startDate, endDate, desc) =>
-                                  this.handleDontFillAdd(startDate, endDate, desc)}/>
+                                  this.handleDontFillAdd(startDate, endDate, desc)}
+                              onLoadingCompleted={() => this.handleLoadingCompleted()}
+                    />
                 </div>
             </div>
           </MuiThemeProvider>

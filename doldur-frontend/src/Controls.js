@@ -25,6 +25,7 @@ import {AddCourseWidget} from "./AddCourseWidget";
 import {AddDontFillWidget} from "./AddDontFillWidget";
 import {AdvancedSettings} from "./AdvancedSettings";
 import {Colorset} from "./Colorset";
+import {LoadingDialog} from "./LoadingDialog/LoadingDialog";
 
 import "./Controls.css"
 
@@ -59,14 +60,20 @@ export class Controls extends React.Component{
                 checkCollision: true
             },
             scenarios: [],
-            colorset: new Colorset()
+            colorset: new Colorset(),
+
+            loading: false,
+            loadingMessage: "Loading...",
         }
     }
     componentDidMount() {
         document.title = "Robot Değilim *-*";
+        this.setState({loading: true, loadingMessage: "Loading..."});
         getAllCourses().then(data => {
             this.setState({allCourses: data});
             this.restoreData();
+            this.setState({loading: false});
+            this.props.onLoadingCompleted();
         });
         if (isMobile){
             document.body.style.zoom = "60%";
@@ -321,16 +328,19 @@ export class Controls extends React.Component{
         });
         //console.log(courseData);
         console.log(dontFills);
-        const calculatedSchedule = compute_schedule(
-            this.state.surname.slice(0,2),
-            this.state.department,
-            0,
-            courseData,
-            dontFills
-        );
-        //console.log(calculatedSchedule);
-        this.setState({scenario: calculatedSchedule});
-        this.handleScheduleComplete(calculatedSchedule);
+        this.setState({loading: true, loadingMessage: "Computing schedule..."});
+        setTimeout(() => {
+            const calculatedSchedule = compute_schedule(
+                this.state.surname.slice(0,2),
+                this.state.department,
+                0,
+                courseData,
+                dontFills
+            );
+            //console.log(calculatedSchedule);
+            this.setState({scenario: calculatedSchedule, loading: false});
+            this.handleScheduleComplete(calculatedSchedule);
+        }, 500);
     }
     render() {
         return (
@@ -449,6 +459,9 @@ export class Controls extends React.Component{
                                    endMin={30}
                                    onDontFillAdd={(startDate, endDate, desc) =>
                                     this.props.onDontFillAdd(startDate, endDate, desc)}/>
+                {
+                    this.state.loading ? <LoadingDialog text={this.state.loadingMessage} /> : null
+                }
             </div>
         )
     }
