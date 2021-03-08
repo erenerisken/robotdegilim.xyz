@@ -1,0 +1,15 @@
+server {
+	listen 3000 default_server;
+	listen [::]:3000 default_server;
+	
+	root /var/www/build;
+	
+	index index.html;
+
+	server_name beta.robotdegilim.xyz;
+
+	location / {
+		add_header Access-Control-Allow-Origin *;
+		try_files $uri $uri/ =404;
+	}
+}
