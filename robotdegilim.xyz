@@ -6,7 +6,7 @@ server {
 	
 	index index.html;
 
-	server_name beta.robotdegilim.xyz;
+	server_name robotdegilim.xyz;
 
 	location / {
 		add_header Access-Control-Allow-Origin *;
