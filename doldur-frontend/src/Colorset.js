@@ -57,6 +57,76 @@ export class Colorset{
                 text: "#000000",
                 textSection: "#FFFFFF"
             },
+            {
+                main: "#2CFFD9",
+                secondary: "#FFFFFF",
+                ternary: "#CCFFF6",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#C3F6FF",
+                secondary: "#FFFFFF",
+                ternary: "#C3F6FF",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#F7DCFF",
+                secondary: "#FFFFFF",
+                ternary: "#F7DCFF",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#F7F3C2",
+                secondary: "#FFFFFF",
+                ternary: "#F7F3C2",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#DDF7D7",
+                secondary: "#FFFFFF",
+                ternary: "#DDF7D7",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#FFA9A9",
+                secondary: "#FFFFFF",
+                ternary: "#FFA9A9",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#FFD39A",
+                secondary: "#FFFFFF",
+                ternary: "#FFD39A",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#B6C5FB",
+                secondary: "#FFFFFF",
+                ternary: "#B6C5FB",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#CAD2D5",
+                secondary: "#FFFFFF",
+                ternary: "#CAD2D5",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
+            {
+                main: "#CCFFF6",
+                secondary: "#FFFFFF",
+                ternary: "#CCFFF6",
+                text: "#000000",
+                textSection: "#FFFFFF"
+            },
         ]
         this.iterator = -1;
     }
