@@ -1,9 +1,8 @@
 .df-widget-wrapper {
-    border-style: groove;
     margin: 6pt;
     padding: 3pt;
     text-align: left;
-    background: aliceblue;
+    background-color: aliceblue;
 }
 
 .add-df-row {
@@ -12,7 +11,7 @@
 }
 
 .df-widget-select {
-    margin: 3pt;
+    margin: auto 3pt;
 }
 
 .df-typo {

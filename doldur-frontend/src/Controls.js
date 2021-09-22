@@ -7,6 +7,7 @@ import {
     FormHelperText,
     MenuItem,
     InputLabel,
+    Paper,
     Snackbar,
     Divider
 } from "@material-ui/core";
@@ -344,7 +345,7 @@ export class Controls extends React.Component{
     }
     render() {
         return (
-            <div className={isMobile ? "control-mobile" : "control-wrapper"}>
+            <Paper style={isMobile ? styles.mobile : styles.desktop}>
                 <Snackbar
                     open={this.state.alertMsg !== ""}
                     autoHideDuration={5000}
@@ -363,6 +364,7 @@ export class Controls extends React.Component{
                             value={this.state.surname}
                             inputProps={{ maxLength: 12 }}
                             variant={"outlined"}
+                            size={'small'}
                             onChange={e => this.setState({surname: e.target.value.toUpperCase()})}
                         />
                     </div>
@@ -374,14 +376,15 @@ export class Controls extends React.Component{
                             value={this.state.department}
                             inputProps={{ maxLength: 12 }}
                             variant={"outlined"}
+                            size={'small'}
                             onChange={e => this.setState({department: e.target.value.toUpperCase()})}
                         />
                     </div>
                 </div>
                 <div className={"control-row"}>
                     <div className={"textfield-wrapper"}>
-                        <FormControl className={"form-control"}>
-                            <InputLabel>Semester</InputLabel>
+                        <FormControl className={"form-control"} variant={"outlined"} size={"small"}>
+                            <InputLabel style={{background: 'white'}}>Semester</InputLabel>
                             <Select
                                 error={this.state.errorSemester}
                                 value={this.state.semester}
@@ -462,7 +465,21 @@ export class Controls extends React.Component{
                 {
                     this.state.loading ? <LoadingDialog text={this.state.loadingMessage} /> : null
                 }
-            </div>
+            </Paper>
         )
     }
+}
+
+const styles = {
+    mobile: {
+        background: "white",
+        margin: 12,
+        width: "100%",
+    },
+    desktop: {
+        background: "white",
+        margin: 12,
+        width: "fit-content",
+        height: "fit-content",
+    },
 }

@@ -1,13 +1,3 @@
-.scheduler-wrapper {
-    margin: 6pt;
-    width: 60%;
-}
-
-.scheduler-mobile {
-    margin: 6pt;
-    width: 100%;
-}
-
 .dayscale-row {
     display: flex;
     flex-direction: row;
@@ -62,7 +52,4 @@
 }
 .program-vertical {
 
-}
-.scheduler-border {
-    border-style: groove;
 }

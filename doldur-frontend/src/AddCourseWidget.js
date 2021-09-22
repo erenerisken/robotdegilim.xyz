@@ -1,5 +1,12 @@
 import React from "react";
-import {TextField, IconButton, FormControl, Select, MenuItem} from "@material-ui/core";
+import {
+    TextField,
+    IconButton,
+    FormControl,
+    Paper,
+    Select,
+    MenuItem
+} from "@material-ui/core";
 import {Autocomplete} from "@material-ui/lab";
 import AddBoxIcon from '@material-ui/icons/AddBox';
 
@@ -21,9 +28,9 @@ export class AddCourseWidget extends React.Component {
     }
     render() {
         return (
-            <div className={"add-course-wrapper"}>
+            <Paper style={styles.paper}>
                 <div className={"add-course-row"}>
-                    <FormControl className={"category-form"} variant={"outlined"}>
+                    <FormControl className={"category-form"} variant={"outlined"} size={"small"}>
                         <Select
                             className={"category-select"}
                             value={this.state.category}
@@ -43,6 +50,7 @@ export class AddCourseWidget extends React.Component {
                         getOptionLabel={(option => option.abbreviation + ": " + option.name)}
                         style={{width: "60%"}}
                         value={this.state.course}
+                        size={"small"}
                         renderInput={(params => <TextField {...params} label={"Course name"} variant={"outlined"}/>)}
                         onChange={(e, v) =>
                             this.setState({course: v})}
@@ -51,7 +59,18 @@ export class AddCourseWidget extends React.Component {
                         <AddBoxIcon fontSize={"large"} color={"primary"} />
                     </IconButton> : null}
                 </div>
-            </div>
+            </Paper>
         )
     }
+}
+
+const styles = {
+    paper: {
+        backgroundColor: 'aliceblue',
+        margin: 15,
+        padding: 9,
+    },
+    whiteBackground: {
+        backgroundColor: 'white',
+    },
 }

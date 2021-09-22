@@ -1,5 +1,13 @@
 import React from "react";
-import {MenuItem, FormControl, Select, Typography, IconButton, TextField} from "@material-ui/core";
+import {
+    MenuItem,
+    FormControl,
+    Paper,
+    Select,
+    Typography,
+    IconButton,
+    TextField
+} from "@material-ui/core";
 import AddBoxIcon from '@material-ui/icons/AddBox';
 
 import "./AddDontFillWidget.css"
@@ -20,7 +28,7 @@ export class AddDontFillWidget extends React.Component{
     renderDayPick(val, onChange){
         return (
             <div className={"df-widget-select"}>
-                <FormControl className={"df-widget-formcontrol"} variant={"outlined"}>
+                <FormControl style={styles.dropdown} variant={"outlined"} size={"small"}>
                     <Select labelId={"df-select-label-day"}
                             id={"df-select-day"}
                             value={val}
@@ -46,7 +54,7 @@ export class AddDontFillWidget extends React.Component{
         }
         return (
             <div className={"df-widget-select"}>
-                <FormControl className={"df-widget-formcontrol"} variant={"outlined"}>
+                <FormControl style={styles.dropdown} variant={"outlined"} size={"small"}>
                     <Select labelId={"df-select-label-min"}
                             id={"df-select-min"}
                             value={val}
@@ -66,7 +74,7 @@ export class AddDontFillWidget extends React.Component{
         }
         return (
             <div className={"df-widget-select"}>
-                <FormControl className={"df-widget-formcontrol"} variant={"outlined"}>
+                <FormControl style={styles.dropdown} variant={"outlined"} size={"small"}>
                     <Select labelId={"df-select-label-min"}
                             id={"df-select-min"}
                             value={val}
@@ -101,7 +109,7 @@ export class AddDontFillWidget extends React.Component{
     }
     render() {
         return (
-            <div className={"df-widget-wrapper"}>
+            <Paper style={styles.paper}>
                 <div className={"add-df-row"}>
                     {this.renderDayPick(this.state.day, val => this.setState({day: val}))}
                     {this.renderHourPick(this.state.startHour,val => this.setState({startHour: val}))}
@@ -126,6 +134,7 @@ export class AddDontFillWidget extends React.Component{
                             value={this.state.description}
                             inputProps={{ maxLength: 8 }}
                             variant={"outlined"}
+                            size={"small"}
                             onChange={e => this.setState({description: e.target.value})}
                         />
                     </div>
@@ -133,7 +142,19 @@ export class AddDontFillWidget extends React.Component{
                         <AddBoxIcon fontSize={"large"} color={"primary"} />
                     </IconButton>
                 </div>
-            </div>
+            </Paper>
         )
+    }
+}
+
+const styles = {
+    paper: {
+        backgroundColor: 'aliceblue',
+        margin: 15,
+        padding: 3,
+    },
+    dropdown: {
+        marginTop: 'auto',
+        marginBottom: 'auto',
     }
 }

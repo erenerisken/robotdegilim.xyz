@@ -21,8 +21,6 @@ import html2canvas from 'html2canvas';
 
 const currentDate = '2021-02-20';
 
-
-
 class DayScaleRow extends React.Component{
     render() {
         return (
@@ -58,10 +56,10 @@ export class WeeklyProgram extends React.Component{
 
     doCapture() {
         window.scrollTo(0, 0);
- 
+
         // Convert the div to image (canvas)
         html2canvas(document.getElementById("screenshot")).then(function (canvas) {
-    
+
             // Get the image data as JPEG and 0.9 quality (0.0 - 1.0)
             console.log(canvas.toDataURL("image/jpeg", 0.9));
             const a = document.createElement('a');
@@ -181,30 +179,27 @@ export class WeeklyProgram extends React.Component{
     }
     render() {
         const data = this.convertToEntry();
-        //console.log(data);
         return (
-            <div className={isMobile ? "scheduler-mobile" : "scheduler-wrapper"}>
-                <div id="screenshot" className={"scheduler-border"}>
-                    <Paper>
-                        <Scheduler
-                            id={"scheduler"}
-                            data={data}
-                        >
-                            <ViewState
-                                currentDate={currentDate}
-                            />
-                            <WeekView
-                                startDayHour={7.667}
-                                endDayHour={17.5}
-                                cellDuration={60}
-                                dayScaleRowComponent={DayScaleRow}
-                                appointmentLayerComponent={this.CustomAppointment}
-                                timeTableCellComponent={this.TimeTableCell}
-                            />
-                            <Appointments appointmentContentComponent={this.AppointmentContent}/>
-                        </Scheduler>
-                    </Paper>
-                </div>
+            <div style={isMobile ? styles.mobile : styles.desktop}>
+                <Paper id="screenshot">
+                    <Scheduler
+                        id={"scheduler"}
+                        data={data}
+                    >
+                        <ViewState
+                            currentDate={currentDate}
+                        />
+                        <WeekView
+                            startDayHour={7.667}
+                            endDayHour={17.5}
+                            cellDuration={60}
+                            dayScaleRowComponent={DayScaleRow}
+                            appointmentLayerComponent={this.CustomAppointment}
+                            timeTableCellComponent={this.TimeTableCell}
+                        />
+                        <Appointments appointmentContentComponent={this.AppointmentContent}/>
+                    </Scheduler>
+                </Paper>
                 <div className={"program-vertical"}>
                     {this.props.scenarios.length > 0?
                     <div className={"program-row"}>
@@ -253,4 +248,15 @@ export class WeeklyProgram extends React.Component{
             </div>
         );
     }
+}
+
+const styles = {
+    mobile: {
+        margin: 12,
+        width: "100%",
+    },
+    desktop: {
+        margin: 12,
+        width: "60%",
+    },
 }
