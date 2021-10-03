@@ -27,12 +27,9 @@ export class WelcomeDialog extends React.Component{
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id={"alert-dialog-description"}>
-                        Nasıl ders çakışmasına bu site gibi bir çözüm bulduysak, diğer sorunlara da beraber çözüm bulabiliriz.
-                        Uzaktan eğitimin sorunlarına çözüm bulmak için gelin, siz de fikirlerinizi anketi doldurarak,
-                        doldurtarak bizimle paylaşın.
+                        Course data is updated for Fall-2021!
                         <br/>
-                        <br/>
-                        Anket Linki : <a href={"https://forms.gle/B72tScNCGypExQN3A"}>https://forms.gle/B72tScNCGypExQN3A</a>
+                        Have a nice semester 🙃
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
