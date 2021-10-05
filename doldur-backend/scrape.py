@@ -178,4 +178,4 @@ for dept in dept_codes:
 
 # before returning, add abbreviations
 json.dump(out, open(out_file, "w"))
-json.dump({"last_updated": round(time.time() * 1000)}, open("last_updated.json", "w"))
+json.dump({"lastUpdated": int(round(time.time() * 1000))}, open("last_updated.json", "w"))
