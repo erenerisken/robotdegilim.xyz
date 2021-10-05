@@ -2,6 +2,7 @@
 import os, re
 import json
 import requests
+import time
 
 # this scrapes oibs64 for all the course data.
 # see data_spec.md for interpreting out_file.
@@ -177,3 +178,4 @@ for dept in dept_codes:
 
 # before returning, add abbreviations
 json.dump(out, open(out_file, "w"))
+json.dump({"last_updated": round(time.time() * 1000)}, open("last_updated.json", "w"))

@@ -9,7 +9,8 @@ import {
     InputLabel,
     Paper,
     Snackbar,
-    Divider
+    Typography,
+    Divider,
 } from "@material-ui/core";
 import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
@@ -21,6 +22,7 @@ import ls from "local-storage";
 
 import {getAllCourses, getMusts} from "./data/Course";
 import {compute_schedule} from "./schedule";
+import {Client} from "./Client";
 import {CourseCard} from "./CourseCard";
 import {AddCourseWidget} from "./AddCourseWidget";
 import {AddDontFillWidget} from "./AddDontFillWidget";
@@ -63,9 +65,13 @@ export class Controls extends React.Component{
             scenarios: [],
             colorset: new Colorset(),
 
+            lastUpdated: 0,
+
             loading: false,
             loadingMessage: "Loading...",
         }
+
+        this.client = new Client();
     }
     componentDidMount() {
         document.title = "Robot Değilim *-*";
@@ -76,6 +82,7 @@ export class Controls extends React.Component{
             this.setState({loading: false});
             this.props.onLoadingCompleted();
         });
+        this.client.getLastUpdated().then(lastUpdated => this.setState({ lastUpdated }));
         if (isMobile){
             document.body.style.zoom = "60%";
         }
@@ -465,6 +472,17 @@ export class Controls extends React.Component{
                 {
                     this.state.loading ? <LoadingDialog text={this.state.loadingMessage} /> : null
                 }
+                {
+                    this.state.lastUpdated ?
+                        <Typography>
+                            {
+                                "Course data is updated " +
+                                Math.floor((new Date() - this.state.lastUpdated) / 1000 / 60) +
+                                " minutes ago"
+                            }
+                        </Typography> :
+                        null
+                }
             </Paper>
         )
     }
@@ -475,11 +493,13 @@ const styles = {
         background: "white",
         margin: 12,
         width: "100%",
+        paddingBottom: 12,
     },
     desktop: {
         background: "white",
         margin: 12,
         width: "fit-content",
         height: "fit-content",
+        paddingBottom: 12,
     },
 }

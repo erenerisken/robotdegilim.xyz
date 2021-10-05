@@ -3,7 +3,13 @@ import axios from "axios";
 export class Client{
     constructor() {
         this.coursesUrl = "https://robotdegilim.xyz/data.json";
+        this.lastUpdatedUrl = "https://robotdegilim.xyz/last_updated.json";
         this.mustUrl = "https://robotdegilim.xyz/musts.json";
+    }
+    async getLastUpdated() {
+        const data = (await axios.get(this.lastUpdatedUrl)).data;
+        console.log("Last updated = " + data.lastUpdated);
+        return data.lastUpdated;
     }
     async getMusts(dept, semester){
         const data = (await axios.get(this.mustUrl)).data;
