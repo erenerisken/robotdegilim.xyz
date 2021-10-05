@@ -130,11 +130,19 @@ export class Colorset{
         ]
         this.iterator = -1;
     }
-    getNextColor(){
+    getNextColor() {
         if (this.colors.length <= 0){
             return {main: 0, secondary: 0, ternary: 0};
         }
         this.iterator = (this.iterator+1)%this.colors.length;
+        return this.colors[this.iterator];
+    }
+
+    getPreviousColor() {
+        if (this.colors.length <= 0){
+            return {main: 0, secondary: 0, ternary: 0};
+        }
+        this.iterator = this.iterator > 0 ? this.iterator - 1 : this.colors.length - 1;
         return this.colors[this.iterator];
     }
 }

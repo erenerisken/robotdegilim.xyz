@@ -103,8 +103,15 @@ export class CourseAdvancedSettings extends React.Component{
                                         color={"primary"}
                                         startIcon={<PaletteIcon />}
                                         style={{marginTop: "6pt"}}
-                                        onClick={() => this.props.onColorChange()}>
-                                    Change Color
+                                        onClick={() => this.props.onPreviousColor()}>
+                                    Prev Color
+                                </Button>
+                                <Button variant={"contained"}
+                                        color={"primary"}
+                                        startIcon={<PaletteIcon />}
+                                        style={{marginTop: "6pt", marginLeft: "6pt"}}
+                                        onClick={() => this.props.onNextColor()}>
+                                    Next Color
                                 </Button>
                             </div>
                         </div>

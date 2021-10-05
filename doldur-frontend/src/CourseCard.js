@@ -38,8 +38,11 @@ export class CourseCard extends React.Component {
     handleSettingsChange(settings){
         this.props.onSettingsChange(settings);
     }
-    handleColorChange(){
+    handleNextColor(){
         this.props.onColorChange(this.state.colorset.getNextColor());
+    }
+    handlePreviousColor(){
+        this.props.onColorChange(this.state.colorset.getPreviousColor());
     }
     toggleSections(){
         const newSelectedSections = Array(this.state.sectionCount).fill(!this.state.selectedSections[0]);
@@ -138,7 +141,8 @@ export class CourseCard extends React.Component {
                                 <div>
                                     <CourseAdvancedSettings color={this.props.color}
                                                             onSettingsChange={(s) => this.handleSettingsChange(s)}
-                                                            onColorChange={() => this.handleColorChange()}
+                                                            onNextColor={() => this.handleNextColor()}
+                                                            onPreviousColor={() => this.handlePreviousColor()}
                                                             settings={this.props.settings}/>
                                 </div>
                                 <Divider />
