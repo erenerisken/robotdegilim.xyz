@@ -128,7 +128,17 @@ export class Colorset{
                 textSection: "#FFFFFF"
             },
         ]
+        this.blackDontFill = {
+            main: "#000000",
+            secondary: "#FFFFFF",
+            ternary: "#000000",
+            text: "#FFFFFF",
+            textSection: "#FFFFFF"
+        };
         this.iterator = -1;
+    }
+    getBlack() {
+        return this.blackDontFill;
     }
     getNextColor() {
         if (this.colors.length <= 0){

@@ -8,21 +8,15 @@
 }
 .program-row {
     display: inline-flex;
-    width: fit-content;
+    width: 100%;
     height: fit-content;
-    margin-right: auto;
-    margin-left: auto;
-
 }
 .program-typo-wrapper {
     margin-top: auto;
     margin-bottom: auto;
 }
 .program-textfield-wrapper {
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: 6pt;
-    margin-right: 6pt;
+    margin: auto 6pt;
 }
 
 .program-textfield {
@@ -49,6 +43,8 @@
 .program-title-dont-fill {
     margin-top: auto;
     margin-bottom: auto;
+    text-align: center;
+    flex-grow: 1;
 }
 .program-vertical {
 

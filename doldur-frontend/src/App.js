@@ -7,6 +7,7 @@ import {WelcomeDialog} from "./WelcomeDialog";
 import {Banner} from "./Banner";
 
 import './App.css';
+import {Colorset} from "./Colorset";
 
 const theme = createMuiTheme({
     palette: {
@@ -25,13 +26,16 @@ class App extends React.Component{
 
             loaded: false,
         }
+
+        this.dontFillColorset = new Colorset();
     }
     handleDontFillAdd(startDate, endDate, description){
         const newDontFills = this.state.dontFills.slice(0);
         newDontFills.push({
             startDate: startDate,
             endDate: endDate,
-            description: description
+            description: description,
+            color: this.dontFillColorset.getBlack(),
         });
         this.setState({dontFills: newDontFills});
     }
@@ -40,6 +44,21 @@ class App extends React.Component{
     }
     handleLoadingCompleted() {
         this.setState({loaded: true});
+    }
+    handleChangeDontFillColor(startDate) {
+        const dontFills = this.state.dontFills.slice(0);
+        this.setState({
+            dontFills: dontFills.map(df => {
+                if (df.startDate === startDate) {
+                    return {
+                        ...df,
+                        color: this.dontFillColorset.getNextColor(),
+                    }
+                } else {
+                    return df;
+                }
+            })
+        });
     }
     render() {
         //console.log(this.state.scenarios);
@@ -53,6 +72,7 @@ class App extends React.Component{
                                    scenarios={this.state.scenarios}
                                    onDontFillAdd={(startDate, endDate, desc) =>
                                        this.handleDontFillAdd(startDate, endDate, desc)}
+                                   onChangeDontFillColor={startDate => this.handleChangeDontFillColor(startDate)}
                                    onDontFillDelete={startDate => this.handleDontFillDelete(startDate)}/>
                     <Controls onSchedule={s => this.setState({scenarios: s})}
                               dontFills={this.state.dontFills}

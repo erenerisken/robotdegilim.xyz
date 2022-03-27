@@ -1,11 +1,12 @@
 import React from "react";
-import {Paper, IconButton, Typography, TextField, Button} from "@material-ui/core";
+import {Paper, IconButton, Typography, TextField, Button, Tooltip} from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
 import FastRewindIcon from '@material-ui/icons/FastRewind';
 import PhotoCameraIcon from '@material-ui/icons/PhotoCamera';
 import FastForwardIcon from '@material-ui/icons/FastForward';
+import PaletteIcon from '@material-ui/icons/Palette';
 import {ViewState} from "@devexpress/dx-react-scheduler";
 import {
     Scheduler,
@@ -84,6 +85,9 @@ export class WeeklyProgram extends React.Component{
     handleDontFillAdd(startDate, endDate){
         this.props.onDontFillAdd(startDate, endDate, "FULL");
     }
+    handleChangeDontFillColor(startDate) {
+        this.props.onChangeDontFillColor(startDate);
+    }
     convertTime(day, hour, min){
         //example : '2021-02-20T09:40'
         return "2021-02-" + (14 + day) + "T" + (hour < 10 ? "0" : "") + hour + ":" + (min < 10 ? "0" : "") + min;
@@ -125,8 +129,8 @@ export class WeeklyProgram extends React.Component{
                 type: "dontFill",
                 title: df.description,
                 color: {
-                    main: "#000000",
-                    text: "#FFFFFF"
+                    main: df.color.main,
+                    text: df.color.text,
                 },
                 startDate: df.startDate,
                 endDate: df.endDate
@@ -154,15 +158,24 @@ export class WeeklyProgram extends React.Component{
                         </div>
                     </div> :
                     <div className={"program-text-container"}>
-                        <div className={"program-row"}>
-                            <IconButton
-                                        onClick={() => this.props.onDontFillDelete(data.startDate)}>
-                                <CloseIcon className={"dont-fill-button"} fontSize={"small"} color={"secondary"}/>
-                            </IconButton>
-                            <div className={"program-title-dont-fill"} style={{color: data.color.text}}>
-                                {data.title}
+                        <Tooltip title={data.title}>
+                            <div className={"program-row"}>
+                                <IconButton
+                                    onClick={() => this.props.onDontFillDelete(data.startDate)}
+                                    style={{padding: 0, marginLeft: 9}}
+                                >
+                                    <CloseIcon className={"dont-fill-button"} fontSize={"small"} style={{color: data.color.text}}/>
+                                </IconButton>
+                                <div className={"program-title-dont-fill"} style={{color: data.color.text}}>
+                                    {data.title}
+                                </div>
+                                <IconButton style={{padding: 0, marginLeft: 9}}
+                                            onClick={() => this.handleChangeDontFillColor(data.startDate)}
+                                >
+                                    <PaletteIcon className={"dont-fill-button"} fontSize={"small"} style={{color: data.color.text}} />
+                                </IconButton>
                             </div>
-                        </div>
+                        </Tooltip>
                     </div>}
             </Appointments.AppointmentContent>
         )
