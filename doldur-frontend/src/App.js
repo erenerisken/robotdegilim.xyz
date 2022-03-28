@@ -60,6 +60,21 @@ class App extends React.Component{
             })
         });
     }
+    handleChangeDontFillDescription(startDate, newDescription) {
+        const dontFills = this.state.dontFills.slice(0);
+        this.setState({
+            dontFills: dontFills.map(df => {
+                if (df.startDate === startDate) {
+                    return {
+                        ...df,
+                        description: newDescription,
+                    }
+                } else {
+                    return df;
+                }
+            })
+        });
+    }
     render() {
         //console.log(this.state.scenarios);
         return (
@@ -73,6 +88,8 @@ class App extends React.Component{
                                    onDontFillAdd={(startDate, endDate, desc) =>
                                        this.handleDontFillAdd(startDate, endDate, desc)}
                                    onChangeDontFillColor={startDate => this.handleChangeDontFillColor(startDate)}
+                                   onChangeDontFillDescription={(startDate, newDescription) =>
+                                       this.handleChangeDontFillDescription(startDate, newDescription)}
                                    onDontFillDelete={startDate => this.handleDontFillDelete(startDate)}/>
                     <Controls onSchedule={s => this.setState({scenarios: s})}
                               dontFills={this.state.dontFills}

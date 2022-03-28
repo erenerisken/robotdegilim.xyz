@@ -8,8 +8,16 @@
 }
 .program-row {
     display: inline-flex;
+    width: fit-content;
+    height: fit-content;
+    margin-right: auto;
+    margin-left: auto;
+}
+.program-row-df {
+    display: inline-flex;
     width: 100%;
     height: fit-content;
+    margin: auto;
 }
 .program-typo-wrapper {
     margin-top: auto;
@@ -35,10 +43,10 @@
 }
 .program-text-container {
     width: 100%;
-    margin: auto;
 }
-.dont-fill-button {
-    margin-left: -10pt;
+.program-text-container-df {
+    width: 100%;
+    margin: auto;
 }
 .program-title-dont-fill {
     margin-top: auto;
@@ -48,4 +56,12 @@
 }
 .program-vertical {
 
+}
+
+.program-title-bottom {
+    margin-top: -5px;
+}
+
+.df-description-text-field {
+    flex-grow: 1;
 }

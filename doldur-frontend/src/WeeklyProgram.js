@@ -1,5 +1,5 @@
 import React from "react";
-import {Paper, IconButton, Typography, TextField, Button, Tooltip} from "@material-ui/core";
+import {Paper, IconButton, Typography, TextField, Button} from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
@@ -46,6 +46,61 @@ class DayScaleRow extends React.Component{
     }
 }
 
+class DontFillBlock extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            editing: false,
+        };
+    }
+
+    handleDescriptionChange(e) {
+        this.props.onChangeDontFillDescription(e.target.value);
+    }
+
+    handleTextFieldKeyDown(e) {
+        if (e.keyCode === 13) {
+            this.setState({editing: false});
+        }
+    }
+
+    render() {
+        return (
+            <div className={"program-text-container-df"}>
+                <div className={"program-row-df"}>
+                    <IconButton
+                        onClick={() => this.props.onDontFillDelete()}
+                        style={{padding: 0}}
+                    >
+                        <CloseIcon fontSize={"small"} style={{color: this.props.data.color.text}}/>
+                    </IconButton>
+                    {
+                        this.state.editing ?
+                            <TextField value={this.props.data.title}
+                                       className={"df-description-text-field"}
+                                       InputProps={{style: {color: this.props.data.color.text}}}
+                                       onChange={e => this.handleDescriptionChange(e)}
+                                       onKeyDown={e => this.handleTextFieldKeyDown(e)}
+                                       onBlur={() => this.setState({editing: false})}
+                            /> :
+                            <div className={"program-title-dont-fill"}
+                                 style={{color: this.props.data.color.text}}
+                                 onClick={() => this.setState({editing: true})}
+                            >
+                                {this.props.data.title}
+                            </div>
+                    }
+                    <IconButton style={{padding: 0}}
+                                onClick={() => this.props.onChangeDontFillColor()}
+                    >
+                        <PaletteIcon fontSize={"small"} style={{color: this.props.data.color.text}} />
+                    </IconButton>
+                </div>
+            </div>
+        );
+    }
+}
+
 export class WeeklyProgram extends React.Component{
     constructor(props) {
         super(props);
@@ -88,6 +143,9 @@ export class WeeklyProgram extends React.Component{
     handleChangeDontFillColor(startDate) {
         this.props.onChangeDontFillColor(startDate);
     }
+    handleChangeDontFillDescription(startDate, newDescription) {
+        this.props.onChangeDontFillDescription(startDate, newDescription);
+    }
     convertTime(day, hour, min){
         //example : '2021-02-20T09:40'
         return "2021-02-" + (14 + day) + "T" + (hour < 10 ? "0" : "") + hour + ":" + (min < 10 ? "0" : "") + min;
@@ -117,8 +175,8 @@ export class WeeklyProgram extends React.Component{
                         title: c.abbreviation,
                         section: c.section.sectionNumber,
                         classroom: lt.classroom !== undefined ? lt.classroom : "-",
-                        startDate: this.convertTime(lt.day, i, lt.startMin),
-                        endDate: this.convertTime(lt.day, i+1, lt.endMin),
+                        startDate: this.convertTime(lt.day, i, lt.startMin + 3),
+                        endDate: this.convertTime(lt.day, i+1, lt.endMin + 5),
                         color: c.color
                     })
                 }
@@ -147,36 +205,25 @@ export class WeeklyProgram extends React.Component{
         return (
             <Appointments.AppointmentContent data={data}
                                              {...restProps}
-                                             className={"program-appointment"} style={{background: data.color.main}}>
+                                             className={"program-appointment"}
+                                             style={{background: data.color.main}}>
                 {data.type === "course"?
                     <div className={"program-text-container"}>
                         <div className={"program-title"} style={{color: data.color.text}}>
                             {data.title + "/" + data.section}
                         </div>
-                        <div className={"program-title"} style={{color: data.color.text}}>
+                        <div className={"program-title-bottom"} style={{color: data.color.text}}>
                             {data.classroom}
                         </div>
                     </div> :
-                    <div className={"program-text-container"}>
-                        <Tooltip title={data.title}>
-                            <div className={"program-row"}>
-                                <IconButton
-                                    onClick={() => this.props.onDontFillDelete(data.startDate)}
-                                    style={{padding: 0, marginLeft: 9}}
-                                >
-                                    <CloseIcon className={"dont-fill-button"} fontSize={"small"} style={{color: data.color.text}}/>
-                                </IconButton>
-                                <div className={"program-title-dont-fill"} style={{color: data.color.text}}>
-                                    {data.title}
-                                </div>
-                                <IconButton style={{padding: 0, marginLeft: 9}}
-                                            onClick={() => this.handleChangeDontFillColor(data.startDate)}
-                                >
-                                    <PaletteIcon className={"dont-fill-button"} fontSize={"small"} style={{color: data.color.text}} />
-                                </IconButton>
-                            </div>
-                        </Tooltip>
-                    </div>}
+                    <DontFillBlock
+                        data={data}
+                        onDontFillDelete={() => this.props.onDontFillDelete(data.startDate)}
+                        onChangeDontFillColor={() => this.handleChangeDontFillColor(data.startDate)}
+                        onChangeDontFillDescription={(newDescription) =>
+                            this.handleChangeDontFillDescription(data.startDate, newDescription)}
+                    />
+                    }
             </Appointments.AppointmentContent>
         )
     }
