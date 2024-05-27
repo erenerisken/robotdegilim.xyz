@@ -2,9 +2,10 @@ import axios from "axios";
 
 export class Client{
     constructor() {
-        this.coursesUrl = "https://robotdegilim.xyz/data.json";
-        this.lastUpdatedUrl = "https://robotdegilim.xyz/last_updated.json";
-        this.mustUrl = "https://robotdegilim.xyz/musts.json";
+        // @todo: Push these into S3 CDN
+        this.coursesUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/data.json";
+        this.lastUpdatedUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/last_updated.json";
+        this.mustUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/musts.json";
     }
     async getLastUpdated() {
         const data = (await axios.get(this.lastUpdatedUrl)).data;
