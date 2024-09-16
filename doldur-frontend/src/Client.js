@@ -1,5 +1,4 @@
 import axios from "axios";
-
 export class Client{
     constructor() {
         // @todo: Push these into S3 CDN

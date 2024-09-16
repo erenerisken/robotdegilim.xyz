@@ -15,6 +15,7 @@ import {
 import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
 import EventAvailableIcon from '@material-ui/icons/EventAvailable';
+import Delete from "@material-ui/icons/Delete";
 import SaveIcon from '@material-ui/icons/Save';
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import {isMobile} from "react-device-detect";
@@ -350,6 +351,9 @@ export class Controls extends React.Component{
             this.handleScheduleComplete(calculatedSchedule);
         }, 500);
     }
+    handleClearCourses(){
+        this.setState({ selectedCourses: [] });
+    }
     render() {
         return (
             <Paper style={isMobile ? styles.mobile : styles.desktop}>
@@ -399,7 +403,7 @@ export class Controls extends React.Component{
                             >
                                 {this.renderSemesterSelections(8)}
                             </Select>
-                            <FormHelperText>Ex: 2nd year Fall semester -> 3</FormHelperText>
+                            <FormHelperText>Ex: 2nd year Fall semester -{">"} 3</FormHelperText>
                         </FormControl>
                     </div>
                     <div className={"control-button"}>
@@ -418,6 +422,15 @@ export class Controls extends React.Component{
                             startIcon={<EventAvailableIcon />}
                             onClick={() => this.handleScheduleBegin()}>
                             Schedule
+                        </Button>
+                    </div>
+                    <div className={"control-button"}>
+                        <Button
+                            variant={"contained"}
+                            style={{backgroundColor:"red", color:"white"}}
+                            startIcon={<Delete style={{color:"white"}}/>}
+                            onClick={()=>this.handleClearCourses()}>
+                            Clear
                         </Button>
                     </div>
                 </div>

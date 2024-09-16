@@ -1,41 +1,96 @@
-import os, re
-import json
 import requests
+import sys
+from bs4 import BeautifulSoup
+import logging
+import os
+import json
+from constants import *
+from datetime import datetime
 
-# this fetches catalog.metu.edu.tr for undergraduate curricula- "must" courses.
+# Configure logging to output to both file and terminal
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("musts.log",encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
 
-out_file="musts.json"
+from musts_helpers import *
+from helpers import *
 
-# pretend we are not a broken python script
-headers = requests.utils.default_headers()
-headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 7.0; Win64; x64; rv:3.0b2pre) Gecko/20110203 Firefox/4.0b12pre",
-			"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"})
+# If does not exist creates export folder
+create_folder(export_folder)
 
-# get the curriculum of a given program
-s = requests.Session()
-def get_curr(dept):
-	return s.get("http://catalog.metu.edu.tr/program.php?fac_prog=%s" % dept,
-					headers=headers).content.decode("utf-8",errors="replace")
+# Start a session for making requests
+session = requests.Session()
 
-prefixes={'423':u'MHED','459': u'BED', '573': u'FDE', '312': u'BA', '311': u'ECON', '310': u'ADM', '454': u'EDS', '316': u'BAS', '315': u'GIA', '314': u'IR', '238': u'BIOL', '234': u'CHEM', '236': u'MATH', '230': u'PHYS', '232': u'SOC', '233': u'PSY', '797': 'EEE', '791': 'AUTO', '356': u'EEE', '453': u'PES', '799': 'ENOT', '798': u'ENEL', '450': u'FLE', '572': u'AEE', '366': u'EFL', '367': u'CHME', '364': u'CVE', '365': u'MECH', '571': u'CENG', '352': u'ECO', '568': u'IE', '569': u'ME', '570': u'METE', '351': 'BUSD', '560': u'ENVE', '561': u'ES', '562': u'CE', '563': u'CHE', '564': u'GEOE', '565': u'MINE', '566': u'PETE', '567': u'EE', '120': u'ARCH', '421': 'PHED', '246': u'STAT', '241': u'PHIL', '125': u'ID', '219': u'GENE', '422': 'CHED', '121': u'CRP', '451': u'TEFL', '378': u'GPC', '355': u'CNG', '354': u'PSIR', '353': u'BUS', '411': u'ECE', '412': 'ESE', '413': 'EME', '371': u'PSYC', '384': u'ASE', '376': u'CTE', '374': u'PNGE', '430': u'CEIT', '240': u'HIST'}
+# Get departments JSON file as dictionary
+departments=get_departments()
+total_departments = len(departments)
 
-# we dice the response into semesters, cut away the elective courses
-# and get the course codes with this majestic RE
-ccode_prog=re.compile("course.php\?prog=[0-9]*&course_code=([0-9]*)")
-out={}
-for dcode in prefixes:
-	text = get_curr(dcode)
-	raw_terms = [a.split("colspan")[0] for a in text.split("<table>")[1:]]
-	node = {}
-	for i, term in enumerate(raw_terms):
-		node[str(i+1)] = [code for code in ccode_prog.findall(term)]
-		a=0
-		while a < len(node[str(i+1)]):
-			if node[str(i+1)][a][:3] == "877" or node[str(i+1)][a][:3] == "387" or node[str(i+1)][a] == "9010100":
-				del node[str(i+1)][a]
-				a-=1
-			a+=1
-	print(node)
-	out[prefixes[dcode]] = node
+data={}
+logging.info("Process of fetching must courses has started")
+# Iterate over department codes
+for i, dept_code in enumerate(departments.keys(), start=1):
+    # Skip departments without prefixes
+    if departments[dept_code]['p'] in ['-no course-','-','']:
+        logging.warning(f"Skipping department {dept_code} due to no courses.")
+        continue
+    
+    logging.info(f"Processing department {i}/{total_departments} ({departments[dept_code]['n']})")
+    
+    # Fetch the department page
+    response=get_department_page(session,dept_code)
+    if not response:
+        continue
+    
+    # Export response HTML for debugging
+    #export_string(response.text,'main.html')
+    
+    # Parse the department page
+    dept_soup=BeautifulSoup(response.text,'html.parser')
+    
+    dept_node={}
+    try:
+        semester_tables = dept_soup.find('div', {'class': 'field-body'}).find_all('table')
+    except Exception as e:
+        logging.error(f"Failed to find course tables for department {dept_code}: {e}")
+        data[departments[dept_code]['p']]=dept_node
+        continue
 
-json.dump(out, open(out_file, "w"))
+    # Skip the last table
+    semester_tables=semester_tables[:-1]
+
+    for sem_no,semester_table in enumerate(semester_tables):
+        courses=[]
+        rows=semester_table.find_all('tr')
+        if not rows:
+            continue
+        rows=rows[1:]
+
+        for row in rows:
+            cells=row.find_all('td')
+            if not cells:
+                continue
+            if len(cells)!=6:
+                break
+
+            course_link=cells[0].find('a')
+            if course_link:
+                course_link=course_link.get('href')
+                course_code=extract_course_code(course_link)
+                courses.append(course_code)
+
+        dept_node[sem_no]=courses
+
+    data[departments[dept_code]['p']]=dept_node
+
+logging.info("Process of fetching must courses has ended")
+# Export data to a JSON file
+current_datetime = datetime.now()
+data_path = os.path.join(export_folder, musts_out_name)
+with open(data_path, "w", encoding="utf-8") as data_file:
+    json.dump(data, data_file, ensure_ascii=False, indent=4)
+logging.info(f"Must Course data exported to: {data_path}")
