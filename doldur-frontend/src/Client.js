@@ -2,10 +2,12 @@ import axios from "axios";
 
 export class Client{
     constructor() {
+        const cacheBuster = Math.random().toString(36).substring(2, 15);
+
         // @todo: Push these into S3 CDN
-        this.coursesUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/data.json";
-        this.lastUpdatedUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/last_updated.json";
-        this.mustUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/musts.json";
+        this.coursesUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/data.json?cb=" + cacheBuster;
+        this.lastUpdatedUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/last_updated.json?cb=" + cacheBuster;
+        this.mustUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/musts.json?cb=" + cacheBuster;
     }
     async getLastUpdated() {
         const data = (await axios.get(this.lastUpdatedUrl)).data;
