@@ -1,0 +1,37 @@
+name: Update JSON Files
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          cd doldur-backend
+          pip install -r requirements.txt
+
+      - name: Run scrape script
+        run: |
+          cd doldur-backend
+          python scrape.py
+
+      - name: Commit and push JSON files
+        run: |
+          git config --local user.name "GitHub Actions Bot"
+          git config --local user.email "actions@github.com"
+          git add doldur-backend/data.json doldur-backend/last_updated.json
+          git commit -m "Update data.json and last_updated.json"
+          git push origin master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -27,7 +27,7 @@ export class WelcomeDialog extends React.Component{
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id={"alert-dialog-description"}>
-                        Course data is updated for new semester 🙃
+                        Bir süredir yoktum demişler öldü, şimdi yazsınlar bakalım kral geri döndü
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
