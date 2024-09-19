@@ -1,23 +1,24 @@
 import axios from "axios";
 
-export class Client{
+export class Client {
     constructor() {
         // @todo: Push these into S3 CDN
-        this.coursesUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/data.json";
-        this.lastUpdatedUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/last_updated.json";
-        this.mustUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/musts.json";
+        this.coursesUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/data.json";
+        this.lastUpdatedUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/lastUpdated.json";
+        this.mustUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/musts.json";
+        this.departments="https://s3.amazonaws.com/cdn.robotdegilim.xyz/departments.json"
     }
     async getLastUpdated() {
         const data = (await axios.get(this.lastUpdatedUrl)).data;
-        console.log("Last updated = " + data.lastUpdated);
-        return data.lastUpdated;
+        console.log("Last updated = " + data);
+        return data;
     }
-    async getMusts(dept, semester){
+    async getMusts(dept, semester) {
         const data = (await axios.get(this.mustUrl)).data;
         console.log(data);
         return data[dept][semester.toString()];
     }
-    async getCourses(){
+    async getCourses() {
         const data = (await axios.get(this.coursesUrl)).data;
         const courses = Array(0);
         // eslint-disable-next-line
@@ -25,7 +26,7 @@ export class Client{
             const courseToPush = {
                 code: code,
                 abbreviation: data[code]["Course Name"].slice(0, data[code]["Course Name"].search(" ")),
-                name: data[code]["Course Name"].slice(data[code]["Course Name"].search("-")+2),
+                name: data[code]["Course Name"].slice(data[code]["Course Name"].search("-") + 2),
                 category: 0,
                 sections: Array(0)
             };
@@ -47,9 +48,9 @@ export class Client{
                         classroom: t["p"],
                         day: t["d"],
                         startHour: parseInt(t["s"].slice(0, t["s"].search(":"))),
-                        startMin: parseInt(t["s"].slice(t["s"].search(":")+1)),
+                        startMin: parseInt(t["s"].slice(t["s"].search(":") + 1)),
                         endHour: parseInt(t["e"].slice(0, t["e"].search(":"))),
-                        endMin: parseInt(t["e"].slice(t["e"].search(":")+1)),
+                        endMin: parseInt(t["e"].slice(t["e"].search(":") + 1)),
                     });
                 });
                 // eslint-disable-next-line

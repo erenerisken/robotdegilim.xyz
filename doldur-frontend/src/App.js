@@ -45,14 +45,14 @@ class App extends React.Component{
     handleLoadingCompleted() {
         this.setState({loaded: true});
     }
-    handleChangeDontFillColor(startDate) {
+    handleChangeDontFillColor(startDate,color) {
         const dontFills = this.state.dontFills.slice(0);
         this.setState({
             dontFills: dontFills.map(df => {
                 if (df.startDate === startDate) {
                     return {
                         ...df,
-                        color: this.dontFillColorset.getNextColor(),
+                        color: color,
                     }
                 } else {
                     return df;
@@ -87,7 +87,7 @@ class App extends React.Component{
                                    scenarios={this.state.scenarios}
                                    onDontFillAdd={(startDate, endDate, desc) =>
                                        this.handleDontFillAdd(startDate, endDate, desc)}
-                                   onChangeDontFillColor={startDate => this.handleChangeDontFillColor(startDate)}
+                                   onChangeDontFillColor = {(startDate,color) => this.handleChangeDontFillColor(startDate,color)}
                                    onChangeDontFillDescription={(startDate, newDescription) =>
                                        this.handleChangeDontFillDescription(startDate, newDescription)}
                                    onDontFillDelete={startDate => this.handleDontFillDelete(startDate)}/>
