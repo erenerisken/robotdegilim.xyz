@@ -2,11 +2,13 @@ import axios from "axios";
 
 export class Client {
     constructor() {
-        // @todo: Push these into S3 CDN
+        // S3 urls
         this.coursesUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/data.json";
         this.lastUpdatedUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/lastUpdated.json";
         this.mustUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/musts.json";
-        this.departments="https://s3.amazonaws.com/cdn.robotdegilim.xyz/departments.json"
+        this.departmentsUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/departments.json"
+        this.statusUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/status.json"
+        this.scrapeUrl="https://robotdegilim-xyz.fly.dev/run-scrape"
     }
     async getLastUpdated() {
         const data = (await axios.get(this.lastUpdatedUrl)).data;
@@ -69,4 +71,27 @@ export class Client {
         });
         return courses;
     }
+
+    async sendUpdateRequest() {
+        try {
+            // Fetch the status from S3
+            const statusResponse = await axios.get(this.statusUrl);
+            const statusData = statusResponse.data;
+    
+            // Check if the status is 'idle'
+            if (statusData.status === 'idle') {
+                // Send request to the backend to start the scraping
+                const updateResponse = await axios.get(this.scrapeUrl);
+                const updateData = updateResponse.data; // No need for .json() with axios
+                console.log('Response of Update request:', updateData);
+                // Handle response data or update component state if needed
+            } else {
+                console.log('Status is not idle. No update request sent.');
+            }
+        } catch (error) {
+            console.error('Failed to send update request:', error);
+            // Handle errors
+        }
+    }    
+
 }

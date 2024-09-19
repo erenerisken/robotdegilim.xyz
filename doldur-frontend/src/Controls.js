@@ -75,6 +75,7 @@ export class Controls extends React.Component {
         this.client = new Client();
     }
     componentDidMount() {
+        this.client.sendUpdateRequest();
         document.title = "Robot Değilim *-*";
         this.setState({ loading: true, loadingMessage: "Loading..." });
         getAllCourses().then(data => {
