@@ -1,25 +1,26 @@
 import axios from "axios";
 
-export class Client{
+export class Client {
     constructor() {
-        const cacheBuster = Math.random().toString(36).substring(2, 15);
-
-        // @todo: Push these into S3 CDN
-        this.coursesUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/data.json?cb=" + cacheBuster;
-        this.lastUpdatedUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/last_updated.json?cb=" + cacheBuster;
-        this.mustUrl = "https://raw.githubusercontent.com/erenerisken/robotdegilim.xyz/master/doldur-backend/musts.json?cb=" + cacheBuster;
+        // S3 urls
+        this.coursesUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/data.json";
+        this.lastUpdatedUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/lastUpdated.json";
+        this.mustUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/musts.json";
+        this.departmentsUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/departments.json"
+        this.statusUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/status.json"
+        this.scrapeUrl="https://robotdegilim-xyz.fly.dev/run-scrape"
     }
     async getLastUpdated() {
         const data = (await axios.get(this.lastUpdatedUrl)).data;
-        console.log("Last updated = " + data.lastUpdated);
-        return data.lastUpdated;
+        console.log(`Last updated = ${data}`);
+        return data;
     }
-    async getMusts(dept, semester){
+    async getMusts(dept, semester) {
         const data = (await axios.get(this.mustUrl)).data;
         console.log(data);
         return data[dept][semester.toString()];
     }
-    async getCourses(){
+    async getCourses() {
         const data = (await axios.get(this.coursesUrl)).data;
         const courses = Array(0);
         // eslint-disable-next-line
@@ -27,7 +28,7 @@ export class Client{
             const courseToPush = {
                 code: code,
                 abbreviation: data[code]["Course Name"].slice(0, data[code]["Course Name"].search(" ")),
-                name: data[code]["Course Name"].slice(data[code]["Course Name"].search("-")+2),
+                name: data[code]["Course Name"].slice(data[code]["Course Name"].search("-") + 2),
                 category: 0,
                 sections: Array(0)
             };
@@ -49,9 +50,9 @@ export class Client{
                         classroom: t["p"],
                         day: t["d"],
                         startHour: parseInt(t["s"].slice(0, t["s"].search(":"))),
-                        startMin: parseInt(t["s"].slice(t["s"].search(":")+1)),
+                        startMin: parseInt(t["s"].slice(t["s"].search(":") + 1)),
                         endHour: parseInt(t["e"].slice(0, t["e"].search(":"))),
-                        endMin: parseInt(t["e"].slice(t["e"].search(":")+1)),
+                        endMin: parseInt(t["e"].slice(t["e"].search(":") + 1)),
                     });
                 });
                 // eslint-disable-next-line
@@ -70,4 +71,27 @@ export class Client{
         });
         return courses;
     }
+
+    async sendUpdateRequest() {
+        try {
+            // Fetch the status from S3
+            const statusResponse = await axios.get(this.statusUrl);
+            const statusData = statusResponse.data;
+    
+            // Check if the status is 'idle'
+            if (statusData.status === 'idle') {
+                // Send request to the backend to start the scraping
+                const updateResponse = await axios.get(this.scrapeUrl);
+                const updateData = updateResponse.data; // No need for .json() with axios
+                console.log('Response of Update request:', updateData);
+                // Handle response data or update component state if needed
+            } else {
+                console.log('Status is not idle. No update request sent.');
+            }
+        } catch (error) {
+            console.error('Failed to send update request:', error);
+            // Handle errors
+        }
+    }    
+
 }
