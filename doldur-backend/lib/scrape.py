@@ -38,7 +38,7 @@ def run_scrape():
                 f"An unexpected error occurred while exporting data: {e}", exc_info=True
             )
 
-        upload_to_s3(s3_client, s3_bucket_name, data_path, status_out_name)
+        upload_to_s3(s3_client, data_path, status_out_name)
 
         logging.info("Starting the scraping process.")
         create_folder(export_folder)
@@ -130,9 +130,9 @@ def run_scrape():
             json.dump(last_updated_info, last_updated_file, ensure_ascii=False, indent=4)
 
         # Upload files to S3
-        upload_to_s3(s3_client,s3_bucket_name,departments_path, departments_out_name)
-        upload_to_s3(s3_client,s3_bucket_name,data_path, data_out_name)
-        upload_to_s3(s3_client,s3_bucket_name,last_updated_path, last_updated_out_name)
+        upload_to_s3(s3_client,departments_path, departments_out_name)
+        upload_to_s3(s3_client,data_path, data_out_name)
+        upload_to_s3(s3_client,last_updated_path, last_updated_out_name)
 
         status={"status":"idle"}
 
@@ -149,7 +149,7 @@ def run_scrape():
                 f"An unexpected error occurred while exporting data: {e}", exc_info=True
             )
 
-        upload_to_s3(s3_client, s3_bucket_name, data_path, status_out_name)
+        upload_to_s3(s3_client, data_path, status_out_name)
 
         logging.info("Scraping process completed successfully and files uploaded to S3.")
 

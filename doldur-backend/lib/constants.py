@@ -1,9 +1,9 @@
 import os
 
 s3_bucket_name="cdn.robotdegilim.xyz"
-aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-aws_region_name = os.environ.get('AWS_REGION')
+aws_access_key_id = os.environ.get('ACCESS_KEY')
+aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
+#aws_region_name = os.environ.get('AWS_REGION')
 # Folder names
 build_folder = "build"
 export_folder = "export"

@@ -36,7 +36,7 @@ def run_musts():
                 f"An unexpected error occurred while exporting data: {e}", exc_info=True
             )
 
-        upload_to_s3(s3_client, s3_bucket_name, data_path, status_out_name)
+        upload_to_s3(s3_client, data_path, status_out_name)
 
 
         logging.info("Starting the process to fetch must courses.")
@@ -95,7 +95,7 @@ def run_musts():
                 f"An unexpected error occurred while exporting data: {e}", exc_info=True
             )
 
-        upload_to_s3(s3_client, s3_bucket_name, data_path, musts_out_name)
+        upload_to_s3(s3_client, data_path, musts_out_name)
 
         status={"status":"idle"}
 
@@ -112,7 +112,7 @@ def run_musts():
                 f"An unexpected error occurred while exporting data: {e}", exc_info=True
             )
 
-        upload_to_s3(s3_client, s3_bucket_name, data_path, status_out_name)
+        upload_to_s3(s3_client, data_path, status_out_name)
 
         logging.info("Process to fetch must courses has ended.")
 
