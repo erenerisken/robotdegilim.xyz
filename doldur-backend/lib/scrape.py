@@ -9,6 +9,7 @@ import logging
 from datetime import datetime
 import boto3
 from botocore.exceptions import NoCredentialsError
+import pytz
 
 def run_scrape():
     """Main function to run the scraping process."""
@@ -120,7 +121,8 @@ def run_scrape():
             json.dump(data, data_file, ensure_ascii=False, indent=4)
 
         last_updated_path = os.path.join(export_folder, last_updated_out_name)
-        current_time = datetime.now()
+        turkey_tz = pytz.timezone('Europe/Istanbul')
+        current_time = datetime.now(turkey_tz)
         formatted_time = current_time.strftime('%d.%m.%Y, %H.%M')
         last_updated_info = {
             "t": current_semester[0] + ":" + current_semester[1],
