@@ -91,7 +91,7 @@ export class Controls extends React.Component {
         else {
             console.log(window.innerWidth);
             console.log(((window.outerWidth - 10) / window.innerWidth) * 100);
-            document.body.style.zoom = parseInt(100 * window.innerWidth / 1920) + "%";
+            // document.body.style.zoom = parseInt(100 * window.innerWidth / 1920) + "%";
         }
     }
     loadRestoredData() {
@@ -524,7 +524,7 @@ const styles = {
     desktop: {
         background: "white",
         margin: 12,
-        width: "fit-content",
+        flex: '1 1 0',
         height: "fit-content",
         paddingBottom: 12,
     },
