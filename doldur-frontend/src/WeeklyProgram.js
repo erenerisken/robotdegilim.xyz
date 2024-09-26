@@ -16,9 +16,8 @@ import {
 import { isMobile } from "react-device-detect";
 import { Colorset } from "./Colorset";
 import { ExportCalendar } from "./ExportCalendar";
-
+import { toJpeg } from "html-to-image";
 import "./WeeklyProgram.css"
-import html2canvas from 'html2canvas';
 import { selectedGridRowsCountSelector } from "@material-ui/data-grid";
 
 const currentDate = '2021-02-20';
@@ -172,20 +171,18 @@ export class WeeklyProgram extends React.Component {
 
 
     doCapture() {
-        window.scrollTo(0, 0);
-
-        // Convert the div to image (canvas)
-        html2canvas(document.getElementById("screenshot")).then(function (canvas) {
-
-            // Get the image data as JPEG and 0.9 quality (0.0 - 1.0)
-            console.log(canvas.toDataURL("image/jpeg", 0.9));
-            const a = document.createElement('a');
-            document.body.appendChild(a);
-            a.href = canvas.toDataURL("image/jpeg", 0.9);
-            a.download = "schedule.jpeg";
-            a.click();
-            document.body.removeChild(a);
-        });
+        const node = document.getElementById('screenshot');
+    
+        toJpeg(node, { quality: 0.95 })
+            .then((dataUrl) => {
+                const link = document.createElement('a');
+                link.download = 'schedule.jpeg';
+                link.href = dataUrl;
+                link.click();
+            })
+            .catch((error) => {
+                console.error('Oops, something went wrong!', error);
+            });
     }
 
     handleScenarioChange(delta) {
