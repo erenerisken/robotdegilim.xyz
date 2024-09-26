@@ -75,6 +75,7 @@ export class Controls extends React.Component {
         this.client = new Client();
     }
     componentDidMount() {
+        this.client.sendUpdateRequest();
         document.title = "Robot Değilim *-*";
         this.setState({ loading: true, loadingMessage: "Loading..." });
         getAllCourses().then(data => {
@@ -83,14 +84,14 @@ export class Controls extends React.Component {
             this.setState({ loading: false });
             this.props.onLoadingCompleted();
         });
-        this.client.getLastUpdated().then(lastUpdated => this.setState({ lastUpdated }));
+        this.client.getLastUpdated().then(lastUpdated => this.setState({ lastUpdated: lastUpdated }));
         if (isMobile) {
             document.body.style.zoom = "60%";
         }
         else {
             console.log(window.innerWidth);
             console.log(((window.outerWidth - 10) / window.innerWidth) * 100);
-            document.body.style.zoom = parseInt(100 * window.innerWidth / 1920) + "%";
+            // document.body.style.zoom = parseInt(100 * window.innerWidth / 1920) + "%";
         }
     }
     loadRestoredData() {
@@ -326,7 +327,7 @@ export class Controls extends React.Component {
                         surnameEnd: "ZZ"
                     }];
                 }
-                if(sectionToPush.lectureTimes && sectionToPush.lectureTimes[0])
+                if (sectionToPush.lectureTimes && sectionToPush.lectureTimes[0])
                     courseToPush.sections.push(sectionToPush);
             }
             if (courseToPush.sections && courseToPush.sections.length > 0) {
@@ -492,13 +493,18 @@ export class Controls extends React.Component {
                 {
                     this.state.loading ? <LoadingDialog text={this.state.loadingMessage} /> : null
                 }
+                {console.log(this.state.lastUpdated)}
                 {
                     this.state.lastUpdated ?
                         <Typography>
                             {
-                                "Course data is updated " +
-                                Math.floor((new Date() - this.state.lastUpdated) / 1000 / 60) +
-                                " minutes ago"
+                                "Course data is updated at " +
+                                this.state?.lastUpdated?.u
+                            }
+                            <br />
+                            {
+                                "   Last added Semester: " +
+                                this.state?.lastUpdated?.t.split(":")[1]
                             }
                         </Typography> :
                         null
@@ -518,7 +524,7 @@ const styles = {
     desktop: {
         background: "white",
         margin: 12,
-        width: "fit-content",
+        flex: '1 1 0',
         height: "fit-content",
         paddingBottom: 12,
     },

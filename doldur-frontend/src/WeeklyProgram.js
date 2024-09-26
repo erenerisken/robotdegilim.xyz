@@ -381,6 +381,6 @@ const styles = {
     },
     desktop: {
         margin: 12,
-        width: "60%",
+        flex: '1 1 0',
     },
 }
