@@ -6,13 +6,13 @@ import {
     Select,
     Typography,
     IconButton,
-    TextField
+    TextField,
 } from "@material-ui/core";
-import AddBoxIcon from '@material-ui/icons/AddBox';
+import AddBoxIcon from "@material-ui/icons/AddBox";
 
-import "./AddDontFillWidget.css"
+import "./AddDontFillWidget.css";
 
-export class AddDontFillWidget extends React.Component{
+export class AddDontFillWidget extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -21,19 +21,25 @@ export class AddDontFillWidget extends React.Component{
             startMin: this.props.startMin,
             endHour: this.props.endHour,
             endMin: this.props.endMin,
-            description: "FULL"
+            description: "FULL",
         };
     }
 
-    renderDayPick(val, onChange){
+    renderDayPick(val, onChange) {
         return (
             <div className={"df-widget-select"}>
-                <FormControl style={styles.dropdown} variant={"outlined"} size={"small"}>
-                    <Select labelId={"df-select-label-day"}
-                            id={"df-select-day"}
-                            value={val}
-                            onChange={e => onChange(e.target.value)}
-                            style={{background: "#FFFFFF"}}>
+                <FormControl
+                    style={styles.dropdown}
+                    variant={"outlined"}
+                    size={"small"}
+                >
+                    <Select
+                        labelId={"df-select-label-day"}
+                        id={"df-select-day"}
+                        value={val}
+                        onChange={(e) => onChange(e.target.value)}
+                        style={{ background: "#FFFFFF" }}
+                    >
                         <MenuItem value={0}>Monday</MenuItem>
                         <MenuItem value={1}>Tuesday</MenuItem>
                         <MenuItem value={2}>Wednesday</MenuItem>
@@ -44,53 +50,77 @@ export class AddDontFillWidget extends React.Component{
                     </Select>
                 </FormControl>
             </div>
-        )
+        );
     }
 
-    renderHourPick(val, onChange){
+    renderHourPick(val, onChange) {
         const menuItems = Array(0);
-        for (let i = this.props.startHour; i <= this.props.endHour; i++){
-            menuItems.push(<MenuItem value={i}>{i < 10? "0"+i : i}</MenuItem> );
+        for (let i = this.props.startHour; i <= this.props.endHour; i++) {
+            menuItems.push(
+                <MenuItem value={i}>{i < 10 ? "0" + i : i}</MenuItem>
+            );
         }
         return (
             <div className={"df-widget-select"}>
-                <FormControl style={styles.dropdown} variant={"outlined"} size={"small"}>
-                    <Select labelId={"df-select-label-min"}
-                            id={"df-select-min"}
-                            value={val}
-                            onChange={e => onChange(e.target.value)}
-                            style={{background: "#FFFFFF"}}>
+                <FormControl
+                    style={styles.dropdown}
+                    variant={"outlined"}
+                    size={"small"}
+                >
+                    <Select
+                        labelId={"df-select-label-min"}
+                        id={"df-select-min"}
+                        value={val}
+                        onChange={(e) => onChange(e.target.value)}
+                        style={{ background: "#FFFFFF" }}
+                    >
                         {menuItems}
                     </Select>
                 </FormControl>
             </div>
-        )
+        );
     }
 
-    renderMinPick(val, onChange){
+    renderMinPick(val, onChange) {
         const menuItems = Array(0);
-        for (let i = 0; i <= 59; i+=10){
-            menuItems.push(<MenuItem value={i}>{i < 10 ? "0"+i : i}</MenuItem> );
+        for (let i = 0; i <= 59; i += 10) {
+            menuItems.push(
+                <MenuItem value={i}>{i < 10 ? "0" + i : i}</MenuItem>
+            );
         }
         return (
             <div className={"df-widget-select"}>
-                <FormControl style={styles.dropdown} variant={"outlined"} size={"small"}>
-                    <Select labelId={"df-select-label-min"}
-                            id={"df-select-min"}
-                            value={val}
-                            onChange={e => onChange(e.target.value)}
-                            style={{background: "#FFFFFF"}}>
+                <FormControl
+                    style={styles.dropdown}
+                    variant={"outlined"}
+                    size={"small"}
+                >
+                    <Select
+                        labelId={"df-select-label-min"}
+                        id={"df-select-min"}
+                        value={val}
+                        onChange={(e) => onChange(e.target.value)}
+                        style={{ background: "#FFFFFF" }}
+                    >
                         {menuItems}
                     </Select>
                 </FormControl>
             </div>
-        )
+        );
     }
 
-    handleAddDontFill(){
+    handleAddDontFill() {
         this.props.onDontFillAdd(
-            this.convertTime(this.state.day, this.state.startHour, this.state.startMin),
-            this.convertTime(this.state.day, this.state.endHour, this.state.endMin),
+            this.convertTime(
+                this.state.day,
+                this.state.startHour,
+                this.state.startMin
+            ),
+            this.convertTime(
+                this.state.day,
+                this.state.endHour,
+                this.state.endMin
+            ),
             this.state.description
         );
         this.setState({
@@ -99,32 +129,50 @@ export class AddDontFillWidget extends React.Component{
             startMin: this.props.startMin,
             endHour: this.props.endHour,
             endMin: this.props.endMin,
-            description: "FULL"
+            description: "FULL",
         });
     }
-    convertTime(day, hour, min){
+    convertTime(day, hour, min) {
         //example : '2021-02-20T09:40'
-        return new Date("2021-02-" + (14 + day) + "T" + (hour < 10 ? "0" : "") +
-            hour + ":" + (min < 10 ? "0" : "") + min);
+        return new Date(
+            "2021-02-" +
+                (14 + day) +
+                "T" +
+                (hour < 10 ? "0" : "") +
+                hour +
+                ":" +
+                (min < 10 ? "0" : "") +
+                min
+        );
     }
     render() {
         return (
             <Paper style={styles.paper}>
                 <div className={"add-df-row"}>
-                    {this.renderDayPick(this.state.day, val => this.setState({day: val}))}
-                    {this.renderHourPick(this.state.startHour,val => this.setState({startHour: val}))}
+                    {this.renderDayPick(this.state.day, (val) =>
+                        this.setState({ day: val })
+                    )}
+                    {this.renderHourPick(this.state.startHour, (val) =>
+                        this.setState({ startHour: val })
+                    )}
                     <div className={"df-typo"}>
                         <Typography>:</Typography>
                     </div>
-                    {this.renderMinPick(this.state.startMin,val => this.setState({startMin: val}))}
+                    {this.renderMinPick(this.state.startMin, (val) =>
+                        this.setState({ startMin: val })
+                    )}
                     <div className={"df-typo"}>
                         <Typography>-</Typography>
                     </div>
-                    {this.renderHourPick(this.state.endHour,val => this.setState({endHour: val}))}
+                    {this.renderHourPick(this.state.endHour, (val) =>
+                        this.setState({ endHour: val })
+                    )}
                     <div className={"df-typo"}>
                         <Typography>:</Typography>
                     </div>
-                    {this.renderMinPick(this.state.endMin,val => this.setState({endMin: val}))}
+                    {this.renderMinPick(this.state.endMin, (val) =>
+                        this.setState({ endMin: val })
+                    )}
                     <div className={"df-typo"}>
                         <Typography>is</Typography>
                     </div>
@@ -135,7 +183,9 @@ export class AddDontFillWidget extends React.Component{
                             inputProps={{ maxLength: 8 }}
                             variant={"outlined"}
                             size={"small"}
-                            onChange={e => this.setState({description: e.target.value})}
+                            onChange={(e) =>
+                                this.setState({ description: e.target.value })
+                            }
                         />
                     </div>
                     <IconButton onClick={() => this.handleAddDontFill()}>
@@ -143,18 +193,18 @@ export class AddDontFillWidget extends React.Component{
                     </IconButton>
                 </div>
             </Paper>
-        )
+        );
     }
 }
 
 const styles = {
     paper: {
-        backgroundColor: 'aliceblue',
+        backgroundColor: "aliceblue",
         margin: 15,
         padding: 3,
     },
     dropdown: {
-        marginTop: 'auto',
-        marginBottom: 'auto',
-    }
-}
+        marginTop: "auto",
+        marginBottom: "auto",
+    },
+};
