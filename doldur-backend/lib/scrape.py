@@ -25,25 +25,12 @@ def run_scrape():
             return "busy"
 
         status={"status":"busy"}
-
-        # Export the data to a JSON file
-        data_path = os.path.join(export_folder, status_out_name)
-        try:
-            with open(data_path, "w", encoding="utf-8") as data_file:
-                json.dump(status, data_file, ensure_ascii=False, indent=4)
-            logging.info(f"Status info exported to: {data_path}")
-        except IOError as e:
-            logging.error(f"Failed to write data to {data_path}: {e}", exc_info=True)
-        except Exception as e:
-            logging.error(
-                f"An unexpected error occurred while exporting data: {e}", exc_info=True
-            )
-
+        data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
 
         logging.info("Starting the scraping process.")
-        create_folder(export_folder)
-        
+
+        create_folder(export_folder)        
         session = requests.Session()
         response = get_main_page(session)
         main_soup = BeautifulSoup(response.text, 'html.parser')
@@ -56,12 +43,9 @@ def run_scrape():
         current_semester = extract_current_semester(main_soup)
 
         data = {}
-        total_depts = len(dept_codes)
-
-        for index, dept_code in enumerate(dept_codes, start=1):
+        dept_len=len(dept_codes)
+        for index,dept_code in enumerate(dept_codes,start=1):
             try:
-                logging.info(f"Processing department {index}/{total_depts}: {dept_code}")
-
                 response = get_dept(session, dept_code, current_semester[0])
                 dept_soup = BeautifulSoup(response.text, 'html.parser')
                 
@@ -99,10 +83,14 @@ def run_scrape():
                     course_node["Sections"] = sections
 
                     data[int(course_code)] = course_node
+                if index%10==0:
+                    progress=(index/dept_len)*100
+                    logging.info(f"completed {progress:.2f}% ({index}/{dept_len})")
+
 
             except Exception as e:
                 logging.error(f"Error processing department code {dept_code}: {e}", exc_info=True)
-                continue
+                raise RecoverException()
 
         departments_json = {}
         for dept_code in dept_codes:
@@ -113,13 +101,8 @@ def run_scrape():
 
         # Saving to files
         departments_path = os.path.join(export_folder, departments_out_name)
-        with open(departments_path, "w", encoding="utf-8") as departments_file:
-            json.dump(departments_json, departments_file, ensure_ascii=False, indent=4)
-        
         data_path = os.path.join(export_folder, data_out_name)
-        with open(data_path, "w", encoding="utf-8") as data_file:
-            json.dump(data, data_file, ensure_ascii=False, indent=4)
-
+        
         last_updated_path = os.path.join(export_folder, last_updated_out_name)
         turkey_tz = pytz.timezone('Europe/Istanbul')
         current_time = datetime.now(turkey_tz)
@@ -128,29 +111,17 @@ def run_scrape():
             "t": current_semester[0] + ":" + current_semester[1],
             "u": formatted_time
         }
-        with open(last_updated_path, "w", encoding="utf-8") as last_updated_file:
-            json.dump(last_updated_info, last_updated_file, ensure_ascii=False, indent=4)
 
+        write_json(departments_json,departments_path)     
+        write_json(data,data_path)     
+        write_json(last_updated_info,last_updated_path)
         # Upload files to S3
         upload_to_s3(s3_client,departments_path, departments_out_name)
         upload_to_s3(s3_client,data_path, data_out_name)
         upload_to_s3(s3_client,last_updated_path, last_updated_out_name)
 
         status={"status":"idle"}
-
-        # Export the data to a JSON file
-        data_path = os.path.join(export_folder, status_out_name)
-        try:
-            with open(data_path, "w", encoding="utf-8") as data_file:
-                json.dump(status, data_file, ensure_ascii=False, indent=4)
-            logging.info(f"Status info exported to: {data_path}")
-        except IOError as e:
-            logging.error(f"Failed to write data to {data_path}: {e}", exc_info=True)
-        except Exception as e:
-            logging.error(
-                f"An unexpected error occurred while exporting data: {e}", exc_info=True
-            )
-
+        data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
 
         logging.info("Scraping process completed successfully and files uploaded to S3.")
@@ -158,3 +129,9 @@ def run_scrape():
     except Exception as e:
         logging.error(f"An error occurred in the scraping process: {e}", exc_info=True)
         raise
+    except RecoverException as e:
+        logging.error(f"Recovering...",)
+        status={"status":"idle"}
+        data_path=write_status(status)
+        upload_to_s3(s3_client, data_path, status_out_name)
+

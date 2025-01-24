@@ -1,9 +1,11 @@
 import os
 
+# s3
 s3_bucket_name="cdn.robotdegilim.xyz"
-aws_access_key_id = os.environ.get('ACCESS_KEY')
-aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
+#aws_access_key_id = os.environ.get('ACCESS_KEY')
+#aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
 #aws_region_name = os.environ.get('AWS_REGION')
+
 # Folder names
 build_folder = "build"
 export_folder = "export"
@@ -22,9 +24,7 @@ headers = {
     "Pragma": "no-cache",
 }
 
-course_catalog_url = (
-    "https://catalog.metu.edu.tr/course.php?prog={dept_code}&course_code={course_code}"
-)
+course_catalog_url = "https://catalog.metu.edu.tr/course.php?prog={dept_code}&course_code={course_code}"
 department_catalog_url = "http://catalog.metu.edu.tr/program.php?fac_prog={dept_code}"
 oibs64_url = "https://oibs2.metu.edu.tr/View_Program_Course_Details_64/main.php"
 
