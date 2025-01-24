@@ -1,7 +1,10 @@
 import requests
+import json
 from bs4 import BeautifulSoup
 from lib.constants import *
+from lib.exceptions import RecoverException
 import logging
+import time
 
 
 def get_main_page(session: requests.Session):
@@ -9,15 +12,14 @@ def get_main_page(session: requests.Session):
     try:
         response = session.get(oibs64_url, headers=headers)
         response.encoding = "utf-8"
-        # logging.info("Fetched main page successfully.")
         return response
     except requests.RequestException as e:
         logging.error(f"Error fetching main page: {e}")
-        return None
+        raise RecoverException()
 
 
-def get_dept(session: requests.Session, dept_code: str, semester_code: str):
-    """Fetch department page using session."""
+def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries:int=10,delay:int=30):
+    """Fetch department page using session with retry mechanism."""
     data = {
         "textWithoutThesis": 1,
         "select_dept": dept_code,
@@ -25,44 +27,65 @@ def get_dept(session: requests.Session, dept_code: str, semester_code: str):
         "submit_CourseList": "Submit",
         "hidden_redir": "Login",
     }
-    try:
-        response = session.post(oibs64_url, headers=headers, data=data)
-        response.encoding = "utf-8"
-        # logging.info(f"Fetched department page for {dept_code} and semester {semester_code}.")
-        return response
-    except requests.RequestException as e:
-        logging.error(f"Error fetching department page for {dept_code}: {e}")
-        return None
+    attempt=0
+    while attempt < tries:
+        try:
+            response = session.post(oibs64_url, headers=headers, data=data)
+            response.encoding = "utf-8"
+            if response.status_code == 200:
+                return response
+        except requests.RequestException as e:
+            logging.error(f"Error fetching department page for {dept_code}: {e}")
+            raise RecoverException()
+        attempt+=1
+        if attempt<tries:
+            time.sleep(delay)
+    logging.error(f"Failed to fetch department page for {dept_code} aftr {tries} attempts.")
+    raise RecoverException()
 
 
-def get_course(session: requests.Session, course_code: str):
+
+def get_course(session: requests.Session, course_code: str,tries:int=10,delay:int=30):
     """Fetch course page using session."""
     data = {
         "SubmitCourseInfo": "Course Info",
         "text_course_code": course_code,
         "hidden_redir": "Course_List",
     }
-    try:
-        response = session.post(oibs64_url, headers=headers, data=data)
-        response.encoding = "utf-8"
-        # logging.info(f"Fetched course page for {course_code}.")
-        return response
-    except requests.RequestException as e:
-        logging.error(f"Error fetching course page for {course_code}: {e}")
-        return None
+    attempt=0
+    while attempt < tries:
+        try:
+            response = session.post(oibs64_url, headers=headers, data=data)
+            response.encoding = "utf-8"
+            if response.status_code==200:
+                return response
+        except requests.RequestException as e:
+            logging.error(f"Error fetching course page for {course_code}: {e}")
+            raise RecoverException()
+        attempt +=1
+        if attempt<tries:
+            time.sleep(delay)
+    logging.error(f"Failed to fetch course page for {course_code} after {tries} attempts.")
+    raise RecoverException()
 
-
-def get_section(session: requests.Session, section_code: str):
+def get_section(session: requests.Session, section_code: str,tries:int=10,delay:int=30):
     """Fetch section page using session."""
     data = {"submit_section": section_code, "hidden_redir": "Course_Info"}
-    try:
-        response = session.post(oibs64_url, headers=headers, data=data)
-        response.encoding = "utf-8"
-        # logging.info(f"Fetched section page for {section_code}.")
-        return response
-    except requests.RequestException as e:
-        logging.error(f"Error fetching section page for {section_code}: {e}")
-        return None
+    attempt=0
+    while attempt < tries:
+        try:
+            response = session.post(oibs64_url, headers=headers, data=data)
+            response.encoding = "utf-8"
+            if response.status_code == 200:
+                return response
+        except requests.RequestException as e:
+            logging.error(f"Error fetching section page for {section_code}: {e}")
+            raise RecoverException()
+        attempt+=1
+        if attempt<tries:
+            time.sleep(delay)
+    logging.error(f"Failed to fetch section page for {section_code} after {tries} attempts.")
+    raise RecoverException()
 
 
 def get_department_prefix(session: requests.Session, dept_code: str, course_code: str):
@@ -83,12 +106,12 @@ def get_department_prefix(session: requests.Session, dept_code: str, course_code
                 [char for char in course_code_with_prefix if char.isalpha()]
             )
             if dept_prefix:
-                # logging.info(f"Extracted department prefix for {course_code}: {dept_prefix}")
                 return dept_prefix
     except requests.RequestException as e:
         logging.error(
             f"Error fetching department prefix for {dept_code} and {course_code}: {e}"
         )
+        raise RecoverException()
 
 
 def extract_departments(soup, dept_codes, dept_names):
@@ -103,7 +126,6 @@ def extract_departments(soup, dept_codes, dept_names):
                 if value and text:
                     dept_codes.append(value)
                     dept_names[value] = text
-                    # logging.info(f"Extracted department {text} with code {value}.")
 
 
 def extract_current_semester(soup):
@@ -118,9 +140,9 @@ def extract_current_semester(soup):
                     current_semester_option.get_text(),
                 )
             )
-            logging.info(f"Extracted current semester: {current_semester[1]}")
             return current_semester
-
+    logging.error("Could not extract current semester.")
+    raise RecoverException()
 
 def extract_courses(soup, course_codes, course_names):
     """Extract course codes and names from the department page(soup object)."""
@@ -134,8 +156,6 @@ def extract_courses(soup, course_codes, course_names):
 
         course_codes.append(course_code)
         course_names[course_code] = course_name
-        # logging.info(f"Extracted course {course_name} with code {course_code}.")
-
 
 def extract_sections(session: requests.Session, soup, sections):
     """Extract sections and their informations from the course page(soup object)."""
@@ -180,9 +200,6 @@ def extract_sections(session: requests.Session, soup, sections):
             section_instructors = [info_cells[1].get_text(), info_cells[2].get_text()]
 
             response = get_section(session, section_code)
-            if not response:
-                logging.warning(f"Failed to get section info for {section_code}.")
-                continue
 
             section_soup = BeautifulSoup(response.text, "html.parser")
             section_constraints = []
@@ -194,8 +211,9 @@ def extract_sections(session: requests.Session, soup, sections):
             section_node["c"] = section_constraints
             section_node["t"] = section_times
             sections[section_code] = section_node
-            # logging.info(f"Extracted section {section_code}.")
 
+    except RecoverException as e:
+        raise
     except Exception as e:
         logging.error(f"Error extracting sections: {e}")
 
@@ -273,5 +291,12 @@ def extract_tags_as_string(html_code, start_tag, end_tag):
         logging.error(f"An error occurred: {e}", exc_info=True)
         raise
 
-    # logging.info(f"Tags extracted: {tags}")
     return tags
+
+def write_json(data:dict,file_path):
+    try:
+        with open(file_path, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+    except Exception as e:
+        logging.error(f"Error while writing to this path: {file_path}")
+        raise RecoverException()
