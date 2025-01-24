@@ -2,8 +2,8 @@ import os
 
 # s3
 s3_bucket_name="cdn.robotdegilim.xyz"
-#aws_access_key_id = os.environ.get('ACCESS_KEY')
-#aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
+aws_access_key_id = os.environ.get('ACCESS_KEY')
+aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
 #aws_region_name = os.environ.get('AWS_REGION')
 
 # Folder names
