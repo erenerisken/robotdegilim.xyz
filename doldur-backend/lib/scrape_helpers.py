@@ -7,6 +7,7 @@ from lib.helpers import check_delay
 import logging
 import time
 
+logger=logging.getLogger(shared_logger)
 
 def get_main_page(session: requests.Session):
     """Fetch oibs64 main page using session"""
@@ -224,7 +225,7 @@ def extract_constraints(soup, constraints):
                 }
             )
     except Exception as e:
-        logging.error(f"Error extracting constraints: {e}")
+        logger.error(f"Error extracting constraints: {e}")
 
 
 def any_course(soup):
@@ -301,5 +302,5 @@ def load_prefixes():
                 prefixes[code] = departments[code]['p']
             return prefixes
     except Exception as e:
-        logging.error(f"Failed to load prefixes from file {file_path}: {e}")
+        logger.error(f"Failed to load prefixes from file {file_path}: {e}")
         return {}

@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import time
 from logging.handlers import SMTPHandler
 
+logger=logging.getLogger(shared_logger)
+
 last_request_time = None
 
 def create_folder(folder_path: str):
@@ -41,7 +43,7 @@ def is_idle(s3_client):
         else:
             return False
     except Exception as e:
-        logging.error(f"Error fetching or reading status.json: {e}")
+        logger.error(f"Error fetching or reading status.json: {e}")
         return False
 
 def write_status(status: dict):
@@ -63,17 +65,21 @@ def check_delay(delay: int = 1):
 
 # Configure email handler
 def get_email_handler():
-    mail_handler = SMTPHandler(
-        mailhost=(MAIL_SERVER, MAIL_PORT),
-        fromaddr=MAIL_DEFAULT_SENDER,
-        toaddrs=[MAIL_RECIPIENT],
-        subject="Error in Robotdegilim",
-        credentials=(MAIL_USERNAME, MAIL_PASSWORD),
-        secure=()  # Use TLS
-    )
-    
-    mail_handler.setLevel(logging.ERROR)  # Only send email for errors
-    mail_handler.setFormatter(logging.Formatter(
-        '%(asctime)s - %(levelname)s - %(message)s'
-    ))
-    return mail_handler
+    try:
+        mail_handler = SMTPHandler(
+            mailhost=(MAIL_SERVER, MAIL_PORT),
+            fromaddr=MAIL_DEFAULT_SENDER,
+            toaddrs=[MAIL_RECIPIENT],
+            subject="Error in Robotdegilim",
+            credentials=(MAIL_USERNAME, MAIL_PASSWORD),
+            secure=()  # Use TLS
+        )
+        
+        mail_handler.setLevel(logging.ERROR)  # Only send email for errors
+        mail_handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(levelname)s - %(message)s'
+        ))
+        return mail_handler
+    except Exception as e:
+        logger.error("Failed to create email handler: "+str(e))
+        return None

@@ -5,6 +5,7 @@ from lib.musts_helpers import *
 from lib.helpers import *
 import logging
 
+logger = logging.getLogger(shared_logger)
 
 def run_musts():
     """Main function to run the process of fetching and exporting must courses."""
@@ -23,7 +24,7 @@ def run_musts():
         data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
 
-        logging.info("Starting the process to fetch must courses.")
+        logger.info("Starting the process to fetch must courses.")
 
         create_folder(export_folder)
         session = requests.Session()
@@ -44,7 +45,7 @@ def run_musts():
             data[departments[dept_code]["p"]] = dept_node
             if index%10==0:
                 progress=(index/dept_len)*100
-                logging.info(f"completed {progress:.2f}% ({index}/{dept_len})")
+                logger.info(f"completed {progress:.2f}% ({index}/{dept_len})")
             
         data_path=write_musts(data)
         upload_to_s3(s3_client, data_path, musts_out_name)
@@ -53,7 +54,7 @@ def run_musts():
         data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
 
-        logging.info("Process to fetch must courses has ended.")
+        logger.info("Process to fetch must courses has ended.")
 
     except RecoverException as e:
         status={"status":"idle"}

@@ -8,6 +8,8 @@ import json
 from urllib.parse import urlparse, parse_qs
 import logging
 
+logger=logging.getLogger(shared_logger)
+
 def load_departments():
     """Find the departments JSON file from export_folder and return its contents as a dictionary."""
     file_path = os.path.join(export_folder, departments_out_name)
@@ -16,7 +18,7 @@ def load_departments():
             departments = json.load(file)
             return departments
     except Exception as e:
-        logging.error(f"Failed to load departments from file {file_path}: {e}")
+        logger.error(f"Failed to load departments from file {file_path}: {e}")
         return {}
 
 def get_department_page(session: requests.Session, dept_code: str, tries: int = 10, delay: int = 30):

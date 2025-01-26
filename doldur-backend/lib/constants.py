@@ -1,13 +1,15 @@
 import os
 
+# shared logger name
+shared_logger="flask.app"
+
 # Email configuration
 MAIL_SERVER = "smtp.gmail.com"  # Or another SMTP server
 MAIL_PORT = 587  # Common port for SMTP
-MAIL_USE_TLS = True
 MAIL_USERNAME = os.environ.get('MAIL_USERNAME')  # Replace with your email
 MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")  # Replace with your email password
 MAIL_DEFAULT_SENDER = MAIL_USERNAME  # Sender address
-MAIL_RECIPIENT = MAIL_USERNAME  # Where to send the email
+MAIL_RECIPIENT = "info.robotdegilim@gmail.com"  # Where to send the email
 
 # s3
 s3_bucket_name="cdn.robotdegilim.xyz"

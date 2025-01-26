@@ -11,6 +11,8 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 import pytz
 
+logger=logging.getLogger(shared_logger)
+
 def run_scrape():
     """Main function to run the scraping process."""
     try:
@@ -28,7 +30,7 @@ def run_scrape():
         data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
 
-        logging.info("Starting the scraping process.")
+        logger.info("Starting the scraping process.")
 
         create_folder(export_folder)        
         session = requests.Session()
@@ -85,7 +87,7 @@ def run_scrape():
                     data[int(course_code)] = course_node
                 if index%10==0:
                     progress=(index/dept_len)*100
-                    logging.info(f"completed {progress:.2f}% ({index}/{dept_len})")
+                    logger.info(f"completed {progress:.2f}% ({index}/{dept_len})")
 
 
             except Exception as e:
@@ -123,7 +125,7 @@ def run_scrape():
         data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
 
-        logging.info("Scraping process completed successfully and files uploaded to S3.")
+        logger.info("Scraping process completed successfully and files uploaded to S3.")
 
     except RecoverException as e:
         status={"status":"idle"}

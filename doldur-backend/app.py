@@ -17,19 +17,27 @@ log_file = 'app.log'
 max_log_size = 5 * 1024 * 1024  # 5 MB
 backup_count = 2
 
-# Configure logging
+# Initialize Flask app logger
+logger = logging.getLogger(shared_logger)  # Use a named logger to avoid confusion
+
+# Set the logging level to INFO
+logger.setLevel(logging.INFO)
+
+# Set up file logging with rotation
 handler = RotatingFileHandler(log_file, maxBytes=max_log_size, backupCount=backup_count)
 handler.setLevel(logging.INFO)
+
+# Define the format for the log messages
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 
-logging.basicConfig(handlers=[handler], level=logging.INFO)  # Adjust logging level for production
-logger = logging.getLogger("flask.app")  # Explicit Flask app logger
+# Add the file handler to the logger
 logger.addHandler(handler)
 
-# Add email handler for errors
-e_mail_handler = get_email_handler()
-logger.addHandler(e_mail_handler)
+# Set up email handler for error messages
+email_handler = get_email_handler()
+if email_handler:
+    logger.addHandler(email_handler)
 
 # Initialize Flask app
 app = Flask(__name__, static_folder=build_folder, static_url_path='/')
@@ -67,6 +75,6 @@ class RunMusts(Resource):
 api.add_resource(RunScrape, '/run-scrape')
 api.add_resource(RunMusts, '/run-musts')
 
-#if __name__ == '__main__':
-#    # Debug should be turned off for production
+# Start Flask app (uncomment this in production)
+# if __name__ == '__main__':
 #    app.run(host='0.0.0.0', port=3000)
