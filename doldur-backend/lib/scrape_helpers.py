@@ -3,6 +3,7 @@ import json
 from bs4 import BeautifulSoup
 from lib.constants import *
 from lib.exceptions import RecoverException
+from lib.helpers import check_delay
 import logging
 import time
 
@@ -10,12 +11,12 @@ import time
 def get_main_page(session: requests.Session):
     """Fetch oibs64 main page using session"""
     try:
+        #check_delay()
         response = session.get(oibs64_url, headers=headers)
         response.encoding = "utf-8"
         return response
     except requests.RequestException as e:
-        logging.error(f"Error fetching main page: {e}")
-        raise RecoverException()
+        raise RecoverException("Failed to get main page",{"error":str(e)}) from None
 
 
 def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries:int=10,delay:int=30):
@@ -30,18 +31,17 @@ def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries
     attempt=0
     while attempt < tries:
         try:
+            #check_delay()
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code == 200:
                 return response
         except requests.RequestException as e:
-            logging.error(f"Error fetching department page for {dept_code}: {e}")
-            raise RecoverException()
+            raise RecoverException("Failed to get dept page",{"dept_code":dept_code,"error":str(e)}) from None
         attempt+=1
         if attempt<tries:
             time.sleep(delay)
-    logging.error(f"Failed to fetch department page for {dept_code} aftr {tries} attempts.")
-    raise RecoverException()
+    raise RecoverException("Failed to get dept page",{"trials":tries,"error":str(e)}) from None
 
 
 
@@ -55,18 +55,17 @@ def get_course(session: requests.Session, course_code: str,tries:int=10,delay:in
     attempt=0
     while attempt < tries:
         try:
+            #check_delay()
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code==200:
                 return response
         except requests.RequestException as e:
-            logging.error(f"Error fetching course page for {course_code}: {e}")
-            raise RecoverException()
+            raise RecoverException("Failed to get course page",{"course_code":course_code,"error":str(e)}) from None
         attempt +=1
         if attempt<tries:
             time.sleep(delay)
-    logging.error(f"Failed to fetch course page for {course_code} after {tries} attempts.")
-    raise RecoverException()
+    raise RecoverException("Failed to get course page",{"course_code":course_code,"trials":tries}) from None
 
 def get_section(session: requests.Session, section_code: str,tries:int=10,delay:int=30):
     """Fetch section page using session."""
@@ -74,23 +73,23 @@ def get_section(session: requests.Session, section_code: str,tries:int=10,delay:
     attempt=0
     while attempt < tries:
         try:
+            #check_delay()
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code == 200:
                 return response
         except requests.RequestException as e:
-            logging.error(f"Error fetching section page for {section_code}: {e}")
-            raise RecoverException()
+            raise RecoverException("Failed to get section page",{"section_code":section_code,"error":str(e)}) from None
         attempt+=1
         if attempt<tries:
             time.sleep(delay)
-    logging.error(f"Failed to fetch section page for {section_code} after {tries} attempts.")
-    raise RecoverException()
+    raise RecoverException("Failed to get section page",{"section_code":section_code,"trials":tries}) from None
 
 
 def get_department_prefix(session: requests.Session, dept_code: str, course_code: str):
     """Fetch department prefix from course catalog page with using session"""
     try:
+        check_delay()
         response = session.get(
             course_catalog_url.replace("{dept_code}", dept_code).replace(
                 "{course_code}", course_code
@@ -108,10 +107,7 @@ def get_department_prefix(session: requests.Session, dept_code: str, course_code
             if dept_prefix:
                 return dept_prefix
     except requests.RequestException as e:
-        logging.error(
-            f"Error fetching department prefix for {dept_code} and {course_code}: {e}"
-        )
-        raise RecoverException()
+        raise RecoverException("Failed to get dept prefix",{"dept_code":dept_code,"course_code":course_code,"error":str(e)}) from None
 
 
 def extract_departments(soup, dept_codes, dept_names):
@@ -141,8 +137,7 @@ def extract_current_semester(soup):
                 )
             )
             return current_semester
-    logging.error("Could not extract current semester.")
-    raise RecoverException()
+    raise RecoverException("Could not extract current semester.") from None
 
 def extract_courses(soup, course_codes, course_names):
     """Extract course codes and names from the department page(soup object)."""
@@ -198,7 +193,6 @@ def extract_sections(session: requests.Session, soup, sections):
 
             section_code = info_cells[0].find("input").get("value")
             section_instructors = [info_cells[1].get_text(), info_cells[2].get_text()]
-
             response = get_section(session, section_code)
 
             section_soup = BeautifulSoup(response.text, "html.parser")
@@ -213,10 +207,9 @@ def extract_sections(session: requests.Session, soup, sections):
             sections[section_code] = section_node
 
     except RecoverException as e:
-        raise
+        raise RecoverException("Failed to extract sections",{"error":str(e)}) from None
     except Exception as e:
-        logging.error(f"Error extracting sections: {e}")
-
+        raise RecoverException("Failed to extract sections",{"error":str(e)}) from None
 
 def extract_constraints(soup, constraints):
     """Extracts section constraints from section page(soup object)."""
@@ -232,7 +225,6 @@ def extract_constraints(soup, constraints):
                     "e": cons_cells[2].get_text(),
                 }
             )
-        # logging.info("Extracted constraints successfully.")
     except Exception as e:
         logging.error(f"Error extracting constraints: {e}")
 
@@ -241,7 +233,6 @@ def any_course(soup):
     """Return True if formmessage contains error message else False"""
     form_msg = soup.find("div", id="formmessage").find("b").get_text()
     if form_msg:
-        # logging.warning("Error message found in formmessage.")
         return False
     return True
 
@@ -288,8 +279,7 @@ def extract_tags_as_string(html_code, start_tag, end_tag):
             cindex += 1
 
     except Exception as e:
-        logging.error(f"An error occurred: {e}", exc_info=True)
-        raise
+        raise RecoverException("Failed to extract tags",{"error":str(e)}) from None
 
     return tags
 
@@ -298,5 +288,20 @@ def write_json(data:dict,file_path):
         with open(file_path, "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
     except Exception as e:
-        logging.error(f"Error while writing to this path: {file_path}")
-        raise RecoverException()
+        raise RecoverException("Failed to write json",{"file_path":file_path,"error":str(e)}) from None
+    
+def load_prefixes():
+    """Find the departments JSON file from export_folder and return its contents as a dictionary."""
+    file_path = os.path.join(export_folder, departments_out_name)
+    if not os.path.exists(file_path):
+        return {}
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            departments = json.load(file)
+            prefixes={}
+            for code in departments.keys():
+                prefixes[code] = departments[code]['p']
+            return prefixes
+    except Exception as e:
+        logging.error(f"Failed to load prefixes from file {file_path}: {e}")
+        return {}

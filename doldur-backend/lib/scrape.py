@@ -37,7 +37,7 @@ def run_scrape():
 
         dept_codes = []
         dept_names = {}
-        dept_prefixes = {}
+        dept_prefixes = load_prefixes()
 
         extract_departments(main_soup, dept_codes, dept_names)
         current_semester = extract_current_semester(main_soup)
@@ -89,8 +89,7 @@ def run_scrape():
 
 
             except Exception as e:
-                logging.error(f"Error processing department code {dept_code}: {e}", exc_info=True)
-                raise RecoverException()
+                raise RecoverException("Failed to process dept",{"dept_code":dept_code,"error":str(e)}) from None
 
         departments_json = {}
         for dept_code in dept_codes:
@@ -127,11 +126,10 @@ def run_scrape():
         logging.info("Scraping process completed successfully and files uploaded to S3.")
 
     except Exception as e:
-        logging.error(f"An error occurred in the scraping process: {e}", exc_info=True)
-        raise
+        raise e from None
     except RecoverException as e:
-        logging.error(f"Recovering...",)
         status={"status":"idle"}
         data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
+        raise RecoverException("Scraping proccess failed",{"error":str(e)}) from None
 

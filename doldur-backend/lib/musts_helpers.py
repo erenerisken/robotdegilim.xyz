@@ -2,12 +2,13 @@ import time
 import requests
 from lib.exceptions import RecoverException
 from lib.constants import *
+from lib.helpers import check_delay
 import os
 import json
 from urllib.parse import urlparse, parse_qs
 import logging
 
-def get_departments():
+def load_departments():
     """Find the departments JSON file from export_folder and return its contents as a dictionary."""
     file_path = os.path.join(export_folder, departments_out_name)
     try:
@@ -23,6 +24,7 @@ def get_department_page(session: requests.Session, dept_code: str, tries: int = 
     attempt = 0
     while attempt < tries:
         try:
+            #check_delay()
             response = session.get(
                 department_catalog_url.replace("{dept_code}", str(dept_code)), headers=headers
             )
@@ -31,14 +33,12 @@ def get_department_page(session: requests.Session, dept_code: str, tries: int = 
             if response.status_code == 200:
                 return response
         except requests.RequestException as e:
-            logging.error(f"Request failed for department {dept_code}: {e}")
-            raise RecoverException()
+            raise RecoverException("Request failed",{"dept_code":dept_code,"error":str(e)}) from None
         
         attempt += 1
         if attempt < tries:
             time.sleep(delay)
-    logging.error(f"Failed to fetch department page for {dept_code} after {tries} attempts.")
-    raise RecoverException()
+    raise RecoverException("Failed to get department page", {"dept_code":dept_code,"trials":tries}) from None
 
 
 def extract_course_code(course_link: str):
@@ -49,8 +49,7 @@ def extract_course_code(course_link: str):
         course_code = query_params.get("course_code", [None])[0]
         return course_code
     except Exception as e:
-        logging.error(f"Failed to extract course code from link {course_link}: {e}")
-        raise
+        raise RecoverException("Failed to extract course code",{"course_link":course_link,"error":str(e)}) from None
 
 def extract_dept_node(dept_soup):
     """Extract department node data from BeautifulSoup object."""
@@ -83,8 +82,7 @@ def extract_dept_node(dept_soup):
             if courses:
                 dept_node[sem_no] = courses
     except Exception as e:
-        logging.error(f"Failed to extract department node data: {e}")
-        raise RecoverException()
+        raise RecoverException("Failed to extract the node",{"error":str(e)}) from None
     return dept_node
 
 def write_musts(data:dict):
@@ -94,7 +92,4 @@ def write_musts(data:dict):
             json.dump(data, data_file, ensure_ascii=False, indent=4)
             return data_path
     except Exception as e:
-        logging.error(
-            f"An unexpected error occurred while exporting data: {e}", exc_info=True
-        )
-        raise RecoverException()
+        raise RecoverException("Failed to write musts",{"error":str(e)}) from None

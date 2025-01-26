@@ -6,6 +6,11 @@ import json
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+from lib.constants import *
+import lib.scrape
+import lib.musts
+from lib.helpers import get_email_handler
+from lib.exceptions import RecoverException
 
 # Set up logging with rotation
 log_file = 'app.log'
@@ -22,10 +27,9 @@ logging.basicConfig(handlers=[handler], level=logging.INFO)  # Adjust logging le
 logger = logging.getLogger("flask.app")  # Explicit Flask app logger
 logger.addHandler(handler)
 
-# Import constants and library modules
-from lib.constants import *
-import lib.scrape
-import lib.musts
+# Add email handler for errors
+e_mail_handler = get_email_handler()
+logger.addHandler(e_mail_handler)
 
 # Initialize Flask app
 app = Flask(__name__, static_folder=build_folder, static_url_path='/')
@@ -43,20 +47,20 @@ class RunScrape(Resource):
     def get(self):
         try:
             if lib.scrape.run_scrape() == "busy":
-                return {"status": "System is busy"}, 409  # Use HTTP 409 for conflicts
+                return {"status": "System is busy"}, 200  # Use HTTP 409 for conflicts
             return {"status": "Scraping completed successfully"}, 200
         except Exception as e:
-            logger.error(f"Error running scrape process: {e}", exc_info=True)
+            logging.error(str(e))  # Log the error
             return {"error": "Error running scrape process"}, 500
 
 class RunMusts(Resource):
     def get(self):
         try:
             if lib.musts.run_musts() == "busy":
-                return {"status": "System is busy"}, 409  # Use HTTP 409 for conflicts
+                return {"status": "System is busy"}, 200  # Use HTTP 409 for conflicts
             return {"status": "Get musts completed successfully"}, 200
         except Exception as e:
-            logger.error(f"Error running get musts process: {e}", exc_info=True)
+            logging.error(str(e))  # Log the error
             return {"error": "Error running get musts process"}, 500
 
 # Add API resources
@@ -65,4 +69,4 @@ api.add_resource(RunMusts, '/run-musts')
 
 #if __name__ == '__main__':
 #    # Debug should be turned off for production
-#    app.run(host='0.0.0.0', port=8080)
+#    app.run(host='0.0.0.0', port=3000)

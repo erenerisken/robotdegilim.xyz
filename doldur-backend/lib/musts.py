@@ -28,10 +28,9 @@ def run_musts():
         create_folder(export_folder)
         session = requests.Session()
 
-        departments = get_departments()
+        departments = load_departments()
         if not departments:
-            logging.error("No departments data available. Exiting process.")
-            raise RecoverException()
+            raise RecoverException("No departments data available.")
 
         data = {}
         dept_len=len(departments.keys())
@@ -57,13 +56,9 @@ def run_musts():
         logging.info("Process to fetch must courses has ended.")
 
     except Exception as e:
-        logging.error(
-            f"An error occurred in the must courses fetching process: {e}",
-            exc_info=True,
-        )
-        raise
+        raise e from None
     except RecoverException as e:
-        logging.error(f"Recovering...",)
         status={"status":"idle"}
         data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
+        raise RecoverException("Musts proccess failed",{"error":str(e)}) from None
