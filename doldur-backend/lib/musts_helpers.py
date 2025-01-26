@@ -32,7 +32,7 @@ def get_department_page(session: requests.Session, dept_code: str, tries: int = 
 
             if response.status_code == 200:
                 return response
-        except requests.RequestException as e:
+        except Exception as e:
             raise RecoverException("Request failed",{"dept_code":dept_code,"error":str(e)}) from None
         
         attempt += 1

@@ -46,7 +46,6 @@ def is_idle(s3_client):
 
 def write_status(status: dict):
     data_path = os.path.join(export_folder, status_out_name)
-
     try:
         with open(data_path, "w", encoding="utf-8") as data_file:
             json.dump(status, data_file, ensure_ascii=False, indent=4)

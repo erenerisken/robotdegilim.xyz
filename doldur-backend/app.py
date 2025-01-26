@@ -50,7 +50,7 @@ class RunScrape(Resource):
                 return {"status": "System is busy"}, 200  # Use HTTP 409 for conflicts
             return {"status": "Scraping completed successfully"}, 200
         except Exception as e:
-            logging.error(str(e))  # Log the error
+            logger.error(str(e))  # Log the error
             return {"error": "Error running scrape process"}, 500
 
 class RunMusts(Resource):
@@ -60,7 +60,7 @@ class RunMusts(Resource):
                 return {"status": "System is busy"}, 200  # Use HTTP 409 for conflicts
             return {"status": "Get musts completed successfully"}, 200
         except Exception as e:
-            logging.error(str(e))  # Log the error
+            logger.error(str(e))  # Log the error
             return {"error": "Error running get musts process"}, 500
 
 # Add API resources

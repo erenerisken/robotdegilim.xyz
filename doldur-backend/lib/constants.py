@@ -18,7 +18,6 @@ aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
 # Folder names
 build_folder = "build"
 export_folder = "export"
-logs_folder="logs"
 
 # output file names
 data_out_name = "data.json"

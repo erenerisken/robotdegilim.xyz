@@ -55,10 +55,10 @@ def run_musts():
 
         logging.info("Process to fetch must courses has ended.")
 
-    except Exception as e:
-        raise e from None
     except RecoverException as e:
         status={"status":"idle"}
         data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
         raise RecoverException("Musts proccess failed",{"error":str(e)}) from None
+    except Exception as e:
+        raise e from None

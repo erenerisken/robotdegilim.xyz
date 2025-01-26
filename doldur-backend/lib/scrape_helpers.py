@@ -15,7 +15,7 @@ def get_main_page(session: requests.Session):
         response = session.get(oibs64_url, headers=headers)
         response.encoding = "utf-8"
         return response
-    except requests.RequestException as e:
+    except Exception as e:
         raise RecoverException("Failed to get main page",{"error":str(e)}) from None
 
 
@@ -36,7 +36,7 @@ def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries
             response.encoding = "utf-8"
             if response.status_code == 200:
                 return response
-        except requests.RequestException as e:
+        except Exception as e:
             raise RecoverException("Failed to get dept page",{"dept_code":dept_code,"error":str(e)}) from None
         attempt+=1
         if attempt<tries:
@@ -60,7 +60,7 @@ def get_course(session: requests.Session, course_code: str,tries:int=10,delay:in
             response.encoding = "utf-8"
             if response.status_code==200:
                 return response
-        except requests.RequestException as e:
+        except Exception as e:
             raise RecoverException("Failed to get course page",{"course_code":course_code,"error":str(e)}) from None
         attempt +=1
         if attempt<tries:
@@ -78,7 +78,7 @@ def get_section(session: requests.Session, section_code: str,tries:int=10,delay:
             response.encoding = "utf-8"
             if response.status_code == 200:
                 return response
-        except requests.RequestException as e:
+        except Exception as e:
             raise RecoverException("Failed to get section page",{"section_code":section_code,"error":str(e)}) from None
         attempt+=1
         if attempt<tries:
@@ -106,7 +106,7 @@ def get_department_prefix(session: requests.Session, dept_code: str, course_code
             )
             if dept_prefix:
                 return dept_prefix
-    except requests.RequestException as e:
+    except Exception as e:
         raise RecoverException("Failed to get dept prefix",{"dept_code":dept_code,"course_code":course_code,"error":str(e)}) from None
 
 
@@ -206,8 +206,6 @@ def extract_sections(session: requests.Session, soup, sections):
             section_node["t"] = section_times
             sections[section_code] = section_node
 
-    except RecoverException as e:
-        raise RecoverException("Failed to extract sections",{"error":str(e)}) from None
     except Exception as e:
         raise RecoverException("Failed to extract sections",{"error":str(e)}) from None
 

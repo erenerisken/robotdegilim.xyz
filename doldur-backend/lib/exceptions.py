@@ -14,4 +14,19 @@ class RecoverException(Exception):
         self.details = details
 
     def __str__(self):
-        return f"{self.args[0]} | Details:\n\t {self.details}" if self.details else self.args[0]
+        return f"{self.args[0]} | Details: {self.format_details(self.details)}" if self.details else self.args[0]
+
+    def format_details(self,details:dict):
+        if "error" in details.keys():
+            r="{"
+            for k,v in details.items():
+                if k=="error":
+                    ev=v
+                    continue
+                else:
+                    r+=f"'{str(k)}': '{str(v)}', "
+            ev=str(ev).replace('\n','\n\t')
+            r+="'error': \n\t'"+ev+"'}"
+            return r
+        else:
+            return str(details)

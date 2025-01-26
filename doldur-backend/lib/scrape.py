@@ -125,11 +125,11 @@ def run_scrape():
 
         logging.info("Scraping process completed successfully and files uploaded to S3.")
 
-    except Exception as e:
-        raise e from None
     except RecoverException as e:
         status={"status":"idle"}
         data_path=write_status(status)
         upload_to_s3(s3_client, data_path, status_out_name)
         raise RecoverException("Scraping proccess failed",{"error":str(e)}) from None
+    except Exception as e:
+        raise e from None
 
