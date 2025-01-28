@@ -55,7 +55,7 @@ def write_status(status: dict):
     except Exception as e:
         raise RecoverException("Failed to export status",{"error":str(e)}) from None
 
-def check_delay(delay: int = 1):
+def check_delay(delay: float = 1):
     global last_request_time
     now = datetime.now()
     if last_request_time and now - last_request_time < timedelta(seconds=delay):

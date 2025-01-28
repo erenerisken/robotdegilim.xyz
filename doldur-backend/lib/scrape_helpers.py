@@ -20,7 +20,7 @@ def get_main_page(session: requests.Session):
         raise RecoverException("Failed to get main page",{"error":str(e)}) from None
 
 
-def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries:int=10,delay:int=30):
+def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries:int=10):
     """Fetch department page using session with retry mechanism."""
     data = {
         "textWithoutThesis": 1,
@@ -32,7 +32,7 @@ def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries
     attempt=0
     while attempt < tries:
         try:
-            #check_delay()
+            check_delay()
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code == 200:
@@ -40,13 +40,11 @@ def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries
         except Exception as e:
             raise RecoverException("Failed to get dept page",{"dept_code":dept_code,"error":str(e)}) from None
         attempt+=1
-        if attempt<tries:
-            time.sleep(delay)
     raise RecoverException("Failed to get dept page",{"trials":tries,"error":str(e)}) from None
 
 
 
-def get_course(session: requests.Session, course_code: str,tries:int=10,delay:int=30):
+def get_course(session: requests.Session, course_code: str,tries:int=10):
     """Fetch course page using session."""
     data = {
         "SubmitCourseInfo": "Course Info",
@@ -56,7 +54,7 @@ def get_course(session: requests.Session, course_code: str,tries:int=10,delay:in
     attempt=0
     while attempt < tries:
         try:
-            #check_delay()
+            check_delay()
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code==200:
@@ -64,17 +62,15 @@ def get_course(session: requests.Session, course_code: str,tries:int=10,delay:in
         except Exception as e:
             raise RecoverException("Failed to get course page",{"course_code":course_code,"error":str(e)}) from None
         attempt +=1
-        if attempt<tries:
-            time.sleep(delay)
     raise RecoverException("Failed to get course page",{"course_code":course_code,"trials":tries}) from None
 
-def get_section(session: requests.Session, section_code: str,tries:int=10,delay:int=30):
+def get_section(session: requests.Session, section_code: str,tries:int=10):
     """Fetch section page using session."""
     data = {"submit_section": section_code, "hidden_redir": "Course_Info"}
     attempt=0
     while attempt < tries:
         try:
-            #check_delay()
+            check_delay()
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code == 200:
@@ -82,8 +78,6 @@ def get_section(session: requests.Session, section_code: str,tries:int=10,delay:
         except Exception as e:
             raise RecoverException("Failed to get section page",{"section_code":section_code,"error":str(e)}) from None
         attempt+=1
-        if attempt<tries:
-            time.sleep(delay)
     raise RecoverException("Failed to get section page",{"section_code":section_code,"trials":tries}) from None
 
 

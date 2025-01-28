@@ -21,12 +21,12 @@ def load_departments():
         logger.error(f"Failed to load departments from file {file_path}: {e}")
         return {}
 
-def get_department_page(session: requests.Session, dept_code: str, tries: int = 10, delay: int = 30):
+def get_department_page(session: requests.Session, dept_code: str, tries: int = 10):
     """Fetch department catalog page using session with retry mechanism."""
     attempt = 0
     while attempt < tries:
         try:
-            #check_delay()
+            check_delay()
             response = session.get(
                 department_catalog_url.replace("{dept_code}", str(dept_code)), headers=headers
             )
@@ -38,8 +38,6 @@ def get_department_page(session: requests.Session, dept_code: str, tries: int = 
             raise RecoverException("Request failed",{"dept_code":dept_code,"error":str(e)}) from None
         
         attempt += 1
-        if attempt < tries:
-            time.sleep(delay)
     raise RecoverException("Failed to get department page", {"dept_code":dept_code,"trials":tries}) from None
 
 
