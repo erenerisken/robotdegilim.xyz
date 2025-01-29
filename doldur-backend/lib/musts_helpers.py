@@ -1,4 +1,6 @@
+import time
 import requests
+from lib.exceptions import RecoverException
 from lib.constants import *
 import os
 import json
@@ -11,34 +13,33 @@ def get_departments():
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             departments = json.load(file)
-            logging.info(f"Loaded departments from {file_path}")
             return departments
-    except FileNotFoundError:
-        logging.error(f"Departments file not found: {file_path}")
-        return {}
-    except json.JSONDecodeError:
-        logging.error(f"Error decoding JSON from file: {file_path}")
-        return {}
     except Exception as e:
         logging.error(f"Failed to load departments from file {file_path}: {e}")
         return {}
 
-def get_department_page(session: requests.Session, dept_code: str):
-    """Fetch department catalog page using session."""
-    try:
-        response = session.get(
-            department_catalog_url.replace("{dept_code}", str(dept_code)), headers=headers
-        )
-        response.encoding = "utf-8"
-        if response.status_code == 200:
-            #logging.info(f"Successfully fetched department page for {dept_code}")
-            pass
-        else:
-            logging.warning(f"Failed to fetch department page for {dept_code}. Status code: {response.status_code}")
-        return response
-    except requests.RequestException as e:
-        logging.error(f"Request failed for department {dept_code}: {e}")
-        return None
+def get_department_page(session: requests.Session, dept_code: str, tries: int = 10, delay: int = 30):
+    """Fetch department catalog page using session with retry mechanism."""
+    attempt = 0
+    while attempt < tries:
+        try:
+            response = session.get(
+                department_catalog_url.replace("{dept_code}", str(dept_code)), headers=headers
+            )
+            response.encoding = "utf-8"
+
+            if response.status_code == 200:
+                return response
+        except requests.RequestException as e:
+            logging.error(f"Request failed for department {dept_code}: {e}")
+            raise RecoverException()
+        
+        attempt += 1
+        if attempt < tries:
+            time.sleep(delay)
+    logging.error(f"Failed to fetch department page for {dept_code} after {tries} attempts.")
+    raise RecoverException()
+
 
 def extract_course_code(course_link: str):
     """Extract the course code from a course URL."""
@@ -46,15 +47,10 @@ def extract_course_code(course_link: str):
         parsed_url = urlparse(course_link)
         query_params = parse_qs(parsed_url.query)
         course_code = query_params.get("course_code", [None])[0]
-        if course_code:
-            #logging.debug(f"Extracted course code: {course_code}")
-            pass
-        else:
-            logging.warning(f"Course code not found in link: {course_link}")
         return course_code
     except Exception as e:
         logging.error(f"Failed to extract course code from link {course_link}: {e}")
-        return None
+        raise
 
 def extract_dept_node(dept_soup):
     """Extract department node data from BeautifulSoup object."""
@@ -86,7 +82,19 @@ def extract_dept_node(dept_soup):
 
             if courses:
                 dept_node[sem_no] = courses
-        #logging.info(f"Extracted department node data successfully")
     except Exception as e:
         logging.error(f"Failed to extract department node data: {e}")
+        raise RecoverException()
     return dept_node
+
+def write_musts(data:dict):
+    data_path = os.path.join(export_folder, musts_out_name)
+    try:
+        with open(data_path, "w", encoding="utf-8") as data_file:
+            json.dump(data, data_file, ensure_ascii=False, indent=4)
+            return data_path
+    except Exception as e:
+        logging.error(
+            f"An unexpected error occurred while exporting data: {e}", exc_info=True
+        )
+        raise RecoverException()
