@@ -1,107 +1,87 @@
-import React from 'react';
-import {isMobile} from "react-device-detect";
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import {WeeklyProgram} from "./WeeklyProgram";
-import {Controls} from "./Controls";
-import {WelcomeDialog} from "./WelcomeDialog";
-import {Banner} from "./Banner";
-
-import './App.css';
-import {Colorset} from "./Colorset";
+import React, { useState } from "react";
+import { isMobile } from "react-device-detect";
+import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+import { WeeklyProgram } from "./WeeklyProgram";
+import { Controls } from "./Controls";
+import { WelcomeDialog } from "./WelcomeDialog";
+import { Banner } from "./Banner";
+import "./App.css";
+import { Colorset } from "./Colorset";
 
 const theme = createMuiTheme({
-    palette: {
-        secondary: {
-            main: '#71F154'
-        }
-    }
+  palette: {
+    secondary: {
+      main: "#71F154",
+    },
+  },
 });
 
-class App extends React.Component{
-    constructor(props) {
-        super(props);
-        this.state = {
-            scenarios: [],
-            dontFills: [],
+const App = () => {
+  const [scenarios, setScenarios] = useState([]);
+  const [dontFills, setDontFills] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const dontFillColorset = new Colorset();
 
-            loaded: false,
-        }
+  const handleDontFillAdd = (startDate, endDate, description) => {
+    setDontFills([
+      ...dontFills,
+      {
+        startDate,
+        endDate,
+        description,
+        color: dontFillColorset.getBlack(),
+      },
+    ]);
+  };
 
-        this.dontFillColorset = new Colorset();
-    }
-    handleDontFillAdd(startDate, endDate, description){
-        const newDontFills = this.state.dontFills.slice(0);
-        newDontFills.push({
-            startDate: startDate,
-            endDate: endDate,
-            description: description,
-            color: this.dontFillColorset.getBlack(),
-        });
-        this.setState({dontFills: newDontFills});
-    }
-    handleDontFillDelete(startDate){
-        this.setState({dontFills: this.state.dontFills.filter(df => df.startDate !== startDate)});
-    }
-    handleLoadingCompleted() {
-        this.setState({loaded: true});
-    }
-    handleChangeDontFillColor(startDate,color) {
-        const dontFills = this.state.dontFills.slice(0);
-        this.setState({
-            dontFills: dontFills.map(df => {
-                if (df.startDate === startDate) {
-                    return {
-                        ...df,
-                        color: color,
-                    }
-                } else {
-                    return df;
-                }
-            })
-        });
-    }
-    handleChangeDontFillDescription(startDate, newDescription) {
-        const dontFills = this.state.dontFills.slice(0);
-        this.setState({
-            dontFills: dontFills.map(df => {
-                if (df.startDate === startDate) {
-                    return {
-                        ...df,
-                        description: newDescription,
-                    }
-                } else {
-                    return df;
-                }
-            })
-        });
-    }
-    render() {
-        //console.log(this.state.scenarios);
-        return (
-          <MuiThemeProvider theme={theme}>
-            <div className="App">
-                <Banner />
-                { this.state.loaded ? <WelcomeDialog /> : null }
-                <div className={isMobile ? "column" : "row"}>
-                    <WeeklyProgram dontFills={this.state.dontFills}
-                                   scenarios={this.state.scenarios}
-                                   onDontFillAdd={(startDate, endDate, desc) =>
-                                       this.handleDontFillAdd(startDate, endDate, desc)}
-                                   onChangeDontFillColor = {(startDate,color) => this.handleChangeDontFillColor(startDate,color)}
-                                   onChangeDontFillDescription={(startDate, newDescription) =>
-                                       this.handleChangeDontFillDescription(startDate, newDescription)}
-                                   onDontFillDelete={startDate => this.handleDontFillDelete(startDate)}/>
-                    <Controls onSchedule={s => this.setState({scenarios: s})}
-                              dontFills={this.state.dontFills}
-                              onDontFillAdd={(startDate, endDate, desc) =>
-                                  this.handleDontFillAdd(startDate, endDate, desc)}
-                              onLoadingCompleted={() => this.handleLoadingCompleted()}
-                    />
-                </div>
-            </div>
-          </MuiThemeProvider>
-      );
-  }
-}
+  const handleDontFillDelete = (startDate) => {
+    setDontFills(dontFills.filter((df) => df.startDate !== startDate));
+  };
+
+  const handleLoadingCompleted = () => {
+    setLoaded(true);
+  };
+
+  const handleChangeDontFillColor = (startDate, color) => {
+    setDontFills(
+      dontFills.map((df) =>
+        df.startDate === startDate ? { ...df, color } : df
+      )
+    );
+  };
+
+  const handleChangeDontFillDescription = (startDate, newDescription) => {
+    setDontFills(
+      dontFills.map((df) =>
+        df.startDate === startDate ? { ...df, description: newDescription } : df
+      )
+    );
+  };
+
+  return (
+    <MuiThemeProvider theme={theme}>
+      <div className="App">
+        <Banner />
+        {loaded && <WelcomeDialog />}
+        <div className={isMobile ? "column" : "row"}>
+          <WeeklyProgram
+            dontFills={dontFills}
+            scenarios={scenarios}
+            onDontFillAdd={handleDontFillAdd}
+            onChangeDontFillColor={handleChangeDontFillColor}
+            onChangeDontFillDescription={handleChangeDontFillDescription}
+            onDontFillDelete={handleDontFillDelete}
+          />
+          <Controls
+            onSchedule={setScenarios}
+            dontFills={dontFills}
+            onDontFillAdd={handleDontFillAdd}
+            onLoadingCompleted={handleLoadingCompleted}
+          />
+        </div>
+      </div>
+    </MuiThemeProvider>
+  );
+};
 
 export default App;
