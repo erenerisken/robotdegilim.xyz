@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -11,75 +11,63 @@ import {
   Typography,
 } from "@material-ui/core";
 
-export class WelcomeDialog extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: true,
-      copied: false,
-    };
-  }
+export const WelcomeDialog = () => {
+  const [open, setOpen] = useState(true);
+  const [copied, setCopied] = useState(false);
 
-  handleCopyEmail = () => {
+  const handleCopyEmail = () => {
     navigator.clipboard.writeText("info.robotdegilim@gmail.com");
-    this.setState({ copied: true });
+    setCopied(true);
 
     setTimeout(() => {
-      this.setState({ copied: false });
+      setCopied(false);
     }, 1500);
   };
-
-  render() {
-    return (
-      <div className="dialog-wrapper">
-        <Dialog
-          open={this.state.open}
-          onClose={() => this.setState({ open: false })}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">Welcome!</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Öneriler ve şikayetler için{" "}
-              <Tooltip
-                title={this.state.copied ? "Copied" : "Click to copy"}
-                open={this.state.copied}
-                arrow
+  return (
+    <div className="dialog-wrapper">
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Welcome!</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Öneriler ve şikayetler için{" "}
+            <Tooltip title={"Copied"} open={copied} arrow>
+              <Box
+                component="span"
+                sx={{
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  color: "blue",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  "&:hover": { textDecoration: "underline" },
+                }}
+                onClick={handleCopyEmail}
               >
-                <Box
-                  component="span"
-                  sx={{
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                    color: "blue",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                  onClick={this.handleCopyEmail}
-                >
-                  <Typography style={{ color: "blue" }}>
-                    {" "}
-                    info.robotdegilim@gmail.com{" "}
-                  </Typography>
-                </Box>
-              </Tooltip>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => this.setState({ open: false })}
-              color="secondary"
-              variant="contained"
-              autoFocus={false}
-            >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+                <Typography style={{ color: "blue" }}>
+                  {" "}
+                  info.robotdegilim@gmail.com{" "}
+                </Typography>
+              </Box>
+            </Tooltip>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpen(false)}
+            color="secondary"
+            variant="contained"
+            autoFocus={false}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
