@@ -1,110 +1,125 @@
-import React from "react";
-import {Button} from "@material-ui/core";
-import BackupIcon from '@material-ui/icons/Backup';
-import {gapi} from "gapi-script";
+import React, { useEffect, useState } from "react";
+import { Button, Tooltip } from "@material-ui/core";
+import BackupIcon from "@material-ui/icons/Backup";
 
-export class ExportCalendar extends React.Component{
-    constructor(props) {
-        super(props);
-        this.gapi = window.gapi;
-        this.CLIENT_ID = "531687826330-d2raf921gt5ur2q5lspcv25ceak6v7e7.apps.googleusercontent.com";
-        this.API_KEY = "AIzaSyC1JqJ83f1CZ8Otm-lDrpCX443r7OWewbw";
-        this.DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
-        this.SCOPES = "https://www.googleapis.com/auth/calendar.events";
-    }
-    convertDay(date){
-        //           0123456789012345
-        //example : '2021-02-20T09:40'
-        //2020-10-15T16:30:00+03:00
-        //console.log(date);
-        //console.log(typeof date);
-        const day = parseInt(date.slice(8, 10)) - 14;
-        const hour = parseInt(date.slice(11, 13));
-        const min = parseInt(date.slice(14));
-        return "2020-10-" + (12 + day) + "T" +
-            (hour < 10 ? "0" : "") + hour + ":" + (min < 10 ? "0" : "") + min + ":00+03:00";
-    }
-    convertEvents(){
-        /*
-        * var event = {
-            'summary': info[curr].summary,
-            'start': {
-              'dateTime': info[curr].start.dateTime,
-              'timeZone': info[curr].start.timeZone
-            },
-            'end': {
-              'dateTime': info[curr].end.dateTime,
-              'timeZone': info[curr].end.timeZone
-            },
-            'recurrence': [
-              'RRULE:FREQ=WEEKLY;COUNT=14'
-            ]
+const CLIENT_ID =
+  "531687826330-d2raf921gt5ur2q5lspcv25ceak6v7e7.apps.googleusercontent.com";
+const API_KEY = "AIzaSyC1JqJ83f1CZ8Otm-lDrpCX443r7OWewbw";
+const DISCOVERY_DOCS = [
+  "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+];
+const SCOPES = "https://www.googleapis.com/auth/calendar.events";
+
+export const ExportCalendar = ({ events }) => {
+  const [gapiLoaded, setGapiLoaded] = useState(false);
+
+  useEffect(() => {
+    // Load gapi script dynamically
+    const loadGapi = () => {
+      const script = document.createElement("script");
+      script.src = "https://apis.google.com/js/api.js";
+      script.async = true;
+      script.onload = () => {
+        window.gapi.load("client:auth2", async () => {
+          try {
+            await window.gapi.client.init({
+              apiKey: API_KEY,
+              clientId: CLIENT_ID,
+              discoveryDocs: DISCOVERY_DOCS,
+              scope: SCOPES,
+            });
+            setGapiLoaded(true);
+          } catch (error) {
+            console.error("GAPI initialization error:", error);
           }
-        * */
-        const events = Array(0);
-        if (this.props.events === undefined){
-            return [];
-        }
-        this.props.events.map(e => {
-            if (e.type === "course"){
-                events.push({
-                    summary: e.title,
-                    start: {
-                        timeZone: "Turkey",
-                        dateTime: this.convertDay(e.startDate)
-                    },
-                    end: {
-                        timeZone: "Turkey",
-                        dateTime: this.convertDay(e.endDate)
-                    },
-                    recurrence: [
-                        'RRULE:FREQ=WEEKLY;COUNT=14'
-                    ]
-                });
+        });
+      };
+      document.body.appendChild(script);
+    };
+
+    if (!window.gapi) {
+      loadGapi();
+    } else {
+      setGapiLoaded(true);
+    }
+  }, []);
+
+  const convertDay = (date) => {
+    const day = parseInt(date.slice(8, 10)) - 14;
+    const hour = parseInt(date.slice(11, 13));
+    const min = parseInt(date.slice(14));
+    return `2020-10-${12 + day}T${hour.toString().padStart(2, "0")}:${min
+      .toString()
+      .padStart(2, "0")}:00+03:00`;
+  };
+
+  const convertEvents = () => {
+    if (!events || events.length === 0) return [];
+    return events
+      .filter((e) => e.type === "course")
+      .map((e) => ({
+        summary: e.title,
+        start: { timeZone: "Turkey", dateTime: convertDay(e.startDate) },
+        end: { timeZone: "Turkey", dateTime: convertDay(e.endDate) },
+        recurrence: ["RRULE:FREQ=WEEKLY;COUNT=14"],
+      }));
+  };
+
+  const handleExport = async () => {
+    if (!window.gapi || !window.gapi.auth2) {
+      console.error("Google API not initialized");
+      return;
+    }
+
+    const authInstance = window.gapi.auth2.getAuthInstance();
+    if (!authInstance) {
+      console.error("Auth instance not found");
+      return;
+    }
+
+    try {
+      await authInstance.signIn();
+      const convertedEvents = convertEvents();
+
+      convertedEvents.forEach((event) => {
+        window.gapi.client.calendar.events
+          .insert({
+            calendarId: "primary",
+            resource: event,
+          })
+          .then((response) => {
+            console.log("Event added:", response);
+            if (response.result.htmlLink) {
+              window.open(response.result.htmlLink);
             }
-        });
-        return events;
+          })
+          .catch((error) => console.error("Error adding event:", error));
+      });
+    } catch (error) {
+      console.error("Sign-in error:", error);
     }
+  };
 
-    handleExport(){
-        const events = this.convertEvents();
-        let popUped = false;
-        events.map(e => console.log(e));
-        gapi.load('client:auth2', () => {
-            gapi.client.init({
-                apiKey: this.API_KEY,
-                clientId: this.CLIENT_ID,
-                discoveryDocs: this.DISCOVERY_DOCS,
-                scope: this.SCOPES,
-            });
-            gapi.client.load('calendar', 'v3', () => console.log('added to calendar!'))
-
-            gapi.auth2.getAuthInstance().signIn().then(() => {
-                events.map(event => {
-                    let request = gapi.client.calendar.events.insert({
-                        'calendarId': 'primary',
-                        'resource': event,
-                    });
-                    request.execute(e => {
-                        console.log(e);
-                        if (e.htmlLink !== undefined && !popUped){
-                            popUped = true;
-                            window.open(e.htmlLink);
-                        }
-                    });
-                });
-            });
-        });
-    }
-    render() {
-        return (
-            <div className={"export-calendar-wrapper"}>
-                <Button variant={"contained"}
-                        color={"secondary"}
-                        startIcon={<BackupIcon />} onClick={() => this.handleExport()}>
-                    Export to Google
-                </Button>
-            </div>
-        )
-    }
-}
+  return (
+    <div className="export-calendar-wrapper">
+      <Tooltip
+        title="Still in development."
+        arrow
+        placement="top"
+        disableInteractive
+      >
+        <span>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<BackupIcon />}
+            onClick={handleExport}
+            disabled={true}
+          >
+            Export to Google
+          </Button>
+        </span>
+      </Tooltip>
+    </div>
+  );
+};
