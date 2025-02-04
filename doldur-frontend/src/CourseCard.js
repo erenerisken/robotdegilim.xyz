@@ -42,12 +42,8 @@ export const CourseCard = ({
     onSettingsChange(settings);
   };
 
-  const handleNextColor = () => {
-    onColorChange(colorset.getNextColor());
-  };
-
-  const handlePreviousColor = () => {
-    onColorChange(colorset.getPreviousColor());
+  const handleColorChange = (color) => {
+    onColorChange(color);
   };
 
   const toggleSections = () => {
@@ -119,8 +115,7 @@ export const CourseCard = ({
               <CourseAdvancedSettings
                 color={color}
                 onSettingsChange={handleSettingsChange}
-                onNextColor={handleNextColor}
-                onPreviousColor={handlePreviousColor}
+                onColorChange={handleColorChange}
                 settings={settings}
               />
               <Divider />
