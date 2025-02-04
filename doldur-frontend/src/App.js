@@ -10,6 +10,9 @@ import { Colorset } from "./Colorset";
 
 const theme = createMuiTheme({
   palette: {
+    primary:{
+      main: "#1976d2"
+    },
     secondary: {
       main: "#71F154",
     },
