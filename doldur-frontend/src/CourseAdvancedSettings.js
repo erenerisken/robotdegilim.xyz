@@ -105,22 +105,39 @@ export const CourseAdvancedSettings = ({
               />
             </div>
             <Divider />
-            <div className="settings-row" style={{display:"flex" , alignItems:"center"}}>
+            <div
+              className="settings-row"
+            >
               <IconButton
-                style={{ padding: 0 }}
+                style={{
+                  marginTop: "5px",
+                  backgroundColor: "#1976d2",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
+                }}
                 id="palette-button"
                 aria-controls={open ? "palette-menu" : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? "true" : undefined}
                 onClick={handleOpenColorPalette}
               >
-                <PaletteIcon fontSize="20" style={{ color: "black" }} />
-                <Typography style={{ color: "black" }}>Change Color</Typography>
+                <PaletteIcon fontSize="20" style={{ color: "white" }} />
+                <Typography style={{ color: "white" }}>Change Color</Typography>
               </IconButton>
               <Menu
                 id="palette-menu"
                 open={open}
                 anchorEl={anchorEl}
+                getContentAnchorEl={null}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center",
+                }}
                 onClose={handleClose}
                 MenuListProps={{
                   "aria-labelledby": "palette-button",
