@@ -15,6 +15,7 @@ import {
 import MuiAlert from "@material-ui/lab/Alert";
 import AddIcon from "@material-ui/icons/Add";
 import EventAvailableIcon from "@material-ui/icons/EventAvailable";
+import ImportContactsIcon from "@material-ui/icons/ImportContacts";
 import Delete from "@material-ui/icons/Delete";
 import SaveIcon from "@material-ui/icons/Save";
 import SaveAltIcon from "@material-ui/icons/SaveAlt";
@@ -407,6 +408,10 @@ export class Controls extends React.Component {
   handleClearCourses() {
     this.setState({ selectedCourses: [] });
   }
+  openInNewTab = (url) => {
+    const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+    if (newWindow) newWindow.opener = null; // Fix for potential security vulnerability
+  };
   render() {
     return (
       <Paper style={isMobile ? styles.mobile : styles.desktop}>
@@ -482,6 +487,16 @@ export class Controls extends React.Component {
               onClick={() => this.handleAddMustCourse()}
             >
               Add Must Courses
+            </Button>
+          </div>
+          <div className={"control-button"}>
+            <Button
+              variant={"contained"}
+              style={{ backgroundColor: "#0DAEEE", color: "white" }}
+              startIcon={<ImportContactsIcon style={{ color: "white" }} />}
+              onClick={() => this.openInNewTab("https://metu-non.tech")}
+            >
+              NTE Catalog
             </Button>
           </div>
           <div className={"control-button"}>
