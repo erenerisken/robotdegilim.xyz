@@ -33,7 +33,7 @@ export class Colorset {
         main: "#E05656",
         secondary: "#FFFFFF",
         ternary: "#F5BABA",
-        text: "#FFFFFF",
+        text: "#000000",
         textSection: "#FFFFFF",
       },
       {
