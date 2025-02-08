@@ -405,8 +405,6 @@ export class Controls extends React.Component {
     if (newWindow) newWindow.opener = null; // Fix for potential security vulnerability
   };
   render() {
-    console.log("controls_render");
-    
     return (
       <Paper style={isMobile ? styles.mobile : styles.desktop}>
         <Snackbar
