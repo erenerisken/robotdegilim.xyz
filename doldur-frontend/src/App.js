@@ -26,15 +26,20 @@ const App = () => {
   const dontFillColorset = new Colorset();
 
   const handleDontFillAdd = (startDate, endDate, description) => {
-    setDontFills((prev) => [
-      ...prev,
-      {
-        startDate,
-        endDate,
-        description,
-        color: dontFillColorset.getBlack(),
-      },
-    ]);
+    setDontFills((prev) => {
+      const isOverlapping = prev.some((df) => startDate == df.startDate);
+      return isOverlapping
+        ? [...prev]
+        : [
+            ...prev,
+            {
+              startDate,
+              endDate,
+              description,
+              color: dontFillColorset.getBlack(),
+            },
+          ];
+    });
   };
 
   const handleDontFillDelete = (startDate) => {
