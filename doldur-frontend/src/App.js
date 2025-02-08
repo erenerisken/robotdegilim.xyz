@@ -10,8 +10,8 @@ import { Colorset } from "./Colorset";
 
 const theme = createMuiTheme({
   palette: {
-    primary:{
-      main: "#1976d2"
+    primary: {
+      main: "#1976d2",
     },
     secondary: {
       main: "#71F154",
@@ -26,8 +26,8 @@ const App = () => {
   const dontFillColorset = new Colorset();
 
   const handleDontFillAdd = (startDate, endDate, description) => {
-    setDontFills([
-      ...dontFills,
+    setDontFills((prev) => [
+      ...prev,
       {
         startDate,
         endDate,
@@ -38,7 +38,7 @@ const App = () => {
   };
 
   const handleDontFillDelete = (startDate) => {
-    setDontFills(dontFills.filter((df) => df.startDate !== startDate));
+    setDontFills((prev) => prev.filter((df) => df.startDate !== startDate));
   };
 
   const handleLoadingCompleted = () => {
@@ -46,16 +46,14 @@ const App = () => {
   };
 
   const handleChangeDontFillColor = (startDate, color) => {
-    setDontFills(
-      dontFills.map((df) =>
-        df.startDate === startDate ? { ...df, color } : df
-      )
+    setDontFills((prev) =>
+      prev.map((df) => (df.startDate === startDate ? { ...df, color } : df))
     );
   };
 
   const handleChangeDontFillDescription = (startDate, newDescription) => {
-    setDontFills(
-      dontFills.map((df) =>
+    setDontFills((prev) =>
+      prev.map((df) =>
         df.startDate === startDate ? { ...df, description: newDescription } : df
       )
     );
