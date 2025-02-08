@@ -75,6 +75,7 @@ export class Controls extends React.Component {
 
     this.client = new Client();
   }
+
   componentDidMount() {
     this.client.sendUpdateRequest();
     document.title = "Robot Değilim *-*";
@@ -91,8 +92,6 @@ export class Controls extends React.Component {
     if (isMobile) {
       document.body.style.zoom = "60%";
     } else {
-      console.log(window.innerWidth);
-      console.log(((window.outerWidth - 10) / window.innerWidth) * 100);
       // document.body.style.zoom = parseInt(100 * window.innerWidth / 1920) + "%";
     }
   }
@@ -109,7 +108,6 @@ export class Controls extends React.Component {
     const restoredCourses = ls.get("restoredCourses");
     const restoredInfo = ls.get("restoredInfo");
     const restoredSettings = ls.get("restoredSettings");
-    console.log(restoredCourses);
     this.setState({
       restoredCourses: restoredCourses !== null ? restoredCourses : [],
       restoredSettings:
@@ -135,8 +133,6 @@ export class Controls extends React.Component {
             },
       restoreAvailable: restoredSettings !== null,
     });
-    console.log(restoredSettings);
-    console.log(restoredInfo);
   }
   getCourseByCode(code) {
     for (let i = 0; i < this.state.allCourses.length; i++) {
@@ -233,7 +229,6 @@ export class Controls extends React.Component {
     const newSelectedCourses = this.state.selectedCourses.slice(0);
     newSelectedCourses[i].sections = sections;
     this.setState({ selectedCourses: newSelectedCourses });
-    console.log("Course " + i + " sections:" + sections);
   }
   handleAddCourse(c) {
     if (c === null) {
@@ -268,7 +263,6 @@ export class Controls extends React.Component {
   }
   handleScheduleComplete(scenarios) {
     if (scenarios.length <= 0) {
-      console.log("Fail!");
       this.setState({
         alertMsg: "There is no available schedule for this criteria.",
       });
@@ -320,14 +314,17 @@ export class Controls extends React.Component {
       errorSemester: false,
       errorSurname: false,
     });
-    if (this.state.department.length < 2) {
+    if (
+      this.state.settings.checkDepartment &&
+      this.state.department.length < 2
+    ) {
       this.setState({
         alertMsg: "Please enter a correct department",
         errorDept: true,
       });
       return;
     }
-    if (this.state.surname.length < 2 && this.state.settings.checkSurname) {
+    if (this.state.settings.checkSurname && this.state.surname.length < 2) {
       this.setState({
         alertMsg: "Please enter at least 2 letters of your surname",
         errorSurname: true,
@@ -378,8 +375,6 @@ export class Controls extends React.Component {
           courseToPush.sections.push(sectionToPush);
       }
       if (courseToPush.sections && courseToPush.sections.length > 0) {
-        console.log(courseToPush.code);
-
         courseData.push(courseToPush);
       }
     });
@@ -389,8 +384,6 @@ export class Controls extends React.Component {
         times: [formattedDf],
       });
     });
-    //console.log(courseData);
-    console.log(dontFills);
     this.setState({ loading: true, loadingMessage: "Computing schedule..." });
     setTimeout(() => {
       const calculatedSchedule = compute_schedule(
@@ -400,7 +393,6 @@ export class Controls extends React.Component {
         courseData,
         dontFills
       );
-      //console.log(calculatedSchedule);
       this.setState({ scenario: calculatedSchedule, loading: false });
       this.handleScheduleComplete(calculatedSchedule);
     }, 500);
@@ -413,6 +405,8 @@ export class Controls extends React.Component {
     if (newWindow) newWindow.opener = null; // Fix for potential security vulnerability
   };
   render() {
+    console.log("controls_render");
+    
     return (
       <Paper style={isMobile ? styles.mobile : styles.desktop}>
         <Snackbar
@@ -446,7 +440,7 @@ export class Controls extends React.Component {
           </div>
           <div className={"textfield-wrapper"}>
             <TextField
-              required
+              required={this.state.settings.checkDepartment}
               error={this.state.errorDept}
               label={"Department"}
               value={this.state.department}
@@ -583,7 +577,6 @@ export class Controls extends React.Component {
         {this.state.loading ? (
           <LoadingDialog text={this.state.loadingMessage} />
         ) : null}
-        {console.log(this.state.lastUpdated)}
         {this.state.lastUpdated ? (
           <Typography>
             {"Course data is updated at " + this.state?.lastUpdated?.u}

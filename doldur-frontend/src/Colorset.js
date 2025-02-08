@@ -145,7 +145,6 @@ export class Colorset {
     if (this.colors.length <= 0) {
       return { main: 0, secondary: 0, ternary: 0 };
     }
-    console.log("next color");
 
     this.iterator = (this.iterator + 1) % this.colors.length;
     return this.colors[this.iterator];
