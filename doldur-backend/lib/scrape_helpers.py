@@ -32,7 +32,7 @@ def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries
     attempt=0
     while attempt < tries:
         try:
-            check_delay()
+            check_delay(0.75)
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code == 200:
@@ -54,7 +54,7 @@ def get_course(session: requests.Session, course_code: str,tries:int=10):
     attempt=0
     while attempt < tries:
         try:
-            check_delay()
+            check_delay(0.75)
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code==200:
@@ -70,7 +70,7 @@ def get_section(session: requests.Session, section_code: str,tries:int=10):
     attempt=0
     while attempt < tries:
         try:
-            check_delay()
+            check_delay(0.75)
             response = session.post(oibs64_url, headers=headers, data=data)
             response.encoding = "utf-8"
             if response.status_code == 200:

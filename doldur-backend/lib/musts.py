@@ -31,7 +31,7 @@ def run_musts():
 
         departments = load_departments()
         if not departments:
-            raise RecoverException("No departments data available.")
+            raise RecoverException(noDeptsErrMsg)
 
         data = {}
         dept_len=len(departments.keys())

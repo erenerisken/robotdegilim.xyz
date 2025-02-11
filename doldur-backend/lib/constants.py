@@ -1,5 +1,8 @@
 import os
 
+# No department data error message
+noDeptsErrMsg="No departments data available."
+
 # shared logger name
 shared_logger="flask.app"
 

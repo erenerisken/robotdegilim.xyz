@@ -1,37 +1,21 @@
-from flask import Flask, request, render_template, Response, make_response
-from flask_restful import Resource, Api
-from flask_restful import reqparse
+from flask import Flask, request, redirect
+from flask_restful import Resource, Api, reqparse
 from flask_cors import CORS
-import json
-import os
 import logging
-from logging.handlers import RotatingFileHandler
 from lib.constants import *
 import lib.scrape
 import lib.musts
 from lib.helpers import get_email_handler
-from lib.exceptions import RecoverException
+from lib.exceptions import RecoverException # do not delete this line
 
-# Set up logging with rotation
+# Set up logging
 log_file = 'app.log'
-max_log_size = 5 * 1024 * 1024  # 5 MB
-backup_count = 2
-
-# Initialize Flask app logger
-logger = logging.getLogger(shared_logger)  # Use a named logger to avoid confusion
-
-# Set the logging level to INFO
+logger = logging.getLogger(shared_logger)
 logger.setLevel(logging.INFO)
-
-# Set up file logging with rotation
-handler = RotatingFileHandler(log_file, maxBytes=max_log_size, backupCount=backup_count)
+handler = logging.FileHandler(log_file)
 handler.setLevel(logging.INFO)
-
-# Define the format for the log messages
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
-
-# Add the file handler to the logger
 logger.addHandler(handler)
 
 # Set up email handler for error messages
@@ -46,6 +30,18 @@ cors = CORS(app)
 
 parser = reqparse.RequestParser()
 
+# musts flag
+first_run_musts = False
+no_depts_data=True
+
+# Middleware: Redirect to /run-musts if first_run_musts is True
+@app.before_request
+def check_musts_flag():
+    global first_run_musts
+    if first_run_musts and request.path and not no_depts_data == "/run-scrape":
+        logger.info("Redirecting /run-scrape request to /run-musts due to musts flag.")
+        return redirect("/run-musts")
+
 @app.route('/')
 def index():
     """Serve the frontend index file."""
@@ -55,20 +51,29 @@ class RunScrape(Resource):
     def get(self):
         try:
             if lib.scrape.run_scrape() == "busy":
-                return {"status": "System is busy"}, 200  # Use HTTP 409 for conflicts
+                return {"status": "System is busy"}, 200
             return {"status": "Scraping completed successfully"}, 200
         except Exception as e:
-            logger.error(str(e))  # Log the error
+            logger.error(str(e))
             return {"error": "Error running scrape process"}, 500
 
 class RunMusts(Resource):
     def get(self):
+        global first_run_musts
+        global no_depts_data
         try:
             if lib.musts.run_musts() == "busy":
-                return {"status": "System is busy"}, 200  # Use HTTP 409 for conflicts
+                if not first_run_musts:
+                    first_run_musts = True
+                    return {"status": "System is busy, request is received"}, 200
+                return {"status": "System is busy"}, 200
+            first_run_musts=False
             return {"status": "Get musts completed successfully"}, 200
         except Exception as e:
-            logger.error(str(e))  # Log the error
+            logger.error(str(e))
+            if noDeptsErrMsg in str(e):
+                no_depts_data=True
+                logger.info("scrape process is prioritized")
             return {"error": "Error running get musts process"}, 500
 
 # Add API resources
