@@ -32,14 +32,14 @@ parser = reqparse.RequestParser()
 
 # musts flag
 first_run_musts = False
-no_depts_data=True
+depts_data_available=False
 
 # Middleware: Redirect to /run-musts if first_run_musts is True
 @app.before_request
 def check_musts_flag():
     global first_run_musts
-    if first_run_musts and request.path and not no_depts_data == "/run-scrape":
-        logger.info("Redirecting /run-scrape request to /run-musts due to musts flag.")
+    global depts_data_available
+    if first_run_musts and request.path == "/run-scrape" and depts_data_available:
         return redirect("/run-musts")
 
 @app.route('/')
@@ -49,9 +49,11 @@ def index():
 
 class RunScrape(Resource):
     def get(self):
+        global depts_data_available
         try:
             if lib.scrape.run_scrape() == "busy":
                 return {"status": "System is busy"}, 200
+            depts_data_available = True
             return {"status": "Scraping completed successfully"}, 200
         except Exception as e:
             logger.error(str(e))
