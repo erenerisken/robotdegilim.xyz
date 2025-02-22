@@ -6,7 +6,7 @@ import { Controls } from "./Controls";
 import { WelcomeDialog } from "./WelcomeDialog";
 import { Banner } from "./Banner";
 import "./App.css";
-import { Colorset } from "./Colorset";
+import { useSelector } from "react-redux";
 
 const theme = createMuiTheme({
   palette: {
@@ -20,49 +20,11 @@ const theme = createMuiTheme({
 });
 
 const App = () => {
-  const [scenarios, setScenarios] = useState([]);
-  const [dontFills, setDontFills] = useState([]);
   const [loaded, setLoaded] = useState(false);
-  const dontFillColorset = new Colorset();
-
-  const handleDontFillAdd = (startDate, endDate, description) => {
-    setDontFills((prev) => {
-      const isOverlapping = prev.some((df) => startDate == df.startDate);
-      return isOverlapping
-        ? [...prev]
-        : [
-            ...prev,
-            {
-              startDate,
-              endDate,
-              description,
-              color: dontFillColorset.getBlack(),
-            },
-          ];
-    });
-  };
-
-  const handleDontFillDelete = (startDate) => {
-    setDontFills((prev) => prev.filter((df) => df.startDate !== startDate));
-  };
-
   const handleLoadingCompleted = () => {
     setLoaded(true);
   };
-
-  const handleChangeDontFillColor = (startDate, color) => {
-    setDontFills((prev) =>
-      prev.map((df) => (df.startDate === startDate ? { ...df, color } : df))
-    );
-  };
-
-  const handleChangeDontFillDescription = (startDate, newDescription) => {
-    setDontFills((prev) =>
-      prev.map((df) =>
-        df.startDate === startDate ? { ...df, description: newDescription } : df
-      )
-    );
-  };
+  const dontFillsState = useSelector((state) => state.dontFillsState);
 
   return (
     <MuiThemeProvider theme={theme}>
@@ -70,18 +32,9 @@ const App = () => {
         <Banner />
         {loaded && <WelcomeDialog />}
         <div className={isMobile ? "column" : "row"}>
-          <WeeklyProgram
-            dontFills={dontFills}
-            scenarios={scenarios}
-            onDontFillAdd={handleDontFillAdd}
-            onChangeDontFillColor={handleChangeDontFillColor}
-            onChangeDontFillDescription={handleChangeDontFillDescription}
-            onDontFillDelete={handleDontFillDelete}
-          />
+          <WeeklyProgram />
           <Controls
-            onSchedule={setScenarios}
-            dontFills={dontFills}
-            onDontFillAdd={handleDontFillAdd}
+            dontFills={dontFillsState.result}
             onLoadingCompleted={handleLoadingCompleted}
           />
         </div>
