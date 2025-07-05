@@ -8,11 +8,11 @@ import json
 from urllib.parse import urlparse, parse_qs
 import logging
 
-logger=logging.getLogger(shared_logger)
+logger=logging.getLogger(consts.shared_logger)
 
 def load_departments():
     """Find the departments JSON file from export_folder and return its contents as a dictionary."""
-    file_path = os.path.join(export_folder, departments_out_name)
+    file_path = os.path.join(consts.export_folder, consts.departments_out_name)
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             departments = json.load(file)
@@ -28,7 +28,7 @@ def get_department_page(session: requests.Session, dept_code: str, tries: int = 
         try:
             check_delay()
             response = session.get(
-                department_catalog_url.replace("{dept_code}", str(dept_code)), headers=headers
+                consts.department_catalog_url.replace("{dept_code}", str(dept_code)), headers=consts.headers
             )
             response.encoding = "utf-8"
 
@@ -86,7 +86,7 @@ def extract_dept_node(dept_soup):
     return dept_node
 
 def write_musts(data:dict):
-    data_path = os.path.join(export_folder, musts_out_name)
+    data_path = os.path.join(consts.export_folder, consts.musts_out_name)
     try:
         with open(data_path, "w", encoding="utf-8") as data_file:
             json.dump(data, data_file, ensure_ascii=False, indent=4)

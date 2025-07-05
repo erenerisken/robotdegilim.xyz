@@ -3,6 +3,7 @@ from flask_restful import Resource, Api, reqparse
 from flask_cors import CORS
 import logging
 from lib.constants import *
+import lib.constants
 import lib.scrape
 import lib.musts
 from lib.helpers import get_email_handler
@@ -10,7 +11,7 @@ from lib.exceptions import RecoverException # do not delete this line
 
 # Set up logging
 log_file = 'app.log'
-logger = logging.getLogger(shared_logger)
+logger = logging.getLogger(consts.shared_logger)
 logger.setLevel(logging.INFO)
 handler = logging.FileHandler(log_file)
 handler.setLevel(logging.INFO)
@@ -24,7 +25,7 @@ if email_handler:
     logger.addHandler(email_handler)
 
 # Initialize Flask app
-app = Flask(__name__, static_folder=build_folder, static_url_path='/')
+app = Flask(__name__, static_folder=consts.build_folder, static_url_path='/')
 api = Api(app)
 cors = CORS(app)
 
@@ -62,7 +63,7 @@ class RunScrape(Resource):
 class RunMusts(Resource):
     def get(self):
         global first_run_musts
-        global no_depts_data
+        global depts_data_available
         try:
             if lib.musts.run_musts() == "busy":
                 if not first_run_musts:
@@ -73,8 +74,8 @@ class RunMusts(Resource):
             return {"status": "Get musts completed successfully"}, 200
         except Exception as e:
             logger.error(str(e))
-            if noDeptsErrMsg in str(e):
-                no_depts_data=True
+            if consts.noDeptsErrMsg in str(e):
+                depts_data_available=False
                 logger.info("scrape process is prioritized")
             return {"error": "Error running get musts process"}, 500
 
@@ -82,6 +83,10 @@ class RunMusts(Resource):
 api.add_resource(RunScrape, '/run-scrape')
 api.add_resource(RunMusts, '/run-musts')
 
-# Start Flask app (uncomment this in production)
+# Start Flask app (comment this in production)
 # if __name__ == '__main__':
-#    app.run(host='0.0.0.0', port=3000)
+#     import set_secrets,set_idle
+#     set_idle.main()
+#     set_secrets.set_secrets()
+#     lib.constants.consts.init_envs()
+#     app.run(host='0.0.0.0', port=3000)

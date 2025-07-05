@@ -7,13 +7,13 @@ from lib.helpers import check_delay
 import logging
 import time
 
-logger=logging.getLogger(shared_logger)
+logger=logging.getLogger(consts.shared_logger)
 
 def get_main_page(session: requests.Session):
     """Fetch oibs64 main page using session"""
     try:
         #check_delay()
-        response = session.get(oibs64_url, headers=headers)
+        response = session.get(consts.oibs64_url, headers=consts.headers)
         response.encoding = "utf-8"
         return response
     except Exception as e:
@@ -33,7 +33,7 @@ def get_dept(session: requests.Session, dept_code: str, semester_code: str,tries
     while attempt < tries:
         try:
             check_delay(0.75)
-            response = session.post(oibs64_url, headers=headers, data=data)
+            response = session.post(consts.oibs64_url, headers=consts.headers, data=data)
             response.encoding = "utf-8"
             if response.status_code == 200:
                 return response
@@ -55,7 +55,7 @@ def get_course(session: requests.Session, course_code: str,tries:int=10):
     while attempt < tries:
         try:
             check_delay(0.75)
-            response = session.post(oibs64_url, headers=headers, data=data)
+            response = session.post(consts.oibs64_url, headers=consts.headers, data=data)
             response.encoding = "utf-8"
             if response.status_code==200:
                 return response
@@ -71,7 +71,7 @@ def get_section(session: requests.Session, section_code: str,tries:int=10):
     while attempt < tries:
         try:
             check_delay(0.75)
-            response = session.post(oibs64_url, headers=headers, data=data)
+            response = session.post(consts.oibs64_url, headers=consts.headers, data=data)
             response.encoding = "utf-8"
             if response.status_code == 200:
                 return response
@@ -86,10 +86,10 @@ def get_department_prefix(session: requests.Session, dept_code: str, course_code
     try:
         check_delay()
         response = session.get(
-            course_catalog_url.replace("{dept_code}", dept_code).replace(
+            consts.course_catalog_url.replace("{dept_code}", dept_code).replace(
                 "{course_code}", course_code
             ),
-            headers=headers,
+            headers=consts.headers,
         )
         response.encoding = "utf-8"
         catalog_soup = BeautifulSoup(response.text, "html.parser")
@@ -174,7 +174,7 @@ def extract_sections(session: requests.Session, soup, sections):
                 time_cells = time_row.find_all("td")
                 if (
                     not time_cells[0].get_text()
-                    or time_cells[0].get_text() not in days_dict
+                    or time_cells[0].get_text() not in consts.days_dict
                 ):
                     continue
                 section_times.append(
@@ -182,7 +182,7 @@ def extract_sections(session: requests.Session, soup, sections):
                         "p": time_cells[3].find("font").get_text(),
                         "s": time_cells[1].find("font").get_text(),
                         "e": time_cells[2].find("font").get_text(),
-                        "d": days_dict[time_cells[0].get_text()],
+                        "d": consts.days_dict[time_cells[0].get_text()],
                     }
                 )
 
@@ -285,7 +285,7 @@ def write_json(data:dict,file_path):
     
 def load_prefixes():
     """Find the departments JSON file from export_folder and return its contents as a dictionary."""
-    file_path = os.path.join(export_folder, departments_out_name)
+    file_path = os.path.join(consts.export_folder, consts.departments_out_name)
     if not os.path.exists(file_path):
         return {}
     try:
@@ -297,4 +297,20 @@ def load_prefixes():
             return prefixes
     except Exception as e:
         logger.error(f"Failed to load prefixes from file {file_path}: {e}")
+        return {}
+
+def load_manual_prefixes():
+    """Find the manual prefixes JSON file from export_folder and return its contents as a dictionary."""
+    file_path = os.path.join(consts.export_folder, consts.manual_prefixes_name)
+    if not os.path.exists(file_path):
+        return {}
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+            manual_prefixes={}
+            for code in data.keys():
+                manual_prefixes[code] = data[code]['p']
+            return manual_prefixes
+    except Exception as e:
+        logger.error(f"Failed to load manual prefixes from file {file_path}: {e}")
         return {}

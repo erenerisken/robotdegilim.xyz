@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import time
 from logging.handlers import SMTPHandler
 
-logger=logging.getLogger(shared_logger)
+logger=logging.getLogger(consts.shared_logger)
 
 last_request_time = None
 
@@ -25,7 +25,7 @@ def upload_to_s3(s3_client, file_path, s3_key):
     try:
         s3_client.upload_file(
             file_path,
-            s3_bucket_name,
+            consts.s3_bucket_name,
             s3_key,
             ExtraArgs={"ACL": "public-read"}  # Make the file public
         )
@@ -35,7 +35,7 @@ def upload_to_s3(s3_client, file_path, s3_key):
 def is_idle(s3_client):
     """Fetches the status.json from S3 and checks if the backend is idle."""
     try:
-        response = s3_client.get_object(Bucket=s3_bucket_name, Key=status_out_name)
+        response = s3_client.get_object(Bucket=consts.s3_bucket_name, Key=consts.status_out_name)
         status_data = response['Body'].read().decode('utf-8')
         status_json = json.loads(status_data)
         if status_json.get("status") == "idle":
@@ -47,7 +47,7 @@ def is_idle(s3_client):
         return False
 
 def write_status(status: dict):
-    data_path = os.path.join(export_folder, status_out_name)
+    data_path = os.path.join(consts.export_folder, consts.status_out_name)
     try:
         with open(data_path, "w", encoding="utf-8") as data_file:
             json.dump(status, data_file, ensure_ascii=False, indent=4)
@@ -67,11 +67,11 @@ def check_delay(delay: float = 1):
 def get_email_handler():
     try:
         mail_handler = SMTPHandler(
-            mailhost=(MAIL_SERVER, MAIL_PORT),
-            fromaddr=MAIL_DEFAULT_SENDER,
-            toaddrs=[MAIL_RECIPIENT],
+            mailhost=(consts.MAIL_SERVER, consts.MAIL_PORT),
+            fromaddr=consts.MAIL_DEFAULT_SENDER,
+            toaddrs=[consts.MAIL_RECIPIENT],
             subject="Error in Robotdegilim",
-            credentials=(MAIL_USERNAME, MAIL_PASSWORD),
+            credentials=(consts.MAIL_USERNAME, consts.MAIL_PASSWORD),
             secure=()  # Use TLS
         )
         
