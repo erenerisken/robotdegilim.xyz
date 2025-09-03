@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, memo } from "react";
+import React, { useMemo, useCallback, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Paper,
@@ -35,9 +35,8 @@ import { DontFillBlock } from "./DontFillBlock";
 const currentDate = "2021-02-20";
 const colorset = new Colorset();
 
-export const WeeklyProgram = () => {
+export const WeeklyProgram = ({ currentScenario, setCurrentScenario }) => {
   const dispatch = useDispatch();
-  const [currentScenario, setCurrentScenario] = useState(0);
   const scenariosState = useSelector((state) => state.scenariosState);
   const dontFillsState = useSelector((state) => state.dontFillsState);
   const scenarios = scenariosState.result;

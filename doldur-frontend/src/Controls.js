@@ -38,6 +38,7 @@ import NTEDialog from "./NTEDialog";
 import SchoolIcon from "@material-ui/icons/School";
 
 export const Controls = (props) => {
+  const { currentScenario } = props;
   const [surname, setSurname] = useState("");
   const [department, setDepartment] = useState("");
   const [semester, setSemester] = useState(0);
@@ -382,10 +383,10 @@ export const Controls = (props) => {
     const occupiedSlots = [];
     
     // Eğer schedule hesaplanmışsa, aktif scenario'yu kullan
-    if (scenariosState.result && scenariosState.result.length > 0) {
-      const currentScenario = scenariosState.result[0]; // İlk scenario'yu kullan
+    if (scenariosState.result && scenariosState.result.length > currentScenario) {
+      const currentScenarioData = scenariosState.result[currentScenario]; // Aktif scenario'yu kullan
       
-      currentScenario.forEach((courseInScenario) => {
+      currentScenarioData.forEach((courseInScenario) => {
         courseInScenario.section.lectureTimes.forEach((lectureTime) => {
           occupiedSlots.push({
             day: lectureTime.day,
