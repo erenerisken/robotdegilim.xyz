@@ -381,10 +381,10 @@ export const Controls = (props) => {
     const occupiedSlots = [];
     
     // Eğer schedule hesaplanmışsa, aktif scenario'yu kullan
-    if (scenariosState.result && scenariosState.result.length > currentScenario) {
-      const currentScenarioData = scenariosState.result[currentScenario]; // Aktif scenario'yu kullan
+    if (scenariosState.result && scenariosState.result.length > 0) {
+      const currentScenario = scenariosState.result[0]; // İlk scenario'yu kullan
       
-      currentScenarioData.forEach((courseInScenario) => {
+      currentScenario.forEach((courseInScenario) => {
         courseInScenario.section.lectureTimes.forEach((lectureTime) => {
           occupiedSlots.push({
             day: lectureTime.day,
