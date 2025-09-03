@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   TextField,
   Select,
@@ -34,6 +34,8 @@ import { Colorset } from "./Colorset";
 import { LoadingDialog } from "./LoadingDialog/LoadingDialog";
 import "./Controls.css";
 import { resetDontFills } from "./slices/dontFillsSlice";
+import NTEDialog from "./NTEDialog";
+import SchoolIcon from "@material-ui/icons/School";
 
 export const Controls = (props) => {
   const [surname, setSurname] = useState("");
@@ -67,8 +69,10 @@ export const Controls = (props) => {
   const [lastUpdated, setLastUpdated] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
+  const [nteDialogOpen, setNteDialogOpen] = useState(false);
 
   const dispatch = useDispatch();
+  const scenariosState = useSelector((state) => state.scenariosState);
 
   const clientRef = useRef(new Client());
 
@@ -374,6 +378,98 @@ export const Controls = (props) => {
     if (newWindow) newWindow.opener = null;
   };
 
+  const calculateOccupiedSlots = () => {
+    const occupiedSlots = [];
+    
+    // Eğer schedule hesaplanmışsa, aktif scenario'yu kullan
+    if (scenariosState.result && scenariosState.result.length > 0) {
+      const currentScenario = scenariosState.result[0]; // İlk scenario'yu kullan
+      
+      currentScenario.forEach((courseInScenario) => {
+        courseInScenario.section.lectureTimes.forEach((lectureTime) => {
+          occupiedSlots.push({
+            day: lectureTime.day,
+            startHour: lectureTime.startHour,
+            startMin: lectureTime.startMin,
+            endHour: lectureTime.endHour,
+            endMin: lectureTime.endMin,
+            source: 'scheduled_course',
+            courseCode: courseInScenario.abbreviation,
+            sectionNumber: courseInScenario.section.sectionNumber
+          });
+        });
+      });
+      
+      // console.log('Using SCHEDULED courses for NTE filtering:', occupiedSlots);
+    } else {
+      // Schedule henüz hesaplanmamışsa, seçili derslerin aktif şubelerini kullan
+      selectedCourses.forEach((c) => {
+        if (c === null || c.settings?.disableCourse) return;
+        const currentCourse = getCourseByCode(c.code);
+        if (!currentCourse) return;
+        
+        currentCourse.sections.forEach((section, sectionIndex) => {
+          if (!c.sections[sectionIndex]) return; // Bu section seçili değil
+          
+          section.lectureTimes.forEach((lectureTime) => {
+            occupiedSlots.push({
+              day: lectureTime.day,
+              startHour: lectureTime.startHour,
+              startMin: lectureTime.startMin,
+              endHour: lectureTime.endHour,
+              endMin: lectureTime.endMin,
+              source: 'selected_course',
+              courseCode: currentCourse.abbreviation,
+              sectionNumber: section.sectionNumber
+            });
+          });
+        });
+      });
+      
+      // console.log('Using SELECTED courses for NTE filtering:', occupiedSlots);
+    }
+    
+    // DontFill bloklarını da ekle
+    props.dontFills.forEach((df) => {
+      occupiedSlots.push({
+        day: df.startDate.getDay(),
+        startHour: df.startDate.getHours(),
+        startMin: df.startDate.getMinutes(),
+        endHour: df.endDate.getHours(),
+        endMin: df.endDate.getMinutes(),
+        source: 'dontfill'
+      });
+    });
+    
+    return occupiedSlots;
+  };
+
+  const handleGetAvailableNTE = () => {
+    setNteDialogOpen(true);
+  };
+
+  const handleNTEDialogClose = () => {
+    setNteDialogOpen(false);
+  };
+
+  const handleAddNTECourse = (nteCourse) => {
+    // NTE dersleri için özel handler - sadece seçilen şube aktif olsun
+    const newSelected = [...selectedCourses];
+    newSelected.push({
+      code: nteCourse.code,
+      sections: [true], // NTE'de sadece 1 şube var ve o aktif
+      color: colorset.getNextColor(),
+      settings: {
+        checkSurname: true,
+        checkDepartment: true,
+        checkCollision: true,
+        disableCourse: false,
+      },
+    });
+    setSelectedCourses(newSelected);
+    setNteDialogOpen(false);
+  };
+
   return (
     <Paper style={isMobile ? styles.mobile : styles.desktop}>
       <Snackbar
@@ -449,6 +545,16 @@ export const Controls = (props) => {
             onClick={() => openInNewTab("https://metu-non.tech")}
           >
             NTE Catalog
+          </Button>
+        </div>
+        <div className="control-button">
+          <Button
+            variant="contained"
+            style={{ backgroundColor: "#FF9800", color: "white" }}
+            startIcon={<SchoolIcon style={{ color: "white" }} />}
+            onClick={handleGetAvailableNTE}
+          >
+            Get Available NTE
           </Button>
         </div>
         <div className="control-button">
@@ -533,6 +639,13 @@ export const Controls = (props) => {
           {"   Last added Semester: " + lastUpdated.t.split(":")[1]}
         </Typography>
       ) : null}
+      
+      <NTEDialog
+        open={nteDialogOpen}
+        onClose={handleNTEDialogClose}
+        occupiedSlots={calculateOccupiedSlots()}
+        onAddCourse={handleAddNTECourse}
+      />
     </Paper>
   );
 };
