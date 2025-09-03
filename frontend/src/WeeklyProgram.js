@@ -1,168 +1,49 @@
-import React, { useMemo, useState, useCallback, memo } from "react";
+import React, { useMemo, useCallback, memo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Paper,
   IconButton,
   Typography,
   TextField,
   Button,
-  Menu,
-  MenuItem,
 } from "@material-ui/core";
-import CloseIcon from "@material-ui/icons/Close";
 import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import FastRewindIcon from "@material-ui/icons/FastRewind";
 import PhotoCameraIcon from "@material-ui/icons/PhotoCamera";
 import FastForwardIcon from "@material-ui/icons/FastForward";
-import PaletteIcon from "@material-ui/icons/Palette";
 import { ViewState } from "@devexpress/dx-react-scheduler";
+import { convertTime } from "./helpers/convertTime";
 import {
   Scheduler,
   WeekView,
   Appointments,
 } from "@devexpress/dx-react-scheduler-material-ui";
+import {
+  handleDontFillAdd,
+  handleChangeDontFillColor,
+  handleChangeDontFillDescription,
+  handleDontFillDelete,
+} from "./slices/dontFillsSlice";
 import { isMobile } from "react-device-detect";
 import { Colorset } from "./Colorset";
 import { ExportCalendar } from "./ExportCalendar";
 import { toJpeg } from "html-to-image";
 import "./WeeklyProgram.css";
+import { DontFillBlock } from "./DontFillBlock";
+
 const currentDate = "2021-02-20";
+const colorset = new Colorset();
 
-export const DontFillBlock = ({
-  data,
-  onDontFillDelete,
-  onChangeDontFillColor,
-  onChangeDontFillDescription,
-}) => {
-  const [editing, setEditing] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const colorset = new Colorset();
-  const colors = colorset.colors;
-  const open = Boolean(anchorEl);
-
-  const handleOpenColorPalette = (event) => {
-    setAnchorEl(event.currentTarget);
+export const WeeklyProgram = ({ currentScenario, setCurrentScenario }) => {
+  const dispatch = useDispatch();
+  const scenariosState = useSelector((state) => state.scenariosState);
+  const dontFillsState = useSelector((state) => state.dontFillsState);
+  const scenarios = scenariosState.result;
+  const dontFills = dontFillsState.result;
+  const onColorChange = (color) => {
+    dispatch(handleChangeDontFillColor(color));
   };
-
-  const handleColorSelect = (color) => {
-    onChangeDontFillColor(color);
-    handleClose();
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleDescriptionChange = (e) => {
-    onChangeDontFillDescription(e.target.value);
-  };
-
-  const handleTextFieldKeyDown = (e) => {
-    if (e.keyCode === 13) {
-      setEditing(false);
-    }
-  };
-
-  return (
-    <div className="program-text-container-df">
-      <div className="program-row-df">
-        <IconButton onClick={onDontFillDelete} style={{ padding: 0 }}>
-          <CloseIcon fontSize="small" style={{ color: data.color.text }} />
-        </IconButton>
-        {editing ? (
-          <TextField
-            value={data.title}
-            className="df-description-text-field"
-            InputProps={{ style: { color: data.color.text } }}
-            onChange={handleDescriptionChange}
-            onKeyDown={handleTextFieldKeyDown}
-            onBlur={() => setEditing(false)}
-          />
-        ) : (
-          <div
-            className="program-title-dont-fill"
-            style={{ color: data.color.text }}
-            onClick={() => setEditing(true)}
-          >
-            {data.title}
-          </div>
-        )}
-        <IconButton
-          style={{ padding: 0 }}
-          id="palette-button"
-          aria-controls={open ? "palette-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
-          onClick={handleOpenColorPalette}
-        >
-          <PaletteIcon fontSize="small" style={{ color: data.color.text }} />
-        </IconButton>
-        <Menu
-          id="palette-menu"
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          MenuListProps={{
-            "aria-labelledby": "palette-button",
-          }}
-          PaperProps={{
-            style: {
-              backgroundColor: "black",
-            },
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "5px",
-              padding: "5px",
-              paddingTop: "0px",
-              paddingBottom: "0px",
-              backgroundColor: "black",
-            }}
-          >
-            {colors.map((color) => (
-              <MenuItem
-                key={color.main}
-                onClick={() => handleColorSelect(color)}
-                style={{ padding: 0 }}
-              >
-                <div
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    backgroundColor: color.main,
-                    borderRadius: "4px",
-                  }}
-                ></div>
-              </MenuItem>
-            ))}
-          </div>
-        </Menu>
-      </div>
-    </div>
-  );
-};
-
-export const WeeklyProgram = ({
-  scenarios,
-  dontFills,
-  onDontFillAdd,
-  onChangeDontFillColor,
-  onChangeDontFillDescription,
-  onDontFillDelete,
-}) => {
-  const [currentScenario, setCurrentScenario] = useState(0);
-
-  const convertTime = useCallback(
-    (day, hour, min) =>
-      `2021-02-${14 + day}T${hour.toString().padStart(2, "0")}:${min
-        .toString()
-        .padStart(2, "0")}`,
-    []
-  );
 
   const handleScenarioChange = useCallback(
     (delta) => {
@@ -181,27 +62,6 @@ export const WeeklyProgram = ({
       );
     },
     [scenarios.length]
-  );
-
-  const handleDontFillAdd = useCallback(
-    (startDate, endDate) => {
-      onDontFillAdd(startDate, endDate, "FULL");
-    },
-    [onDontFillAdd]
-  );
-
-  const handleChangeDontFillColor = useCallback(
-    (startDate, color) => {
-      onChangeDontFillColor(startDate, color);
-    },
-    [onChangeDontFillColor]
-  );
-
-  const handleChangeDontFillDescription = useCallback(
-    (startDate, newDescription) => {
-      onChangeDontFillDescription(startDate, newDescription);
-    },
-    [onChangeDontFillDescription]
   );
 
   const doCapture = useCallback(() => {
@@ -223,7 +83,6 @@ export const WeeklyProgram = ({
     const scenario = scenarios.length
       ? scenarios[Math.min(scenarios.length - 1, currentScenario)]
       : [];
-
     const coursesToDisplay = scenario.reduce((acc, c) => {
       c.section.lectureTimes.forEach((lt) => {
         const length = lt.endHour - lt.startHour;
@@ -255,24 +114,21 @@ export const WeeklyProgram = ({
   }, [scenarios, currentScenario, dontFills, convertTime]);
 
   const timeTableCellComponent = useCallback(
-    (props2) => <TimeTableCell {...props2} onDontFillAdd={handleDontFillAdd} />,
+    (props2) => <TimeTableCell {...props2} />,
     [handleDontFillAdd]
   );
 
   const appointmentContentComponent = useCallback(
-    (props2) => (
-      <AppointmentContent
-        {...props2}
-        onDontFillDelete={onDontFillDelete}
-        handleChangeDontFillColor={handleChangeDontFillColor}
-        handleChangeDontFillDescription={handleChangeDontFillDescription}
-      />
-    ),
-    [
-      onDontFillDelete,
-      handleChangeDontFillColor,
-      handleChangeDontFillDescription,
-    ]
+    (props2) => {
+      return (
+        <AppointmentContent
+          {...props2}
+          onDontFillDelete={() => dispatch(handleDontFillDelete(props2.data))}
+          handleChangeDontFillColor={onColorChange}
+        />
+      );
+    },
+    [scenarios]
   );
 
   return (
@@ -359,19 +215,13 @@ const CustomAppointment = memo((props) => (
   <WeekView.AppointmentLayer {...props} className="custom-appointment" />
 ));
 
-const AppointmentContent = memo(
-  ({
-    data,
-    onDontFillDelete,
-    handleChangeDontFillColor,
-    handleChangeDontFillDescription,
-    ...restProps
-  }) => (
+const AppointmentContent = memo(({ data, ...restProps }) => {
+  return (
     <Appointments.AppointmentContent
       data={data}
       {...restProps}
       className="program-appointment"
-      style={{ background: data.color.main }}
+      style={{ background: data?.color?.main }}
     >
       {data.type === "course" ? (
         <div className="program-text-container">
@@ -386,32 +236,35 @@ const AppointmentContent = memo(
           </div>
         </div>
       ) : (
-        <DontFillBlock
-          data={data}
-          onDontFillDelete={() => onDontFillDelete(data.startDate)}
-          onChangeDontFillColor={(color) =>
-            handleChangeDontFillColor(data.startDate, color)
-          }
-          onChangeDontFillDescription={(newDescription) =>
-            handleChangeDontFillDescription(data.startDate, newDescription)
-          }
-        />
+        <DontFillBlock data={data} />
       )}
     </Appointments.AppointmentContent>
-  )
-);
+  );
+});
 
-const TimeTableCell = memo(
-  ({ startDate, endDate, onDontFillAdd, ...restProps }) =>
-    startDate.getDay() > 4 ? (
-      <WeekView.TimeTableCell {...restProps} style={{ width: "0" }} />
-    ) : (
-      <WeekView.TimeTableCell
-        {...restProps}
-        onClick={() => onDontFillAdd(startDate, endDate)}
-      />
-    )
-);
+const TimeTableCell = memo(({ startDate, endDate, ...restProps }) => {
+  const dispatch = useDispatch();
+
+  if (startDate.getDay() > 4) {
+    return <WeekView.TimeTableCell {...restProps} style={{ width: "0" }} />;
+  }
+
+  return (
+    <WeekView.TimeTableCell
+      {...restProps}
+      onClick={() => {
+        dispatch(
+          handleDontFillAdd({
+            startDate: startDate,
+            endDate: endDate,
+            description: "FULL",
+            color: colorset.blackDontFill,
+          })
+        );
+      }}
+    />
+  );
+});
 
 const styles = {
   mobile: {

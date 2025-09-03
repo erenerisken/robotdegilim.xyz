@@ -21,6 +21,7 @@ const theme = createMuiTheme({
 
 const App = () => {
   const [loaded, setLoaded] = useState(false);
+  const [currentScenario, setCurrentScenario] = useState(0);
   const handleLoadingCompleted = () => {
     setLoaded(true);
   };
@@ -32,10 +33,14 @@ const App = () => {
         <Banner />
         {loaded && <WelcomeDialog />}
         <div className={isMobile ? "column" : "row"}>
-          <WeeklyProgram />
+          <WeeklyProgram 
+            currentScenario={currentScenario}
+            setCurrentScenario={setCurrentScenario}
+          />
           <Controls
             dontFills={dontFillsState.result}
             onLoadingCompleted={handleLoadingCompleted}
+            currentScenario={currentScenario}
           />
         </div>
       </div>
