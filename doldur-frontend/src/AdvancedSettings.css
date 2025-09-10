@@ -5,6 +5,7 @@
 .settings-row {
     display: inline-flex;
     width: 100%;
+    flex-wrap: wrap;
 }
 .settings-accordion {
     width: 100%;
@@ -13,4 +14,15 @@
     margin-top: auto;
     margin-bottom: auto;
     margin-left: 6pt;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .settings-row {
+    flex-direction: column;
+    gap: 6pt;
+  }
+  .settings-accordion {
+    width: 100%;
+  }
 }

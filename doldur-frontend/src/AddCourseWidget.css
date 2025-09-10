@@ -8,6 +8,7 @@
 .add-course-row {
     display: inline-flex;
     width: 100%;
+    flex-wrap: wrap;
 }
 .category-select {
     min-width: 90%;
@@ -18,4 +19,16 @@
 }
 .add-course-name {
     background: #FFFFFF;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .add-course-row {
+    flex-direction: column;
+    gap: 6pt;
+  }
+  .category-select {
+    min-width: 100%;
+    margin-right: 0;
+  }
 }
