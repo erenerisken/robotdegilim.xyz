@@ -1,17 +1,16 @@
-/* Use the same class names as in the component */
-.course-settings-wrapper {
+.settings-wrapper {
     margin: 6pt;
     padding: 3pt;
 }
-.course-settings-row {
+.settings-row {
     display: inline-flex;
     width: 100%;
     flex-wrap: wrap;
 }
-.course-settings-accordion {
+.settings-accordion {
     width: 100%;
 }
-.course-settings-typo {
+.settings-typo {
     margin-top: auto;
     margin-bottom: auto;
     margin-left: 6pt;
@@ -19,11 +18,11 @@
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
-  .course-settings-row {
+  .settings-row {
     flex-direction: column;
     gap: 6pt;
   }
-  .course-settings-accordion {
+  .settings-accordion {
     width: 100%;
   }
 }
