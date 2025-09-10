@@ -89,9 +89,7 @@ export const Controls = (props) => {
       props.onLoadingCompleted();
     });
     clientRef.current.getLastUpdated().then((lu) => setLastUpdated(lu));
-    if (isMobile) {
-      document.body.style.zoom = "60%";
-    }
+    // Remove legacy zoom hack on mobile; rely on responsive CSS instead
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

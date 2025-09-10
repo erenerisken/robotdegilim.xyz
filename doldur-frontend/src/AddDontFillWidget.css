@@ -8,7 +8,9 @@
 .add-df-row {
     display: inline-flex;
     width: 100%;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .df-widget-select {
@@ -31,12 +33,11 @@
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
   .add-df-row {
-    flex-direction: column;
+    flex-wrap: nowrap;
     gap: 6pt;
   }
   .df-widget-select,
   .df-textfield {
-    width: 100%;
-    min-width: unset;
+    min-width: 90pt;
   }
 }

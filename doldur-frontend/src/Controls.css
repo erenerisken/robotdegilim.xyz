@@ -44,16 +44,12 @@
 .MuiFormHelperText-root {
   margin: 0 !important;
   padding-top: 4px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Align InputLabel */
-.MuiInputLabel-outlined {
-  transform: translate(14px, 12px) scale(1) !important;
-}
-
-.MuiInputLabel-outlined.MuiInputLabel-shrink {
-  transform: translate(14px, -6px) scale(0.75) !important;
-}
+/* Use default Material-UI label transforms to avoid layout jumps on small screens */
 
 .control-button {
   margin: 8px 4px;
@@ -156,11 +152,22 @@
   .textfield-wrapper {
     margin-right: 0;
     margin-bottom: 8px;
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    height: auto; /* allow taller container if helper text wraps */
   }
 
   .control-row {
     gap: 4px;
     flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  /* keep outlined inputs compact on small screens */
+  .MuiOutlinedInput-root {
+    height: 40px !important;
   }
 }
 
