@@ -32,9 +32,6 @@ frontend/build/
 backend/.venv/
 backend/storage/
 backend/src/untracked/
-backend/app.log
-backend/export/
 
 # Environment files
-.env
 backend/.env

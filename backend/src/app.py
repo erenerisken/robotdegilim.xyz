@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restful import Resource, Api
 from flask_cors import CORS
 import logging
+import os
 
 from utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
 from pathlib import Path
@@ -33,27 +34,30 @@ app_logger.setLevel(logging.INFO)
 scrape_logger.setLevel(logging.INFO)
 musts_logger.setLevel(logging.INFO)
 
-# app.log (INFO+) — rotate daily at TR midnight, keep 5 days
+# app.log (INFO+) - rotate daily at TR midnight, keep 5 days
 _log_days = 5
-app_file = app_constants.app_log_file
-if not any(isinstance(h, TzTimedRotatingFileHandler) and getattr(h, 'baseFilename', '').endswith(app_file) for h in app_logger.handlers):
+_log_dir = app_constants.log_dir
+_log_dir.mkdir(parents=True, exist_ok=True)
+
+app_file = str(_log_dir / app_constants.app_log_file)
+if not any(isinstance(h, TzTimedRotatingFileHandler) and os.path.basename(getattr(h, 'baseFilename', '')) == app_constants.app_log_file for h in app_logger.handlers):
     h = TzTimedRotatingFileHandler(app_file, when='midnight', interval=1, backupCount=_log_days, encoding=app_constants.log_encoding)
     h.setLevel(logging.INFO)
     h.setFormatter(fmt)
     app_logger.addHandler(h)
 
-# jobs.log (INFO+) for scrape and musts — rotate daily at TR midnight, keep 3 days
-jobs_file = app_constants.jobs_log_file
+# jobs.log (INFO+) for scrape and musts - rotate daily at TR midnight, keep 5 days
+jobs_file = str(_log_dir / app_constants.jobs_log_file)
 for job_logger in (scrape_logger, musts_logger):
-    if not any(isinstance(h, TzTimedRotatingFileHandler) and getattr(h, 'baseFilename', '').endswith(jobs_file) for h in job_logger.handlers):
+    if not any(isinstance(h, TzTimedRotatingFileHandler) and os.path.basename(getattr(h, 'baseFilename', '')) == app_constants.jobs_log_file for h in job_logger.handlers):
         h = TzTimedRotatingFileHandler(jobs_file, when='midnight', interval=1, backupCount=_log_days, encoding=app_constants.log_encoding)
         h.setLevel(logging.INFO)
         h.setFormatter(fmt)
         job_logger.addHandler(h)
 
-# error.log (ERROR+) on parent so children propagate up — rotate daily at TR midnight, keep 3 days
-err_file = app_constants.error_log_file
-if not any(isinstance(h, TzTimedRotatingFileHandler) and getattr(h, 'baseFilename', '').endswith(err_file) for h in parent_logger.handlers):
+# error.log (ERROR+) on parent so children propagate up - rotate daily at TR midnight, keep 5 days
+err_file = str(_log_dir / app_constants.error_log_file)
+if not any(isinstance(h, TzTimedRotatingFileHandler) and os.path.basename(getattr(h, 'baseFilename', '')) == app_constants.error_log_file for h in parent_logger.handlers):
     h = TzTimedRotatingFileHandler(err_file, when='midnight', interval=1, backupCount=_log_days, encoding=app_constants.log_encoding)
     h.setLevel(logging.ERROR)
     h.setFormatter(fmt)
