@@ -2,9 +2,6 @@ import os
 from pathlib import Path
 
 class app_constants:
-    # No department data error message
-    noDeptsErrMsg="No departments data available."
-
     # Email configuration
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')  # Replace with your email
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")  # Replace with your email password
@@ -13,17 +10,13 @@ class app_constants:
     MAIL_DEFAULT_SENDER = MAIL_USERNAME  # Sender address
     MAIL_RECIPIENT = "info.robotdegilim@gmail.com"  # Where to send the email
     MAIL_ERROR_SUBJECT = "Robotdegilim.xyz Error Alert"
-
+    
     # s3
     s3_bucket_name="cdn.robotdegilim.xyz"
     aws_access_key_id = os.environ.get('ACCESS_KEY')
     aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
     #aws_region_name = os.environ.get('AWS_REGION')
-
-    # Folder names
-    build_folder = "build"
-    export_folder = "export"
-
+    
     # Log file names
     app_log_file = "app.log"
     jobs_log_file = "jobs.log"
@@ -36,21 +29,25 @@ class app_constants:
     log_scrape = "robotdegilim.scrape"
     log_musts = "robotdegilim.musts"
     log_utils = "robotdegilim.utils"
-
+    
     # Directories
     backend_dir = Path(__file__).resolve().parents[1]  # backend/
     log_dir = backend_dir / "storage" / "logs"
-
-    # output file names
-    data_out_name = "data.json"
-    departments_out_name = "departments.json"
-    musts_out_name = "musts.json"
-    last_updated_out_name='lastUpdated.json'
-    status_out_name="status.json"
-    departments_noprefix_out_name="departmentsNoPrefix.json"
-    # input file names
-    manual_prefixes_name="manualPrefixes.json"
-
+    data_dir = backend_dir / "storage" / "data"
+    
+    # json file names
+    data_json = "data.json"
+    departments_json = "departments.json"
+    musts_json = "musts.json"
+    last_updated_json = 'lastUpdated.json'
+    status_json = "status.json"
+    departments_noprefix_json = "departmentsNoPrefix.json"
+    manual_prefixes_json = "manualPrefixes.json"
+    
+    # No department data error message
+    noDeptsErrMsg="No departments data available."
+    
+    # Web scraping
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 7.0; Win64; x64; rv:3.0b2pre) Gecko/20110203 Firefox/4.0b12pre",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -70,11 +67,3 @@ class app_constants:
         "Saturday": 5,
         "Sunday": 6,
     }
-
-    @classmethod
-    def init_envs(cls):
-        cls.MAIL_USERNAME = os.environ.get('MAIL_USERNAME')  # Replace with your email
-        cls.MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")  # Replace with your email password
-        cls.aws_access_key_id = os.environ.get('ACCESS_KEY')
-        cls.aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
-
