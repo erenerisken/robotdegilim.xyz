@@ -1,9 +1,11 @@
 import datetime
+import uuid
 from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_cors import CORS
 import logging
 import os
+from werkzeug.exceptions import HTTPException
 
 from utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
 from pathlib import Path
@@ -21,6 +23,7 @@ from utils.emailer import get_email_handler
 from utils.s3 import get_s3_client
 from services.status_service import get_status, set_status, init_status
 from ops.exceptions import RecoverException # do not delete this line
+from utils.logging import JsonFormatter
 
 # Set up structured logging split: app, jobs, and errors
 fmt = logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s')
@@ -74,6 +77,13 @@ if email_handler and not any(isinstance(h, type(email_handler)) for h in parent_
 # Use app logger for this module
 _logger = app_logger
 
+# Optional JSON log formatting
+if app_constants.log_json:
+    jf = JsonFormatter(converter=fmt.converter)
+    for lg in (app_logger, scrape_logger, musts_logger, parent_logger):
+        for h in lg.handlers:
+            h.setFormatter(jf)
+
 # Initialize status defaults in S3 at startup
 try:
     s3 = get_s3_client()
@@ -84,28 +94,47 @@ except Exception as e:
 # Initialize Flask app
 app = Flask(__name__)
 api = Api(app)
-cors = CORS(app)
-
-# No in-process flags; use S3-backed status
+origins = app_constants.allowed_origins
+if origins and origins != "*":
+    cors = CORS(app, resources={r"/*": {"origins": [o.strip() for o in origins.split(',') if o.strip()]}})
+else:
+    cors = CORS(app)
 
 @app.before_request
 def _access_log_start():
-    request._start_time = datetime.now()
+    request._start_time = datetime.datetime.now()
+    request._request_id = uuid.uuid4().hex
 
 @app.after_request
 def _access_log_end(response):
     try:
         start = getattr(request, "_start_time", None)
         if start:
-            duration_ms = int((datetime.now() - start).total_seconds() * 1000)
+            duration_ms = int((datetime.datetime.now() - start).total_seconds() * 1000)
         else:
             duration_ms = -1
         app_logger.info(
-            f"access method={request.method} path={request.path} status={response.status_code} duration_ms={duration_ms}"
+            f"access method={request.method} path={request.path} status={response.status_code} duration_ms={duration_ms} req_id={getattr(request, '_request_id', '-') }"
         )
+        # Security headers
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "no-referrer")
+        response.headers.setdefault("X-Frame-Options", "DENY")
     except Exception:
         pass
     return response
+
+# Global error handler to standardize JSON errors
+
+@app.errorhandler(Exception)
+def _handle_error(e):
+    req_id = getattr(request, "_request_id", None)
+    if isinstance(e, HTTPException):
+        code = e.code or 500
+        _logger.error(f"http_error status={code} path={request.path} msg={e}")
+        return {"error": e.name, "message": str(e), "code": "ERROR", "request_id": req_id}, code
+    _logger.exception(f"unhandled_error path={request.path}")
+    return {"error": "Internal Server Error", "code": "ERROR", "request_id": req_id}, 500
 
 @app.route('/')
 def index():
@@ -116,7 +145,7 @@ class RunScrape(Resource):
     def get(self):
         try:
             if run_scrape() == "busy":
-                return {"status": "System is busy"}, 200
+                return {"status": "System is busy", "code": "BUSY"}, 503
             # mark departments ready and check queued musts
             s3 = get_s3_client()
             st = set_status(s3, depts_ready=True)
@@ -129,14 +158,14 @@ class RunScrape(Resource):
                         set_status(s3, queued_musts=False)
                         return {"status": "Scraping completed; musts completed successfully"}, 200
                     # Very unlikely: still busy
-                    return {"status": "Scraping completed; musts still busy"}, 200
+                    return {"status": "Scraping completed; musts still busy", "code": "BUSY"}, 503
                 except Exception as e:
                     _logger.error(f"queued musts run failed: {e}")
-                    return {"status": "Scraping completed; musts failed"}, 500
+                    return {"status": "Scraping completed; musts failed", "code": "ERROR"}, 500
             return {"status": "Scraping completed successfully"}, 200
         except Exception as e:
             _logger.error(str(e))
-            return {"error": "Error running scrape process"}, 500
+            return {"error": "Error running scrape process", "code": "ERROR"}, 500
 
 class RunMusts(Resource):
     def get(self):
@@ -147,24 +176,24 @@ class RunMusts(Resource):
             if not st.get("depts_ready"):
                 if not st.get("queued_musts"):
                     set_status(s3, queued_musts=True)
-                    return {"status": "Departments data unavailable; musts queued to run after scrape"}, 200
-                return {"status": "Musts already queued; waiting for scrape to produce data"}, 200
+                    return {"status": "Departments data unavailable; musts queued to run after scrape", "code": "QUEUED"}, 202
+                return {"status": "Musts already queued; waiting for scrape to produce data", "code": "QUEUED"}, 202
 
             if run_musts() == "busy":
                 if not st.get("queued_musts"):
                     set_status(s3, queued_musts=True)
-                    return {"status": "System busy; musts queued to run after scrape"}, 200
-                return {"status": "System busy; musts already queued"}, 200
+                    return {"status": "System busy; musts queued to run after scrape", "code": "QUEUED"}, 202
+                return {"status": "System busy; musts already queued", "code": "QUEUED"}, 202
             set_status(s3, queued_musts=False)
-            return {"status": "Get musts completed successfully"}, 200
+            return {"status": "Get musts completed successfully", "code": "OK"}, 200
         except Exception as e:
             _logger.error(str(e))
             if app_constants.noDeptsErrMsg in str(e):
                 s3 = get_s3_client()
                 set_status(s3, depts_ready=False, queued_musts=True)
                 _logger.info("departments data missing; queued musts until after scrape")
-                return {"status": "Departments data missing; musts queued to run after next scrape"}, 200
-            return {"error": "Error running get musts process"}, 500
+                return {"status": "Departments data missing; musts queued to run after next scrape", "code": "QUEUED"}, 202
+            return {"error": "Error running get musts process", "code": "ERROR"}, 500
 
 # Add API resources
 api.add_resource(RunScrape, '/run-scrape')
@@ -180,6 +209,7 @@ def status():
             "status": st.get("status"),
             "queued_musts": st.get("queued_musts"),
             "depts_ready": st.get("depts_ready"),
+            "version": app_constants.app_version,
         }, 200
     except Exception as e:
         _logger.error(f"status check failed: {e}")

@@ -20,3 +20,7 @@ tzdata==2024.1
 webencodings==0.5.1
 yarg==0.1.9
 python-dotenv==1.0.1
+ruff==0.6.4
+black==24.8.0
+mypy==1.10.0
+types-requests==2.32.0.20240907

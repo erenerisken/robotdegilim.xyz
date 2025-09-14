@@ -22,3 +22,19 @@ include = ["ops*", "musts*", "scrape*", "utils*"]
 # Also install top-level single-file modules under src/
 # (so `import app`, `import config`, etc. will work)
 py-modules = ["app", "config"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_ignores = true
+strict_optional = true

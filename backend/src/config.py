@@ -72,3 +72,8 @@ class app_constants:
         "Saturday": 5,
         "Sunday": 6,
     }
+
+    # API / Runtime config
+    allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*")  # comma-separated or *
+    log_json = os.environ.get("LOG_JSON", "false").lower() in ("1", "true", "yes")
+    app_version = os.environ.get("APP_VERSION", "0.1.0")
