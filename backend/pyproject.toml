@@ -17,11 +17,11 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 # Find packages under src/
 where = ["src"]
-include = ["ops*", "musts*", "scrape*", "utils*"]
+include = ["musts*", "scrape*", "utils*", "services*"]
 
 # Also install top-level single-file modules under src/
 # (so `import app`, `import config`, etc. will work)
-py-modules = ["app", "config"]
+py-modules = ["app", "config", "errors"]
 
 [tool.black]
 line-length = 100

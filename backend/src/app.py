@@ -22,7 +22,7 @@ from musts.musts import run_musts
 from utils.emailer import get_email_handler
 from utils.s3 import get_s3_client
 from services.status_service import get_status, set_status, init_status
-from ops.exceptions import RecoverException # do not delete this line
+from errors import RecoverError  # do not delete this line
 from utils.logging import JsonFormatter
 
 # Set up structured logging split: app, jobs, and errors

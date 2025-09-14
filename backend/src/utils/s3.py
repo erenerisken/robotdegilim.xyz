@@ -5,7 +5,7 @@ from typing import Dict
 import boto3
 
 from config import app_constants
-from ops.exceptions import RecoverException
+from errors import RecoverError
 import time
 import random
 
@@ -51,7 +51,7 @@ def upload_to_s3(s3_client:boto3.client, file_path: str, s3_key: str, retries: i
             delay = min(10, (2 ** attempt) + random.uniform(0, 0.5))
             time.sleep(delay)
             attempt += 1
-    raise RecoverException("Failed to upload to S3", {"path": file_path, "error": str(last_error)}) from None
+    raise RecoverError("Failed to upload to S3", {"path": file_path, "error": str(last_error)}) from None
 
 
 def is_idle(s3_client:boto3.client) -> bool:

@@ -3,7 +3,7 @@ from typing import Dict
 import boto3
 
 from config import app_constants
-from ops.exceptions import RecoverException
+from errors import RecoverError
 from utils.s3 import upload_to_s3
 
 
@@ -17,7 +17,7 @@ def write_status(status: Dict[str, str]) -> str:
             json.dump(status, data_file, ensure_ascii=False, indent=4)
             return str(data_path)
     except Exception as e:
-        raise RecoverException("Failed to export status", {"error": str(e)}) from None
+        raise RecoverError("Failed to export status", {"error": str(e)}) from None
 
 def set_busy(s3_client:boto3.client) -> str:
     # Preserve existing flags if possible
