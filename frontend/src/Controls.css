@@ -1,0 +1,29 @@
+.control-wrapper {
+    border-style: groove;
+    margin: 6pt;
+    width: fit-content;
+    height: fit-content;
+}
+.control-mobile {
+    border-style: groove;
+    margin: 6pt;
+    width: 100%;
+}
+.control-row {
+    display: inline-flex;
+    width: 100%;
+}
+.textfield-wrapper {
+    margin: 6pt;
+}
+.control-button {
+    margin-left: 8pt;
+    margin-top: 14pt;
+}
+.centered-row {
+    text-align: center;
+    width: 100%;
+}
+.control-courses {
+    width: 100%;
+}

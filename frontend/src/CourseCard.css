@@ -1,0 +1,26 @@
+.course-card {
+    border-style: groove;
+    margin: 6pt;
+    width: 98%;
+}
+.course-row {
+    display: inline-flex;
+    width: 100%;
+}
+.course-centered-row {
+    text-align: center;
+    width: 100%;
+}
+.course-left-row {
+    text-align: left;
+    width: 100%;
+}
+.course-details {
+    width: 100%;
+}
+.course-accordion {
+    width: 100%;
+}
+.course-sections {
+    width: 100%;
+}

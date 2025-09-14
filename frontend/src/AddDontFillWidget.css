@@ -1,0 +1,28 @@
+.df-widget-wrapper {
+    margin: 6pt;
+    padding: 3pt;
+    text-align: left;
+    background-color: aliceblue;
+}
+
+.add-df-row {
+    display: inline-flex;
+    width: 100%;
+}
+
+.df-widget-select {
+    margin: auto 3pt;
+}
+
+.df-typo {
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 6pt;
+}
+
+.df-textfield {
+    margin-top: auto;
+    margin-bottom: auto;
+    background: #ffffff;
+    min-width: 90pt;
+}

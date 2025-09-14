@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robotdegilim-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+# Optionally move runtime deps here later:
+# dependencies = ["requests", "beautifulsoup4"]
+
+[tool.setuptools]
+# Tell setuptools that our sources live under src/
+package-dir = {"" = "src"}
+# If you want to ship non-.py data inside packages, add package-data here later.
+
+[tool.setuptools.packages.find]
+# Find packages under src/ (e.g., src/ops)
+where = ["src"]
+include = ["ops*"]
+
+# Also install top-level single-file modules under src/
+# (so `import app`, `import email`, etc. will work)
+py-modules = ["app"]
