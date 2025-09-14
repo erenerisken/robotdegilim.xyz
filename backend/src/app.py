@@ -18,7 +18,7 @@ from scrape.scrape import run_scrape
 from musts.musts import run_musts
 from utils.emailer import get_email_handler
 from utils.s3 import get_s3_client
-from services.status_service import get_status, set_status
+from services.status_service import get_status, set_status, init_status
 from ops.exceptions import RecoverException # do not delete this line
 
 # Set up structured logging split: app, jobs, and errors
@@ -72,6 +72,13 @@ if email_handler and not any(isinstance(h, type(email_handler)) for h in parent_
 
 # Use app logger for this module
 _logger = app_logger
+
+# Initialize status defaults in S3 at startup
+try:
+    s3 = get_s3_client()
+    init_status(s3)
+except Exception as e:
+    app_logger.warning(f"Could not initialize status in S3: {e}")
 
 # Initialize Flask app
 app = Flask(__name__)
