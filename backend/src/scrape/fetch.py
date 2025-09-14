@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import requests
 
 from config import app_constants
-from errors import RecoverError
 from utils.http import get as http_get, post_oibs, get_catalog
 
 

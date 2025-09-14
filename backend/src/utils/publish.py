@@ -3,7 +3,6 @@ from typing import Iterable, Tuple
 import boto3
 
 from utils.s3 import upload_to_s3
-from config import app_constants
 
 
 def publish_files(

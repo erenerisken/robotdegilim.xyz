@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-import pytz
+from pytz import timezone
 
 
 class app_constants:
@@ -54,7 +54,7 @@ class app_constants:
     no_prefix_variants = ["-no course-", "-", ""]
 
     # Turkey timezone
-    TR_TZ = pytz.timezone("Europe/Istanbul")
+    TR_TZ = timezone("Europe/Istanbul")
 
     # Web scraping
     headers = {

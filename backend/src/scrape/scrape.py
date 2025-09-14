@@ -1,9 +1,7 @@
 import logging
-import os
 from datetime import datetime
 
 from bs4 import BeautifulSoup
-import pytz
 
 from scrape.fetch import (
     get_main_page,

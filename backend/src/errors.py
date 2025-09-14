@@ -1,5 +1,5 @@
 import inspect
-from typing import Optional, Dict, Any, Mapping, Iterable
+from typing import Optional, Dict, Any, Mapping
 import json
 import textwrap
 
