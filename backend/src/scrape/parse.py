@@ -98,6 +98,7 @@ def extract_sections(
 
             section_times = []
             for time_row in time_rows:
+                time_row = cast(Tag, time_row)
                 time_cells = time_row.find_all("td")
                 if (
                     not time_cells[0].get_text()
