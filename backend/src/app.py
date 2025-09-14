@@ -13,11 +13,12 @@ try:
     load_dotenv(Path(__file__).resolve().parents[1] / '.env')
 except Exception:
     pass
-from app_constants import app_constants
+from config import app_constants
 from scrape.scrape import run_scrape
 from musts.musts import run_musts
 from utils.emailer import get_email_handler
-from utils.s3 import is_idle, get_s3_client
+from utils.s3 import get_s3_client
+from services.status_service import get_status, set_status
 from ops.exceptions import RecoverException # do not delete this line
 
 # Set up structured logging split: app, jobs, and errors
@@ -77,9 +78,7 @@ app = Flask(__name__)
 api = Api(app)
 cors = CORS(app)
 
-# simple in-process flags
-queued_musts_after_scrape = False
-depts_data_available = False
+# No in-process flags; use S3-backed status
 
 @app.route('/')
 def index():
@@ -88,18 +87,19 @@ def index():
 
 class RunScrape(Resource):
     def get(self):
-        global depts_data_available, queued_musts_after_scrape
         try:
             if run_scrape() == "busy":
                 return {"status": "System is busy"}, 200
-            depts_data_available = True
+            # mark departments ready and check queued musts
+            s3 = get_s3_client()
+            st = set_status(s3, depts_ready=True)
             # If a musts run was queued during busy period, run it now
-            if queued_musts_after_scrape:
+            if st.get("queued_musts"):
                 _logger.info("musts run was queued; running after scrape completion")
                 try:
                     result = run_musts()
                     if result != "busy":
-                        queued_musts_after_scrape = False
+                        set_status(s3, queued_musts=False)
                         return {"status": "Scraping completed; musts completed successfully"}, 200
                     # Very unlikely: still busy
                     return {"status": "Scraping completed; musts still busy"}, 200
@@ -113,28 +113,28 @@ class RunScrape(Resource):
 
 class RunMusts(Resource):
     def get(self):
-        global queued_musts_after_scrape
-        global depts_data_available
         try:
+            s3 = get_s3_client()
+            st = get_status(s3)
             # If departments data is not ready yet, queue and exit
-            if not depts_data_available:
-                if not queued_musts_after_scrape:
-                    queued_musts_after_scrape = True
+            if not st.get("depts_ready"):
+                if not st.get("queued_musts"):
+                    set_status(s3, queued_musts=True)
                     return {"status": "Departments data unavailable; musts queued to run after scrape"}, 200
                 return {"status": "Musts already queued; waiting for scrape to produce data"}, 200
 
             if run_musts() == "busy":
-                if not queued_musts_after_scrape:
-                    queued_musts_after_scrape = True
+                if not st.get("queued_musts"):
+                    set_status(s3, queued_musts=True)
                     return {"status": "System busy; musts queued to run after scrape"}, 200
                 return {"status": "System busy; musts already queued"}, 200
-            queued_musts_after_scrape = False
+            set_status(s3, queued_musts=False)
             return {"status": "Get musts completed successfully"}, 200
         except Exception as e:
             _logger.error(str(e))
             if app_constants.noDeptsErrMsg in str(e):
-                depts_data_available = False
-                queued_musts_after_scrape = True
+                s3 = get_s3_client()
+                set_status(s3, depts_ready=False, queued_musts=True)
                 _logger.info("departments data missing; queued musts until after scrape")
                 return {"status": "Departments data missing; musts queued to run after next scrape"}, 200
             return {"error": "Error running get musts process"}, 500
@@ -148,10 +148,11 @@ def status():
     """Report backend readiness and S3 status.json busy/idle state."""
     try:
         s3 = get_s3_client()
+        st = get_status(s3)
         return {
-            "status": "idle" if is_idle(s3) else "busy",
-            "queued_musts": queued_musts_after_scrape,
-            "depts_data_available": depts_data_available,
+            "status": st.get("status"),
+            "queued_musts": st.get("queued_musts"),
+            "depts_ready": st.get("depts_ready"),
         }, 200
     except Exception as e:
         _logger.error(f"status check failed: {e}")
