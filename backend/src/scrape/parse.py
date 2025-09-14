@@ -10,7 +10,7 @@ from scrape.__init__ import _strip_upper
 logger = logging.getLogger(app_constants.log_scrape)
 
 
-def extract_departments(soup: BeautifulSoup, dept_codes: list, dept_names: dict)-> None:
+def extract_departments(soup: BeautifulSoup, dept_codes: list, dept_names: dict) -> None:
     dept_select = soup.find("select", {"name": "select_dept"})
     if dept_select:
         dept_options = dept_select.find_all("option")
@@ -40,7 +40,7 @@ def extract_current_semester(soup: BeautifulSoup) -> tuple:
     raise RecoverError("Could not extract current semester") from None
 
 
-def extract_courses(soup:BeautifulSoup, course_codes:list, course_names:dict) -> None:
+def extract_courses(soup: BeautifulSoup, course_codes: list, course_names: dict) -> None:
     course_table = soup.find("form").find_all("table")[3]
     if course_table:
         course_rows = course_table.find_all("tr")[1:]
@@ -138,7 +138,7 @@ def any_course(soup: BeautifulSoup) -> bool:
 
 def deptify(prefix: str, course_code: str) -> str:
     result = "" + prefix
-    if course_code[3] == '0':
+    if course_code[3] == "0":
         result += course_code[4:]
     else:
         result += course_code[3:]

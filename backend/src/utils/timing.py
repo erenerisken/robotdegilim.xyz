@@ -79,7 +79,11 @@ class CircuitBreaker:
             if self.failures >= self.fail_threshold and self.state != "open":
                 self._open()
             # Or error rate over window
-            elif self.total >= self.window_size and (self.failures / self.total) >= self.error_rate_threshold and self.state != "open":
+            elif (
+                self.total >= self.window_size
+                and (self.failures / self.total) >= self.error_rate_threshold
+                and self.state != "open"
+            ):
                 self._open()
 
     def _open(self):

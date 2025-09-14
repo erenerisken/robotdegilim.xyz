@@ -26,7 +26,6 @@ def run_musts():
         # Do not start if system is busy
         if not is_idle(s3_client):
             return "busy"
-        
 
         logger.info("Starting the process to fetch must courses.")
 
@@ -40,7 +39,10 @@ def run_musts():
             data = {}
             dept_len = len(departments.keys())
             for index, dept_code in enumerate(departments.keys(), start=1):
-                if not departments[dept_code].get("p") or departments[dept_code]["p"] in app_constants.no_prefix_variants:
+                if (
+                    not departments[dept_code].get("p")
+                    or departments[dept_code]["p"] in app_constants.no_prefix_variants
+                ):
                     continue
                 response = get_department_page(session, dept_code)
                 dept_soup = BeautifulSoup(response.text, "html.parser")

@@ -10,7 +10,9 @@ class JsonFormatter(logging.Formatter):
     timestamps with the app's configured timezone.
     """
 
-    def __init__(self, datefmt: Optional[str] = "%Y-%m-%dT%H:%M:%S%z", converter: Optional[Callable] = None):
+    def __init__(
+        self, datefmt: Optional[str] = "%Y-%m-%dT%H:%M:%S%z", converter: Optional[Callable] = None
+    ):
         super().__init__()
         self._datefmt = datefmt
         if converter is not None:
@@ -28,4 +30,3 @@ class JsonFormatter(logging.Formatter):
         if rid:
             payload["request_id"] = rid
         return _json.dumps(payload, ensure_ascii=False)
-

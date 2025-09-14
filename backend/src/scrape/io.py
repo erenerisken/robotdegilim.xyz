@@ -18,7 +18,9 @@ def write_json(data: dict, file_path: str) -> None:
         with open(file_path, "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
     except Exception as e:
-        raise RecoverError("Failed to write json", {"file_path": file_path, "error": str(e)}) from None
+        raise RecoverError(
+            "Failed to write json", {"file_path": file_path, "error": str(e)}
+        ) from None
 
 
 def _load_json_safe(file_path: str) -> Dict[str, Any]:
@@ -32,6 +34,7 @@ def _load_json_safe(file_path: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Failed to read json file {file_path}: {e}")
         return {}
+
 
 def _load_prefix_map(file_path: str, label: str) -> Dict[str, str]:
     """Internal helper to load a prefix map from a JSON file with entries { code: { 'p': prefix } }.
@@ -55,7 +58,9 @@ def _load_prefix_map(file_path: str, label: str) -> Dict[str, str]:
         except Exception:
             continue
     if total:
-        logger.info(f"{label} prefixes loaded from {os.path.basename(str(file_path))}: kept={kept} skipped={total - kept}")
+        logger.info(
+            f"{label} prefixes loaded from {os.path.basename(str(file_path))}: kept={kept} skipped={total - kept}"
+        )
     return result
 
 

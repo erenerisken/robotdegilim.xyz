@@ -22,7 +22,7 @@ def get_email_handler():
             secure=(),  # Use TLS
         )
         handler.setLevel(logging.ERROR)
-        handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
         return handler
     except Exception as e:
         # Use a local logger only if available; otherwise, swallow error quietly

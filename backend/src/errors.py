@@ -8,6 +8,7 @@ __all__ = ["RecoverError", "AppError"]
 
 # -------- helpers --------
 
+
 def _caller_name(default: str = "<unknown>") -> str:
     """Return immediate caller function name with minimal overhead."""
     try:
@@ -32,12 +33,16 @@ def _json_coerce(obj: Any) -> Any:
     except Exception:
         return str(obj)
 
+
 # -------- base and recoverable errors --------
+
 
 class AppError(Exception):
     """Base application error with structured payload utilities."""
 
-    def __init__(self, message: str, details: Optional[Mapping[str, Any]] = None, code: Optional[str] = None) -> None:
+    def __init__(
+        self, message: str, details: Optional[Mapping[str, Any]] = None, code: Optional[str] = None
+    ) -> None:
         self.message = message
         self.code = code
         tmp = dict(details) if details else {}
@@ -67,7 +72,13 @@ class AppError(Exception):
     def _format_details(self, max_len: int = 2000) -> str:
         """Pretty JSON for text logs with truncation."""
         try:
-            text = json.dumps(self.to_dict().get("details", {}), ensure_ascii=False, sort_keys=True, indent=2, default=str)
+            text = json.dumps(
+                self.to_dict().get("details", {}),
+                ensure_ascii=False,
+                sort_keys=True,
+                indent=2,
+                default=str,
+            )
         except Exception:
             # Fallback conservative formatting
             text = str(self.details)
@@ -79,4 +90,5 @@ class AppError(Exception):
 
 class RecoverError(AppError):
     """Recoverable application error for graceful unwind without partial state."""
+
     pass

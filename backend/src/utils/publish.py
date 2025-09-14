@@ -26,4 +26,3 @@ def publish_files(
     lu_path, lu_key = last_updated
     upload_to_s3(s3_client, lu_path, lu_key)
     logger.info(f"uploaded {lu_key} (publish signal)")
-

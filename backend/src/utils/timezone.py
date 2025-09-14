@@ -8,6 +8,7 @@ from config import app_constants
 # Istanbul timezone via pytz (present in requirements)
 TZ_TR = pytz.timezone("Europe/Istanbul")
 
+
 def time_converter_factory(tz=TZ_TR):
     """Return a time converter suitable for logging.Formatter.converter.
 
@@ -15,6 +16,7 @@ def time_converter_factory(tz=TZ_TR):
         fmt = logging.Formatter('%(asctime)s ...')
         fmt.converter = time_converter_factory(TZ_TR)
     """
+
     def _converter(secs: float):
         return datetime.datetime.fromtimestamp(secs, tz).timetuple()
 

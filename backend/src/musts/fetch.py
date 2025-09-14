@@ -23,7 +23,11 @@ def get_department_page(session: requests.Session, dept_code: str, tries: int = 
                 return response
         except Exception as e:
             report_failure()
-            raise RecoverError("Request failed", {"dept_code": dept_code, "error": str(e)}) from None
+            raise RecoverError(
+                "Request failed", {"dept_code": dept_code, "error": str(e)}
+            ) from None
 
         attempt += 1
-    raise RecoverError("Failed to get department page", {"dept_code": dept_code, "trials": tries}) from None
+    raise RecoverError(
+        "Failed to get department page", {"dept_code": dept_code, "trials": tries}
+    ) from None
