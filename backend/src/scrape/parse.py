@@ -16,7 +16,9 @@ def _strip_upper(s) -> str:
 logger = logging.getLogger(app_constants.log_scrape)
 
 
-def extract_departments(soup: BeautifulSoup, dept_codes: List[str], dept_names: Dict[str, str]) -> None:
+def extract_departments(
+    soup: BeautifulSoup, dept_codes: List[str], dept_names: Dict[str, str]
+) -> None:
     dept_select = soup.find("select", {"name": "select_dept"})
     if dept_select:
         dept_options = dept_select.find_all("option")
@@ -42,8 +44,16 @@ def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
     raise RecoverError("Could not extract current semester") from None
 
 
-def extract_courses(soup: BeautifulSoup, course_codes: List[str], course_names: Dict[str, str]) -> None:
-    course_table = cast(Tag, soup.find("form").find_all("table")[3])
+def extract_courses(
+    soup: BeautifulSoup, course_codes: List[str], course_names: Dict[str, str]
+) -> None:
+    form = soup.find("form")
+    if not form:
+        return
+    tables = form.find_all("table")
+    if len(tables) < 4:
+        return
+    course_table = cast(Tag, tables[3])
     if course_table:
         course_rows = course_table.find_all("tr")[1:]
         if course_rows:
@@ -59,9 +69,17 @@ def extract_courses(soup: BeautifulSoup, course_codes: List[str], course_names: 
                         course_names[course_code] = course_name
 
 
-def extract_sections(session: requests.Session, soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
+def extract_sections(
+    session: requests.Session, soup: BeautifulSoup, sections: Dict[str, Dict]
+) -> None:
     try:
-        section_table = cast(Tag, soup.find("form").find_all("table")[2])
+        form = soup.find("form")
+        if not form:
+            return
+        tables = form.find_all("table")
+        if len(tables) < 3:
+            return
+        section_table = cast(Tag, tables[2])
         section_table_string = str(section_table).replace("\n", "")
         section_rows = extract_tags_as_string(section_table_string, "<tr>", "</tr>")[2:]
 
