@@ -28,7 +28,7 @@ def get_s3_client() -> boto3.client:
         return boto3.client('s3', **kwargs)
     except Exception as e:
         logger.error(f"failed to create s3 client: {e}")
-        raise
+        raise e from None
 
 
 def upload_to_s3(s3_client:boto3.client, file_path: str, s3_key: str, retries: int = 5):

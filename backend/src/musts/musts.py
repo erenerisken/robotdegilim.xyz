@@ -35,7 +35,7 @@ def run_musts():
 
             departments = load_departments()
             if not departments:
-                raise RecoverError(app_constants.noDeptsErrMsg)
+                raise RecoverError(app_constants.noDeptsErrMsg) from None
 
             data = {}
             dept_len = len(departments.keys())

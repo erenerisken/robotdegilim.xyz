@@ -37,7 +37,7 @@ def extract_current_semester(soup: BeautifulSoup) -> tuple:
                 )
             )
             return current_semester
-    raise RecoverError("Could not extract current semester")
+    raise RecoverError("Could not extract current semester") from None
 
 
 def extract_courses(soup:BeautifulSoup, course_codes:list, course_names:dict) -> None:

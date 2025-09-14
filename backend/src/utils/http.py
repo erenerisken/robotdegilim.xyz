@@ -75,7 +75,7 @@ def request(
                     f"HTTP {resp.status_code} on {name or method}",
                     {"url": url, "status": resp.status_code},
                     code="FETCH_4XX",
-                )
+                ) from None
             # Else retry (5xx or 429)
             report_failure()
             last_exc = RecoverError(
@@ -89,12 +89,12 @@ def request(
             # continue to retry
     # Exhausted retries
     if isinstance(last_exc, RecoverError):
-        raise last_exc
+        raise last_exc from None
     raise RecoverError(
         f"Request failed for {name or method}",
         {"url": url, "error": str(last_exc) if last_exc else "unknown"},
         code="FETCH_FAIL",
-    )
+    ) from None
 
 
 def get(session: requests.Session, url: str, *, tries: int = 5, base_delay: float = 1.0, name: Optional[str] = None, **kwargs) -> requests.Response:
