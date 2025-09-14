@@ -5,6 +5,7 @@ from typing import Dict, Any
 
 from config import app_constants
 from errors import RecoverError
+from scrape.__init__ import _strip_upper
 
 
 logger = logging.getLogger(app_constants.log_scrape)
@@ -32,15 +33,6 @@ def _load_json_safe(file_path: str) -> Dict[str, Any]:
         logger.error(f"Failed to read json file {file_path}: {e}")
         return {}
 
-
-def _norm_code(code: Any) -> str:
-    return str(code).strip().upper()
-
-
-def _norm_prefix(p: Any) -> str:
-    return str(p or "").strip()
-
-
 def _load_prefix_map(file_path: str, label: str) -> Dict[str, str]:
     """Internal helper to load a prefix map from a JSON file with entries { code: { 'p': prefix } }.
 
@@ -54,10 +46,10 @@ def _load_prefix_map(file_path: str, label: str) -> Dict[str, str]:
     result: Dict[str, str] = {}
     for raw_code, entry in data.items():
         try:
-            prefix = _norm_prefix((entry or {}).get("p", ""))
+            prefix = _strip_upper((entry or {}).get("p", ""))
             if not prefix:
                 continue
-            code = _norm_code(raw_code)
+            code = _strip_upper(raw_code)
             result[code] = prefix
             kept += 1
         except Exception:
