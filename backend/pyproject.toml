@@ -20,5 +20,5 @@ where = ["src"]
 include = ["ops*", "musts*", "scrape*", "utils*"]
 
 # Also install top-level single-file modules under src/
-# (so `import app`, `import app_constants`, etc. will work)
-py-modules = ["app", "app_constants"]
+# (so `import app`, `import config`, etc. will work)
+py-modules = ["app", "config"]

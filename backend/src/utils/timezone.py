@@ -3,7 +3,7 @@ from logging.handlers import TimedRotatingFileHandler
 from typing import Optional
 import pytz
 
-from backend.src import app_constants
+from config import app_constants
 
 # Istanbul timezone via pytz (present in requirements)
 TZ_TR = pytz.timezone("Europe/Istanbul")
@@ -59,4 +59,3 @@ class TzTimedRotatingFileHandler(TimedRotatingFileHandler):
             next_midnight = next_day.replace(hour=0, minute=0, second=0, microsecond=0)
             return int(next_midnight.timestamp())
         return super().computeRollover(currentTime)
-

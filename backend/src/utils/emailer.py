@@ -1,7 +1,7 @@
 import logging
 from logging.handlers import SMTPHandler
 
-from app_constants import app_constants
+from config import app_constants
 
 
 def get_email_handler():
@@ -31,4 +31,3 @@ def get_email_handler():
         except Exception:
             pass
         return None
-

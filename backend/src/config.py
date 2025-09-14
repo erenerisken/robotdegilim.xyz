@@ -12,7 +12,7 @@ class app_constants:
     MAIL_PORT = 587  # Common port for SMTP
     MAIL_DEFAULT_SENDER = MAIL_USERNAME  # Sender address
     MAIL_RECIPIENT = "info.robotdegilim@gmail.com"  # Where to send the email
-    MAIL_ERROR_SUBJECT = "RobotDeğilim.xyz Error Alert"
+    MAIL_ERROR_SUBJECT = "Robotdegilim.xyz Error Alert"
 
     # s3
     s3_bucket_name="cdn.robotdegilim.xyz"
@@ -77,3 +77,4 @@ class app_constants:
         cls.MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")  # Replace with your email password
         cls.aws_access_key_id = os.environ.get('ACCESS_KEY')
         cls.aws_secret_access_key = os.environ.get('SECRET_ACCESS_KEY')
+

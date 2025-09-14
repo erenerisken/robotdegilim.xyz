@@ -4,7 +4,7 @@ from typing import Dict
 
 import boto3
 
-from app_constants import app_constants
+from config import app_constants
 from ops.exceptions import RecoverException
 
 
@@ -52,4 +52,3 @@ def is_idle(s3_client) -> bool:
     except Exception as e:
         logger.error(f"Error fetching or reading status.json: {e}")
         return False
-
