@@ -16,7 +16,9 @@ def get_main_page(session: requests.Session) -> Response:
     return response
 
 
-def get_dept(session: requests.Session, dept_code: str, semester_code: str, tries: int = 5) -> Response:
+def get_dept(
+    session: requests.Session, dept_code: str, semester_code: str, tries: int = 5
+) -> Response:
     data = {
         "textWithoutThesis": 1,
         "select_dept": dept_code,
