@@ -6,6 +6,8 @@ import boto3
 
 from config import app_constants
 from ops.exceptions import RecoverException
+import time
+import random
 
 
 logger = logging.getLogger(app_constants.log_utils)
@@ -29,17 +31,27 @@ def get_s3_client():
         raise
 
 
-def upload_to_s3(s3_client:boto3.client, file_path: str, s3_key: str):
-    """Uploads a file to the S3 bucket and makes it public."""
-    try:
-        s3_client.upload_file(
-            file_path,
-            app_constants.s3_bucket_name,
-            s3_key,
-            ExtraArgs={"ACL": "public-read"},
-        )
-    except Exception as e:
-        raise RecoverException("Failed to upload to S3", {"path": file_path, "error": str(e)}) from None
+def upload_to_s3(s3_client:boto3.client, file_path: str, s3_key: str, retries: int = 3):
+    """Uploads a file to the S3 bucket and makes it public, with retries."""
+    attempt = 0
+    last_error = None
+    while attempt <= retries:
+        try:
+            s3_client.upload_file(
+                file_path,
+                app_constants.s3_bucket_name,
+                s3_key,
+                ExtraArgs={"ACL": "public-read"},
+            )
+            return
+        except Exception as e:
+            last_error = e
+            if attempt == retries:
+                break
+            delay = min(10, (2 ** attempt) + random.uniform(0, 0.5))
+            time.sleep(delay)
+            attempt += 1
+    raise RecoverException("Failed to upload to S3", {"path": file_path, "error": str(last_error)}) from None
 
 
 def is_idle(s3_client) -> bool:

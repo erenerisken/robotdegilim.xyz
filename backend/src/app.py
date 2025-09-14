@@ -1,4 +1,5 @@
-from flask import Flask
+import datetime
+from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_cors import CORS
 import logging
@@ -86,6 +87,25 @@ api = Api(app)
 cors = CORS(app)
 
 # No in-process flags; use S3-backed status
+
+@app.before_request
+def _access_log_start():
+    request._start_time = datetime.now()
+
+@app.after_request
+def _access_log_end(response):
+    try:
+        start = getattr(request, "_start_time", None)
+        if start:
+            duration_ms = int((datetime.now() - start).total_seconds() * 1000)
+        else:
+            duration_ms = -1
+        app_logger.info(
+            f"access method={request.method} path={request.path} status={response.status_code} duration_ms={duration_ms}"
+        )
+    except Exception:
+        pass
+    return response
 
 @app.route('/')
 def index():
