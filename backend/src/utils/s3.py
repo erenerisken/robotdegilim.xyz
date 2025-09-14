@@ -13,7 +13,7 @@ import random
 logger = logging.getLogger(app_constants.log_utils)
 
 
-def get_s3_client()->boto3.client:
+def get_s3_client() -> boto3.client:
     """Create and return a boto3 S3 client using configured credentials.
 
     Falls back to environment/instance credentials if keys are not set.
