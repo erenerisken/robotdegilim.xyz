@@ -17,7 +17,7 @@ from app_constants import app_constants
 from scrape.scrape import run_scrape
 from musts.musts import run_musts
 from utils.emailer import get_email_handler
-from utils.helpers import is_idle, get_s3_client
+from utils.s3 import is_idle, get_s3_client
 from ops.exceptions import RecoverException # do not delete this line
 
 # Set up structured logging split: app, jobs, and errors
