@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+import pytz
+
 class app_constants:
     # Email configuration
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')  # Replace with your email
@@ -46,6 +48,12 @@ class app_constants:
     
     # No department data error message
     noDeptsErrMsg="No departments data available."
+
+    # No prefix variants
+    no_prefix_variants = ["-no course-","-",""]
+
+    # Turkey timezone
+    TR_TZ = pytz.timezone('Europe/Istanbul')
     
     # Web scraping
     headers = {

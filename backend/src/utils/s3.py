@@ -31,7 +31,7 @@ def get_s3_client() -> boto3.client:
         raise
 
 
-def upload_to_s3(s3_client:boto3.client, file_path: str, s3_key: str, retries: int = 3):
+def upload_to_s3(s3_client:boto3.client, file_path: str, s3_key: str, retries: int = 5):
     """Uploads a file to the S3 bucket and makes it public, with retries."""
     attempt = 0
     last_error = None

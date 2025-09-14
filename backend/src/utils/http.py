@@ -51,7 +51,7 @@ def request(
     data: Optional[dict] = None,
     json: Optional[dict] = None,
     ok_status: int = 200,
-    tries: int = 3,
+    tries: int = 5,
     base_delay: float = 1.0,
     name: Optional[str] = None,
     **kwargs,
@@ -97,19 +97,19 @@ def request(
     )
 
 
-def get(session: requests.Session, url: str, *, tries: int = 3, base_delay: float = 1.0, name: Optional[str] = None, **kwargs) -> requests.Response:
+def get(session: requests.Session, url: str, *, tries: int = 5, base_delay: float = 1.0, name: Optional[str] = None, **kwargs) -> requests.Response:
     return request(session, "GET", url, tries=tries, base_delay=base_delay, name=name, **kwargs)
 
 
-def post(session: requests.Session, url: str, *, data: Optional[dict] = None, tries: int = 3, base_delay: float = 0.9, name: Optional[str] = None, **kwargs) -> requests.Response:
+def post(session: requests.Session, url: str, *, data: Optional[dict] = None, tries: int = 5, base_delay: float = 0.9, name: Optional[str] = None, **kwargs) -> requests.Response:
     return request(session, "POST", url, data=data, tries=tries, base_delay=base_delay, name=name, **kwargs)
 
 
-def post_oibs(session: requests.Session, data: dict, *, tries: int = 10, base_delay: float = 0.9, name: str = "oibs_post") -> requests.Response:
+def post_oibs(session: requests.Session, data: dict, *, tries: int = 5, base_delay: float = 0.9, name: str = "oibs_post") -> requests.Response:
     return post(session, app_constants.oibs64_url, data=data, tries=tries, base_delay=base_delay, name=name)
 
 
-def get_catalog(session: requests.Session, dept_code: str, course_code: str, *, tries: int = 3, base_delay: float = 1.0) -> requests.Response:
+def get_catalog(session: requests.Session, dept_code: str, course_code: str, *, tries: int = 5, base_delay: float = 1.0) -> requests.Response:
     url = app_constants.course_catalog_url.replace("{dept_code}", dept_code).replace("{course_code}", course_code)
     return get(session, url, tries=tries, base_delay=base_delay, name="catalog_get")
 
