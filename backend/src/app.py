@@ -1,9 +1,17 @@
-from flask import Flask, request, redirect
+from flask import Flask
 from flask_restful import Resource, Api
 from flask_cors import CORS
 import logging
 
 from utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
+from pathlib import Path
+# Load backend/.env early in dev so env vars are available before importing app_constants
+try:
+    from dotenv import load_dotenv
+    # Ensure we load the .env located under backend/.env regardless of CWD
+    load_dotenv(Path(__file__).resolve().parents[1] / '.env')
+except Exception:
+    pass
 from app_constants import app_constants
 from scrape.scrape import run_scrape
 from musts.musts import run_musts

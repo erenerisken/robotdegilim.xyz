@@ -15,10 +15,10 @@ package-dir = {"" = "src"}
 # If you want to ship non-.py data inside packages, add package-data here later.
 
 [tool.setuptools.packages.find]
-# Find packages under src/ (e.g., src/ops)
+# Find packages under src/
 where = ["src"]
-include = ["ops*"]
+include = ["ops*", "musts*", "scrape*", "utils*"]
 
 # Also install top-level single-file modules under src/
-# (so `import app`, `import email`, etc. will work)
-py-modules = ["app"]
+# (so `import app`, `import app_constants`, etc. will work)
+py-modules = ["app", "app_constants"]
