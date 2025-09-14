@@ -6,7 +6,7 @@ import random
 import time
 
 
-_last_request_time = None
+_last_request_time: datetime | None = None
 
 
 def _check_delay(delay: float = 1.0):
@@ -113,7 +113,7 @@ adaptive = AdaptiveBackoff()
 breaker = CircuitBreaker()
 
 
-def throttle_before_request(base_delay: float = 1.0):
+def throttle_before_request(base_delay: float = 1.0) -> None:
     # Circuit breaker: pause if needed
     while breaker.should_pause():
         time.sleep(1)

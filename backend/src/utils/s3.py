@@ -13,7 +13,7 @@ import random
 logger = logging.getLogger(app_constants.log_utils)
 
 
-def get_s3_client():
+def get_s3_client()->boto3.client:
     """Create and return a boto3 S3 client using configured credentials.
 
     Falls back to environment/instance credentials if keys are not set.
@@ -54,7 +54,7 @@ def upload_to_s3(s3_client:boto3.client, file_path: str, s3_key: str, retries: i
     raise RecoverException("Failed to upload to S3", {"path": file_path, "error": str(last_error)}) from None
 
 
-def is_idle(s3_client) -> bool:
+def is_idle(s3_client:boto3.client) -> bool:
     """Fetches status.json from S3 and checks if the backend is idle."""
     try:
         response = s3_client.get_object(Bucket=app_constants.s3_bucket_name, Key=app_constants.status_json)
