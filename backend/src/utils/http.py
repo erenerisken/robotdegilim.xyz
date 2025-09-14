@@ -36,8 +36,6 @@ def get_http_session(
         session.headers.update(app_constants.headers)
     except Exception:
         pass
-    # Store default timeout on session object for convenience
-    session.request = _wrap_with_timeout(session.request, timeout)
     return session
 
 
@@ -64,6 +62,8 @@ def request(
     for attempt in range(tries):
         try:
             throttle_before_request(base_delay)
+            if "timeout" not in kwargs:
+                kwargs["timeout"] = 15.0
             resp = session.request(method, url, params=params, data=data, json=json, **kwargs)
             if resp.status_code == ok_status:
                 report_success()

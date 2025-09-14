@@ -5,7 +5,8 @@ import requests
 from config import app_constants
 from errors import RecoverError
 from scrape.fetch import get_section
-from scrape.__init__ import _strip_upper
+def _strip_upper(s) -> str:
+    return str(s or "").strip().upper()
 
 logger = logging.getLogger(app_constants.log_scrape)
 
@@ -25,7 +26,7 @@ def extract_departments(soup: BeautifulSoup, dept_codes: list, dept_names: dict)
                     dept_names[value] = text
 
 
-def extract_current_semester(soup: BeautifulSoup) -> tuple:
+def extract_current_semester(soup: BeautifulSoup) -> tuple[str, str]:
     semester_select = soup.find("select", {"name": "select_semester"})
     if semester_select:
         current_semester_option = semester_select.find("option")
@@ -98,7 +99,7 @@ def extract_sections(session: requests.Session, soup: BeautifulSoup, sections: d
             response = get_section(session, section_code)
 
             section_soup = BeautifulSoup(response.text, "html.parser")
-            section_constraints = []
+            section_constraints: list[dict[str, str]] = []
             form_msg = section_soup.find("div", id="formmessage").find("b").get_text()
             if not form_msg:
                 extract_constraints(section_soup, section_constraints)
@@ -112,7 +113,7 @@ def extract_sections(session: requests.Session, soup: BeautifulSoup, sections: d
         raise RecoverError("Failed to extract sections", {"error": str(e)}) from None
 
 
-def extract_constraints(soup: BeautifulSoup, constraints: list) -> None:
+def extract_constraints(soup: BeautifulSoup, constraints: list[dict[str, str]]) -> None:
     try:
         cons_table = soup.find("form").find_all("table")[2]
         cons_rows = cons_table.find_all("tr")[1:]
@@ -146,8 +147,8 @@ def deptify(prefix: str, course_code: str) -> str:
 
 
 def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> list[str]:
-    stack = []
-    tags = []
+    stack: list[str] = []
+    tags: list[str] = []
     sindex = 0
     cindex = 0
     word_length = len(end_tag)

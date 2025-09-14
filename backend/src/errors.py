@@ -14,7 +14,7 @@ def _caller_name(default: str = "<unknown>") -> str:
     try:
         frame = inspect.currentframe()
         if frame and frame.f_back:
-            return frame.f_back.f_code.co_name  # type: ignore[return-value]
+            return str(frame.f_back.f_code.co_name)
     except Exception:
         pass
     return default

@@ -17,7 +17,7 @@ class JsonFormatter(logging.Formatter):
         self._datefmt = datefmt
         if converter is not None:
             # logging.Formatter reads 'converter' attribute to compute asctime
-            self.converter = converter  # type: ignore[attr-defined]
+            setattr(self, "converter", converter)
 
     def format(self, record: logging.LogRecord) -> str:
         payload = {

@@ -53,10 +53,10 @@ class TzTimedRotatingFileHandler(TimedRotatingFileHandler):
             atTime=atTime,
         )
 
-    def computeRollover(self, currentTime: float) -> int:
+    def computeRollover(self, currentTime: int) -> int:
         # Align midnight rollover to timezone midnight for 'midnight'
         if isinstance(self.when, str) and self.when.upper() == "MIDNIGHT":
-            ct = datetime.datetime.fromtimestamp(currentTime, self.tz)
+            ct = datetime.datetime.fromtimestamp(float(currentTime), self.tz)
             next_day = ct + datetime.timedelta(days=self.interval)
             next_midnight = next_day.replace(hour=0, minute=0, second=0, microsecond=0)
             return int(next_midnight.timestamp())
