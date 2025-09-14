@@ -37,7 +37,4 @@ backend/export/
 
 # Environment files
 .env
-.env.*
 backend/.env
-backend/.env.*
-
