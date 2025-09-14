@@ -52,13 +52,7 @@ See `backend/.env.example` for expected variables:
 
 ## Packaging (Backend)
 
-Python packaging uses setuptools with `src/` layout. The package includes `ops*` modules.
-
-## CI
-
-GitHub Actions runs minimal checks:
-- Backend: validates Python setup and compiles sources
-- Frontend: installs dependencies and builds
+Python packaging uses setuptools with `src/` layout.
 
 ## License
 
