@@ -46,6 +46,6 @@ def write_musts(data: Dict[str, Any]) -> str:
     try:
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(data, fh, ensure_ascii=False, indent=4)
-        return path
+        return str(path)
     except Exception as e:
         raise RecoverError("Failed to write musts", {"path": path, "error": str(e)}) from None

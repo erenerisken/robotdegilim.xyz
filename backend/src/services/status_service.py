@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, Any, cast
 import boto3
 
 from config import app_constants
@@ -37,13 +37,13 @@ def set_idle(s3_client: boto3.client) -> str:
     return path
 
 
-def get_status(s3_client: boto3.client) -> dict:
+def get_status(s3_client: boto3.client) -> Dict[str, Any]:
     try:
         obj = s3_client.get_object(
             Bucket=app_constants.s3_bucket_name, Key=app_constants.status_json
         )
         data = obj["Body"].read().decode("utf-8")
-        parsed = json.loads(data)
+        parsed = cast(Dict[str, Any], json.loads(data))
     except Exception:
         parsed = {}
     # defaults
@@ -53,7 +53,7 @@ def get_status(s3_client: boto3.client) -> dict:
     return parsed
 
 
-def set_status(s3_client: boto3.client, **kwargs) -> dict:
+def set_status(s3_client: boto3.client, **kwargs) -> Dict[str, Any]:
     current = get_status(s3_client)
     current.update(kwargs)
     path = write_status(current)

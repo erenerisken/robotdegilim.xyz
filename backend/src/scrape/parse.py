@@ -1,17 +1,22 @@
 import logging
+from typing import List, Dict, Tuple, cast
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 import requests
 
 from config import app_constants
 from errors import RecoverError
 from scrape.fetch import get_section
+
+
 def _strip_upper(s) -> str:
     return str(s or "").strip().upper()
+
 
 logger = logging.getLogger(app_constants.log_scrape)
 
 
-def extract_departments(soup: BeautifulSoup, dept_codes: list, dept_names: dict) -> None:
+def extract_departments(soup: BeautifulSoup, dept_codes: List[str], dept_names: Dict[str, str]) -> None:
     dept_select = soup.find("select", {"name": "select_dept"})
     if dept_select:
         dept_options = dept_select.find_all("option")
@@ -26,23 +31,19 @@ def extract_departments(soup: BeautifulSoup, dept_codes: list, dept_names: dict)
                     dept_names[value] = text
 
 
-def extract_current_semester(soup: BeautifulSoup) -> tuple[str, str]:
+def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
     semester_select = soup.find("select", {"name": "select_semester"})
     if semester_select:
         current_semester_option = semester_select.find("option")
         if current_semester_option:
-            current_semester = tuple(
-                (
-                    _strip_upper(current_semester_option.get("value")),
-                    (current_semester_option.get_text() or "").strip(),
-                )
-            )
-            return current_semester
+            value = _strip_upper(current_semester_option.get("value"))
+            text = (current_semester_option.get_text() or "").strip()
+            return (value, text)
     raise RecoverError("Could not extract current semester") from None
 
 
-def extract_courses(soup: BeautifulSoup, course_codes: list, course_names: dict) -> None:
-    course_table = soup.find("form").find_all("table")[3]
+def extract_courses(soup: BeautifulSoup, course_codes: List[str], course_names: Dict[str, str]) -> None:
+    course_table = cast(Tag, soup.find("form").find_all("table")[3])
     if course_table:
         course_rows = course_table.find_all("tr")[1:]
         if course_rows:
@@ -58,9 +59,9 @@ def extract_courses(soup: BeautifulSoup, course_codes: list, course_names: dict)
                         course_names[course_code] = course_name
 
 
-def extract_sections(session: requests.Session, soup: BeautifulSoup, sections: dict) -> None:
+def extract_sections(session: requests.Session, soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
     try:
-        section_table = soup.find("form").find_all("table")[2]
+        section_table = cast(Tag, soup.find("form").find_all("table")[2])
         section_table_string = str(section_table).replace("\n", "")
         section_rows = extract_tags_as_string(section_table_string, "<tr>", "</tr>")[2:]
 
@@ -99,7 +100,7 @@ def extract_sections(session: requests.Session, soup: BeautifulSoup, sections: d
             response = get_section(session, section_code)
 
             section_soup = BeautifulSoup(response.text, "html.parser")
-            section_constraints: list[dict[str, str]] = []
+            section_constraints: List[Dict[str, str]] = []
             form_msg = section_soup.find("div", id="formmessage").find("b").get_text()
             if not form_msg:
                 extract_constraints(section_soup, section_constraints)
@@ -113,9 +114,9 @@ def extract_sections(session: requests.Session, soup: BeautifulSoup, sections: d
         raise RecoverError("Failed to extract sections", {"error": str(e)}) from None
 
 
-def extract_constraints(soup: BeautifulSoup, constraints: list[dict[str, str]]) -> None:
+def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) -> None:
     try:
-        cons_table = soup.find("form").find_all("table")[2]
+        cons_table = cast(Tag, soup.find("form").find_all("table")[2])
         cons_rows = cons_table.find_all("tr")[1:]
         for cons_row in cons_rows:
             cons_cells = cons_row.find_all("td")
@@ -146,9 +147,9 @@ def deptify(prefix: str, course_code: str) -> str:
     return result
 
 
-def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> list[str]:
-    stack: list[str] = []
-    tags: list[str] = []
+def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List[str]:
+    stack: List[str] = []
+    tags: List[str] = []
     sindex = 0
     cindex = 0
     word_length = len(end_tag)
