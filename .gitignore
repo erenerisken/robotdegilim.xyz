@@ -32,6 +32,7 @@ frontend/build/
 backend/.venv/
 backend/storage/
 backend/src/untracked/
+backend/.ruff_cache/
 
 # Environment files
 backend/.env
