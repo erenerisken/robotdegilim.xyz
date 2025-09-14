@@ -1,92 +1,146 @@
 from flask import Flask, request, redirect
-from flask_restful import Resource, Api, reqparse
+from flask_restful import Resource, Api
 from flask_cors import CORS
 import logging
 
-from ops.constants import *
-import ops.scrape
-import ops.musts
-from ops.helpers import get_email_handler
+from utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
+from app_constants import app_constants
+from scrape.scrape import run_scrape
+from musts.musts import run_musts
+from utils.emailer import get_email_handler
+from utils.helpers import is_idle, get_s3_client
 from ops.exceptions import RecoverException # do not delete this line
 
-# Set up logging
-log_file = 'app.log'
-logger = logging.getLogger(consts.shared_logger)
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler(log_file)
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+# Set up structured logging split: app, jobs, and errors
+fmt = logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s')
+fmt.converter = time_converter_factory(TZ_TR)
 
-# Set up email handler for error messages
+parent_logger = logging.getLogger(app_constants.log_parent)
+app_logger = logging.getLogger(app_constants.log_app)
+scrape_logger = logging.getLogger(app_constants.log_scrape)
+musts_logger = logging.getLogger(app_constants.log_musts)
+
+parent_logger.setLevel(logging.INFO)
+app_logger.setLevel(logging.INFO)
+scrape_logger.setLevel(logging.INFO)
+musts_logger.setLevel(logging.INFO)
+
+# app.log (INFO+) — rotate daily at TR midnight, keep 5 days
+_log_days = 5
+app_file = app_constants.app_log_file
+if not any(isinstance(h, TzTimedRotatingFileHandler) and getattr(h, 'baseFilename', '').endswith(app_file) for h in app_logger.handlers):
+    h = TzTimedRotatingFileHandler(app_file, when='midnight', interval=1, backupCount=_log_days, encoding=app_constants.log_encoding)
+    h.setLevel(logging.INFO)
+    h.setFormatter(fmt)
+    app_logger.addHandler(h)
+
+# jobs.log (INFO+) for scrape and musts — rotate daily at TR midnight, keep 3 days
+jobs_file = app_constants.jobs_log_file
+for job_logger in (scrape_logger, musts_logger):
+    if not any(isinstance(h, TzTimedRotatingFileHandler) and getattr(h, 'baseFilename', '').endswith(jobs_file) for h in job_logger.handlers):
+        h = TzTimedRotatingFileHandler(jobs_file, when='midnight', interval=1, backupCount=_log_days, encoding=app_constants.log_encoding)
+        h.setLevel(logging.INFO)
+        h.setFormatter(fmt)
+        job_logger.addHandler(h)
+
+# error.log (ERROR+) on parent so children propagate up — rotate daily at TR midnight, keep 3 days
+err_file = app_constants.error_log_file
+if not any(isinstance(h, TzTimedRotatingFileHandler) and getattr(h, 'baseFilename', '').endswith(err_file) for h in parent_logger.handlers):
+    h = TzTimedRotatingFileHandler(err_file, when='midnight', interval=1, backupCount=_log_days, encoding=app_constants.log_encoding)
+    h.setLevel(logging.ERROR)
+    h.setFormatter(fmt)
+    parent_logger.addHandler(h)
+
+# Email handler (ERROR+) on parent if configured
 email_handler = get_email_handler()
-if email_handler:
-    logger.addHandler(email_handler)
+if email_handler and not any(isinstance(h, type(email_handler)) for h in parent_logger.handlers):
+    email_handler.setLevel(logging.ERROR)
+    parent_logger.addHandler(email_handler)
+
+# Use app logger for this module
+_logger = app_logger
 
 # Initialize Flask app
-app = Flask(__name__, static_folder=consts.build_folder, static_url_path='/')
+app = Flask(__name__)
 api = Api(app)
 cors = CORS(app)
 
-parser = reqparse.RequestParser()
-
-# musts flag
-first_run_musts = False
-depts_data_available=False
-
-# Middleware: Redirect to /run-musts if first_run_musts is True
-@app.before_request
-def check_musts_flag():
-    global first_run_musts
-    global depts_data_available
-    if first_run_musts and request.path == "/run-scrape" and depts_data_available:
-        return redirect("/run-musts")
+# simple in-process flags
+queued_musts_after_scrape = False
+depts_data_available = False
 
 @app.route('/')
 def index():
-    """Serve the frontend index file."""
-    return app.send_static_file('index.html')
+    """Root endpoint for API server (no static files)."""
+    return {"service": "robotdegilim-backend", "endpoints": ["/run-scrape", "/run-musts", "/status"]}, 200
 
 class RunScrape(Resource):
     def get(self):
-        global depts_data_available
+        global depts_data_available, queued_musts_after_scrape
         try:
-            if ops.scrape.run_scrape() == "busy":
+            if run_scrape() == "busy":
                 return {"status": "System is busy"}, 200
             depts_data_available = True
+            # If a musts run was queued during busy period, run it now
+            if queued_musts_after_scrape:
+                _logger.info("musts run was queued; running after scrape completion")
+                try:
+                    result = run_musts()
+                    if result != "busy":
+                        queued_musts_after_scrape = False
+                        return {"status": "Scraping completed; musts completed successfully"}, 200
+                    # Very unlikely: still busy
+                    return {"status": "Scraping completed; musts still busy"}, 200
+                except Exception as e:
+                    _logger.error(f"queued musts run failed: {e}")
+                    return {"status": "Scraping completed; musts failed"}, 500
             return {"status": "Scraping completed successfully"}, 200
         except Exception as e:
-            logger.error(str(e))
+            _logger.error(str(e))
             return {"error": "Error running scrape process"}, 500
 
 class RunMusts(Resource):
     def get(self):
-        global first_run_musts
+        global queued_musts_after_scrape
         global depts_data_available
         try:
-            if ops.musts.run_musts() == "busy":
-                if not first_run_musts:
-                    first_run_musts = True
-                    return {"status": "System is busy, request is received"}, 200
-                return {"status": "System is busy"}, 200
-            first_run_musts=False
+            # If departments data is not ready yet, queue and exit
+            if not depts_data_available:
+                if not queued_musts_after_scrape:
+                    queued_musts_after_scrape = True
+                    return {"status": "Departments data unavailable; musts queued to run after scrape"}, 200
+                return {"status": "Musts already queued; waiting for scrape to produce data"}, 200
+
+            if run_musts() == "busy":
+                if not queued_musts_after_scrape:
+                    queued_musts_after_scrape = True
+                    return {"status": "System busy; musts queued to run after scrape"}, 200
+                return {"status": "System busy; musts already queued"}, 200
+            queued_musts_after_scrape = False
             return {"status": "Get musts completed successfully"}, 200
         except Exception as e:
-            logger.error(str(e))
-            if consts.noDeptsErrMsg in str(e):
-                depts_data_available=False
-                logger.info("scrape process is prioritized")
+            _logger.error(str(e))
+            if app_constants.noDeptsErrMsg in str(e):
+                depts_data_available = False
+                queued_musts_after_scrape = True
+                _logger.info("departments data missing; queued musts until after scrape")
+                return {"status": "Departments data missing; musts queued to run after next scrape"}, 200
             return {"error": "Error running get musts process"}, 500
 
 # Add API resources
 api.add_resource(RunScrape, '/run-scrape')
 api.add_resource(RunMusts, '/run-musts')
 
-# Start Flask app (comment this in production)
-# if __name__ == '__main__':
-#     import set_secrets,set_idle
-#     set_idle.main()
-#     set_secrets.set_secrets()
-#     lib.constants.consts.init_envs()
-#     app.run(host='0.0.0.0', port=3000)
+@app.route('/status')
+def status():
+    """Report backend readiness and S3 status.json busy/idle state."""
+    try:
+        s3 = get_s3_client()
+        return {
+            "status": "idle" if is_idle(s3) else "busy",
+            "queued_musts": queued_musts_after_scrape,
+            "depts_data_available": depts_data_available,
+        }, 200
+    except Exception as e:
+        _logger.error(f"status check failed: {e}")
+        return {"status": "unknown", "error": "status check failed"}, 500
