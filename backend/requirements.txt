@@ -1,0 +1,8 @@
+Flask==3.0.3
+Flask-Cors==5.0.0
+Flask-RESTful==0.3.10
+requests==2.32.3
+beautifulsoup4==4.12.3
+boto3==1.35.21
+pytz==2024.2
+gunicorn==23.0.0
