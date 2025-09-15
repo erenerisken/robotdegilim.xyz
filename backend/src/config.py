@@ -88,3 +88,22 @@ class app_constants:
     allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*")  # comma-separated or *
     log_json = os.environ.get("LOG_JSON", "false").lower() in ("1", "true", "yes")
     app_version = os.environ.get("APP_VERSION", "0.1.0")
+
+    # Throttling/Backoff tuning (adaptive and circuit-breaker)
+    # Scale multiplies all caller-provided base delays (e.g., 1.0 -> unchanged)
+    throttle_scale = float(os.environ.get("THROTTLE_SCALE", "1.0"))
+    throttle_jitter = float(os.environ.get("THROTTLE_JITTER", "0.25"))
+
+    # Adaptive backoff factors (faster on good network, harsher on failures)
+    adaptive_min_factor = float(os.environ.get("ADAPTIVE_MIN_FACTOR", "1.0"))
+    adaptive_max_factor = float(os.environ.get("ADAPTIVE_MAX_FACTOR", "8.0"))
+    adaptive_grow = float(os.environ.get("ADAPTIVE_GROW", "1.5"))
+    adaptive_decay = float(os.environ.get("ADAPTIVE_DECAY", "1.1"))
+    adaptive_successes_for_decay = int(os.environ.get("ADAPTIVE_SUCCESSES_FOR_DECAY", "10"))
+
+    # Circuit breaker thresholds (open on sustained errors, cool down longer)
+    breaker_fail_threshold = int(os.environ.get("BREAKER_FAIL_THRESHOLD", "10"))
+    breaker_window_size = int(os.environ.get("BREAKER_WINDOW_SIZE", "50"))
+    breaker_error_rate_threshold = float(os.environ.get("BREAKER_ERROR_RATE_THRESHOLD", "0.5"))
+    breaker_cooldown_seconds = int(os.environ.get("BREAKER_COOLDOWN_SECONDS", "120"))
+    breaker_probe_interval_seconds = int(os.environ.get("BREAKER_PROBE_INTERVAL_SECONDS", "30"))

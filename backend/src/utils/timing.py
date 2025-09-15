@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 import random
 import time
+from src.config import app_constants
 
 
 _last_request_time: datetime | None = None
@@ -24,11 +25,11 @@ def _check_delay(delay: float = 1.0):
 
 @dataclass
 class AdaptiveBackoff:
-    min_factor: float = 1.0
-    max_factor: float = 8.0
-    grow: float = 1.5
-    decay: float = 1.1
-    successes_for_decay: int = 10
+    min_factor: float = app_constants.adaptive_min_factor
+    max_factor: float = app_constants.adaptive_max_factor
+    grow: float = app_constants.adaptive_grow
+    decay: float = app_constants.adaptive_decay
+    successes_for_decay: int = app_constants.adaptive_successes_for_decay
 
     factor: float = 1.0
     _success_streak: int = 0
@@ -43,18 +44,18 @@ class AdaptiveBackoff:
             self.factor = max(self.min_factor, self.factor / self.decay)
             self._success_streak = 0
 
-    def compute_delay(self, base_delay: float, jitter: float = 0.25) -> float:
+    def compute_delay(self, base_delay: float, jitter: float = app_constants.throttle_jitter) -> float:
         j = random.uniform(-jitter, jitter)
         return max(0.0, (base_delay + j) * self.factor)
 
 
 @dataclass
 class CircuitBreaker:
-    fail_threshold: int = 10
-    window_size: int = 50
-    error_rate_threshold: float = 0.5
-    cooldown_seconds: int = 120
-    probe_interval_seconds: int = 30
+    fail_threshold: int = app_constants.breaker_fail_threshold
+    window_size: int = app_constants.breaker_window_size
+    error_rate_threshold: float = app_constants.breaker_error_rate_threshold
+    cooldown_seconds: int = app_constants.breaker_cooldown_seconds
+    probe_interval_seconds: int = app_constants.breaker_probe_interval_seconds
 
     failures: int = 0
     total: int = 0
@@ -122,8 +123,19 @@ def throttle_before_request(base_delay: float = 1.0) -> None:
     while breaker.should_pause():
         time.sleep(1)
     # Adaptive backoff delay with jitter
-    delay = adaptive.compute_delay(base_delay)
+    delay = adaptive.compute_delay(base_delay * app_constants.throttle_scale)
     _check_delay(delay)
+
+
+def reset_throttling() -> None:
+    """Reset adaptive backoff and circuit breaker to defaults."""
+    adaptive.factor = app_constants.adaptive_min_factor
+    adaptive._success_streak = 0
+    breaker.failures = 0
+    breaker.total = 0
+    breaker.state = "closed"
+    breaker._opened_at = None
+    breaker._last_probe = None
 
 
 def report_success():
