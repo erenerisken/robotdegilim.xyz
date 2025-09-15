@@ -9,7 +9,7 @@ from src.utils.timing import throttle_before_request, report_success, report_fai
 
 
 def get_http_session(
-    total: int = 3,
+    total: int = app_constants.global_retries,
     backoff_factor: float = 0.5,
     status_forcelist: Optional[tuple[int, ...]] = (429, 500, 502, 503, 504),
     timeout: float = 15.0,
@@ -49,7 +49,7 @@ def request(
     data: Optional[dict] = None,
     json: Optional[dict] = None,
     ok_status: int = 200,
-    tries: int = 5,
+    tries: int = app_constants.global_retries,
     base_delay: float = 1.0,
     name: Optional[str] = None,
     **kwargs,
@@ -101,7 +101,7 @@ def get(
     session: requests.Session,
     url: str,
     *,
-    tries: int = 5,
+    tries: int = app_constants.global_retries,
     base_delay: float = 1.0,
     name: Optional[str] = None,
     **kwargs,
@@ -114,7 +114,7 @@ def post(
     url: str,
     *,
     data: Optional[dict] = None,
-    tries: int = 5,
+    tries: int = app_constants.global_retries,
     base_delay: float = 0.9,
     name: Optional[str] = None,
     **kwargs,
@@ -128,7 +128,7 @@ def post_oibs(
     session: requests.Session,
     data: dict,
     *,
-    tries: int = 5,
+    tries: int = app_constants.global_retries,
     base_delay: float = 0.9,
     name: str = "oibs_post",
 ) -> requests.Response:
@@ -142,7 +142,7 @@ def get_catalog(
     dept_code: str,
     course_code: str,
     *,
-    tries: int = 5,
+    tries: int = app_constants.global_retries,
     base_delay: float = 1.0,
 ) -> requests.Response:
     url = app_constants.course_catalog_url.replace("{dept_code}", dept_code).replace(

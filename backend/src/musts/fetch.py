@@ -9,7 +9,9 @@ from src.utils.timing import throttle_before_request, report_success, report_fai
 logger = logging.getLogger(app_constants.log_musts)
 
 
-def get_department_page(session: requests.Session, dept_code: str, tries: int = 5):
+def get_department_page(
+    session: requests.Session, dept_code: str, tries: int = app_constants.global_retries
+):
     attempt = 0
     while attempt < tries:
         try:

@@ -17,7 +17,10 @@ def get_main_page(session: requests.Session) -> Response:
 
 
 def get_dept(
-    session: requests.Session, dept_code: str, semester_code: str, tries: int = 5
+    session: requests.Session,
+    dept_code: str,
+    semester_code: str,
+    tries: int = app_constants.global_retries,
 ) -> Response:
     data = {
         "textWithoutThesis": 1,
@@ -31,7 +34,9 @@ def get_dept(
     return response
 
 
-def get_course(session: requests.Session, course_code: str, tries: int = 5) -> Response:
+def get_course(
+    session: requests.Session, course_code: str, tries: int = app_constants.global_retries
+) -> Response:
     data = {
         "SubmitCourseInfo": "Course Info",
         "text_course_code": course_code,
@@ -42,7 +47,9 @@ def get_course(session: requests.Session, course_code: str, tries: int = 5) -> R
     return response
 
 
-def get_section(session: requests.Session, section_code: str, tries: int = 5) -> Response:
+def get_section(
+    session: requests.Session, section_code: str, tries: int = app_constants.global_retries
+) -> Response:
     data = {"submit_section": section_code, "hidden_redir": "Course_Info"}
     response: Response = post_oibs(session, data, tries=tries, base_delay=0.9, name="get_section")
     response.encoding = "utf-8"
@@ -51,7 +58,8 @@ def get_section(session: requests.Session, section_code: str, tries: int = 5) ->
 
 def get_department_prefix(session: requests.Session, dept_code: str, course_code: str):
     try:
-        response = get_catalog(session, dept_code, course_code, tries=5, base_delay=1.0)
+        # Use global retry setting from utils.http defaults
+        response = get_catalog(session, dept_code, course_code, base_delay=1.0)
         response.encoding = "utf-8"
         catalog_soup = BeautifulSoup(response.text, "html.parser")
         h2 = catalog_soup.find("h2")

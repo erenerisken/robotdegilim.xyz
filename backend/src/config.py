@@ -89,6 +89,9 @@ class app_constants:
     log_json = os.environ.get("LOG_JSON", "false").lower() in ("1", "true", "yes")
     app_version = os.environ.get("APP_VERSION", "0.1.0")
 
+    # Global retry count to unify all HTTP retries
+    global_retries = int(os.environ.get("GLOBAL_RETRIES", "5"))
+
     # Throttling/Backoff tuning (adaptive and circuit-breaker)
     # Scale multiplies all caller-provided base delays (e.g., 1.0 -> unchanged)
     throttle_scale = float(os.environ.get("THROTTLE_SCALE", "1.0"))
