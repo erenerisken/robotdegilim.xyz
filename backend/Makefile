@@ -14,6 +14,10 @@ help:
 	@echo "  type          - run mypy type checker"
 	@echo "  run           - start Flask dev server on port $(PORT)"
 	@echo "  run-gunicorn  - start with gunicorn on port $(PORT)"
+	@echo "  speed         - GET current /speed state"
+	@echo "  speed-fast    - set speed mode=fast"
+	@echo "  speed-slow    - set speed mode=slow"
+	@echo "  speed-normal  - set speed mode=normal"
 
 install:
 	$(PIP) install -r ./requirements.txt
@@ -39,3 +43,14 @@ run:
 run-gunicorn:
 	gunicorn 'app:app' -b 0.0.0.0:$(PORT) --chdir ./src
 
+speed:
+	$(PY) ./scripts/speed.py --base-url http://localhost:$(PORT)
+
+speed-fast:
+	$(PY) ./scripts/speed.py fast --base-url http://localhost:$(PORT)
+
+speed-slow:
+	$(PY) ./scripts/speed.py slow --base-url http://localhost:$(PORT)
+
+speed-normal:
+	$(PY) ./scripts/speed.py normal --base-url http://localhost:$(PORT)
