@@ -5,6 +5,7 @@ from typing import Dict, Any
 
 from src.config import app_constants
 from src.errors import RecoverError
+from src.utils.s3 import get_s3_client
 
 
 logger = logging.getLogger(app_constants.log_musts)
@@ -29,11 +30,32 @@ def load_departments() -> Dict[str, Any]:
     Returns an object mapping department codes to metadata. Missing or invalid
     files return an empty dict. This function does not modify keys or values.
     """
+    # 1) Prefer local cache if present (development, or after scrape on same host)
     path = app_constants.data_dir / app_constants.departments_json
     data = _load_json_safe(path)
     if data:
-        logger.info(f"departments loaded: count={len(data)} file={os.path.basename(path)}")
-    return data
+        logger.info(
+            f"departments loaded (local): count={len(data)} file={os.path.basename(path)}"
+        )
+        return data
+
+    # 2) Fallback to S3 to align with status/depts_ready detection
+    try:
+        s3 = get_s3_client()
+        obj = s3.get_object(
+            Bucket=app_constants.s3_bucket_name, Key=app_constants.departments_json
+        )
+        body = obj["Body"].read().decode("utf-8")
+        data = json.loads(body)
+        if isinstance(data, dict) and data:
+            logger.info(
+                f"departments loaded (s3): count={len(data)} key={app_constants.departments_json}"
+            )
+            return data
+    except Exception as e:
+        # Silent fallback; caller decides on error handling based on empty result
+        logger.warning(f"could not load departments from S3: {e}")
+    return {}
 
 
 def write_musts(data: Dict[str, Any]) -> str:

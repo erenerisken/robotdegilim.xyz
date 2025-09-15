@@ -62,7 +62,25 @@ def set_status(s3_client: boto3.client, **kwargs) -> Dict[str, Any]:
 
 
 def detect_depts_ready(s3_client: boto3.client) -> bool:
-    """Return True if departments_json exists in the bucket."""
+    """Return True if departments data is available.
+
+    Preference order:
+    1) Local cache under data directory (non-empty valid JSON dict)
+    2) Presence on S3 (head_object succeeds)
+    """
+    # Prefer local cache for development or when scraper runs on same host
+    try:
+        local_path = app_constants.data_dir / app_constants.departments_json
+        if local_path.exists():
+            with open(local_path, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+                if isinstance(data, dict) and len(data) > 0:
+                    return True
+    except Exception:
+        # Ignore and fall back to S3 check
+        pass
+
+    # Fallback to S3 presence
     try:
         s3_client.head_object(
             Bucket=app_constants.s3_bucket_name, Key=app_constants.departments_json
