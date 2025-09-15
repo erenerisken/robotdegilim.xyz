@@ -1,97 +1,154 @@
+<div align="center">
+
 # robotdegilim-backend
 
-Backend service that scrapes METU OIBS data, produces JSON artifacts, and publishes them to S3. It exposes admin endpoints to trigger scrape and “musts” generation, with built‑in backoff/circuit‑breaker for politeness and an end‑only, atomic publish model.
+Lightweight Flask service that scrapes METU OIBS data, builds consistent JSON artifacts, and publishes them atomically to S3. Includes an adaptive throttling layer, retries, and a circuit breaker to remain polite to upstream systems.
 
-## Overview
-- Single-process Flask app; no concurrency by design.
-- Scraper builds data in memory, writes to `storage/data/`, uploads to S3, then uploads `lastUpdated.json` last (publish signal) so clients never see partial data.
-- Robust HTTP layer with timeouts, retries, adaptive backoff, and a circuit breaker.
-- State in S3 (`status.json`): `status`, `queued_musts`, `depts_ready`. Initialized on startup.
+</div>
 
-## Endpoints
-- `GET /run-scrape`
-  - 200 OK `{ status: "Scraping completed successfully" }`
-  - 503 BUSY `{ status: "System is busy", code: "BUSY" }`
-  - If `queued_musts` was set, runs musts right after a successful scrape.
-- `GET /run-musts`
-  - 200 OK `{ status: "Get musts completed successfully", code: "OK" }`
-  - 202 QUEUED when data not ready or scraper is busy.
-- `GET /status`
-  - `{"status":"idle|busy","queued_musts":bool,"depts_ready":bool,"version":string}`
+## Table of Contents
+1. Why it exists
+2. High-level architecture
+3. Data flow / publish model
+4. Endpoints
+5. Directory layout
+6. Environment variables
+7. Local development
+8. Deployment
+9. Operations & observability
+10. Failure modes & resilience
+11. Contributing / style
+12. Troubleshooting FAQ
 
-## Layout
-- `src/app.py` – Flask entrypoint (CORS, access log, security headers, JSON logs, routes)
-- `src/config.py` – Central config (env, file names, dirs, headers)
-- Scraper:
-  - `src/scrape/scrape.py` – Orchestrates the scrape run
-  - `src/scrape/fetch.py` – All METU HTTP calls (via wrappers)
-  - `src/scrape/parse.py` – HTML parsing → structured data
-  - `src/scrape/io.py` – JSON read/write, prefix loaders
-- Musts:
-  - `src/musts/musts.py` – Orchestrates musts run
-  - `src/musts/fetch.py`, `src/musts/parse.py`, `src/musts/io.py`
-- Services/Utils:
-  - `src/services/status_service.py` – read/write status.json; set busy/idle
-  - `src/utils/http.py` – requests.Session factory and robust request wrappers
-  - `src/utils/timing.py` – adaptive backoff + circuit breaker
-  - `src/utils/s3.py` – S3 client, uploads with retries, idle check
-  - `src/utils/publish.py` – uploads files, then `lastUpdated.json`
-  - `src/utils/run.py` – `busy_idle` context manager
-  - `src/utils/logging.py` – JSON log formatter
-  - `src/errors.py` – `AppError` and `RecoverError` (structured, redacted)
+## 1. Why It Exists
+Schools publish course & schedule data behind legacy HTML forms. This service turns that into stable, versioned JSON for a React frontend and other consumers, ensuring clients never observe half-written data.
 
-## Storage
-- Local (created on demand):
-  - Logs: `backend/storage/logs/`
-  - Data: `backend/storage/data/`
-- S3 keys (see `config.py`):
-  - `departments.json`, `departmentsNoPrefix.json`, `manualPrefixes.json` (optional), `data.json`, `musts.json`, `lastUpdated.json`, `status.json`
+## 2. High-Level Architecture
+Single-process synchronous Flask app. A run consists of: fetch → parse → assemble in-memory structures → write local JSON → upload to S3 → upload `lastUpdated.json` last. State (busy/idle, queued operations) is persisted in `status.json` (both locally and on S3) to coordinate scrape vs must runs.
 
-## Configuration
-- Dev: set env in `backend/.env` (gitignored). The app loads it early using `python-dotenv` if installed.
-- Prod (Fly.io): set secrets as environment variables via `flyctl secrets set`.
-- Env vars (subset):
-  - `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_RECIPIENT` – error email (optional)
-  - `ACCESS_KEY`, `SECRET_ACCESS_KEY` – S3 ( Fly.io has no IAM roles )
-  - `ALLOWED_ORIGINS` – CORS (comma-separated or `*`)
-  - `LOG_JSON` – `1/true/yes` for JSON logs; otherwise text logs
-  - `APP_VERSION` – exposed via `/status`
+Key resilience pieces:
+- Centralized HTTP wrapper with: per-attempt timeout, bounded global retries (`GLOBAL_RETRIES`), adaptive delay scaling, jitter, and classification of retryable vs fatal errors.
+- Circuit breaker (rolling window) to stop hammering upstream when error rate exceeds threshold.
+- Atomic publish: only after every data file succeeds do we flip the pointer (`lastUpdated.json`).
 
-## Running
-- Dev (Windows example):
-  - `pip install -r backend/requirements.txt -r backend/requirements-dev.txt`
-  - `set FLASK_ENV=development` (optional)
-  - `python -m flask --app backend/src/app run -p 3000`
-- Prod (Fly):
-  - Install only `backend/requirements.txt`
-  - Use `gunicorn 'app:app' -b 0.0.0.0:3000` or equivalent.
+## 3. Data Flow / Publish Model
+1. Build everything locally under `storage/data/`.
+2. Upload content files (`departments*.json`, `data.json`, `musts.json`, etc.).
+3. Only after success upload `lastUpdated.json` (acts like a “commit”).
+4. Frontend polls or fetches using public S3 URLs; seeing a new `lastUpdated.json` timestamp means a coherent dataset is available.
 
-## Scraping Behavior (politeness)
-- Every request goes through `throttle_before_request()` with adaptive backoff + jitter.
-- Circuit breaker opens on many failures/high error rate, cools down briefly, probes to resume.
-- `utils/http.request()` wraps request attempts and classifies failures (429/5xx retried; hard 4xx aborts).
-- No concurrency; single-process runs. Add a global run timeout later if desired.
+If a failure occurs mid-upload: restart is safe; clients keep prior snapshot.
 
-## Publish Model
-- Build everything in memory; write to `storage/data/`.
-- Upload data files with retries; then upload `lastUpdated.json` last (publish signal).
-- If any upload fails, lastUpdated does not change → clients keep previous complete dataset.
+## 4. Endpoints
+| Method | Path         | Description | Success Response | Busy/Deferred |
+|--------|--------------|-------------|------------------|---------------|
+| GET    | /run-scrape  | Run full scrape + optional queued musts | 200 `{status:"Scraping completed successfully"}` | 503 `{code:"BUSY"}` |
+| GET    | /run-musts   | Generate musts if data ready else queue | 200 `{code:"OK"}` | 202 `{code:"QUEUED"}` |
+| GET    | /status      | Current status + version + flags | 200 JSON | — |
 
-## Error Handling & Logging
-- `RecoverError(message, details, code)` aborts runs cleanly without partial state.
-- Text logs: rotated daily (TR timezone). Access log includes request_id.
-- JSON logs: set `LOG_JSON=1` to structure logs with timestamps, levels, logger, and message.
+## 5. Directory Layout
+```
+src/
+  app.py                # Flask app / routes
+  config.py             # Environment + constants
+  errors.py             # Structured error types
+  services/status_service.py
+  scrape/               # Scrape orchestration + fetch/parse/io
+  musts/                # Musts orchestration + helpers
+  utils/                # http, timing, s3, publish, logging, run helpers
+storage/
+  data/                 # Generated JSON artifacts (local) 
+  logs/                 # Runtime logs
+scripts/                # Maintenance / perf scripts
+```
 
-## Development
-- Lint/format/type check (optional):
-  - `ruff check backend/src`
-  - `black backend/src`
-  - `mypy backend/src`
+## 6. Environment Variables
+Primary variables (see also `../.env.example`):
 
-## Troubleshooting
-- “System is busy”: status.json is not `idle`; wait or check `/status`.
-- “Queued to run after scrape”: musts requested before departments data is ready; it will run after the next successful scrape.
-- Frequent 429/5xx: scraper will slow down via adaptive backoff/breaker. Consider trying later.
+| Name | Default | Purpose | Notes |
+|------|---------|---------|-------|
+| ACCESS_KEY | — | AWS access key for S3 | Required in prod |
+| SECRET_ACCESS_KEY | — | AWS secret key for S3 | Required in prod |
+| MAIL_USERNAME | — | SMTP auth user | Optional, enables email alerts |
+| MAIL_PASSWORD | — | SMTP auth password | Optional |
+| MAIL_RECIPIENT | info.robotdegilim@gmail.com | Alert destination | Can override |
+| ALLOWED_ORIGINS | * | CORS origins | Comma list or * |
+| LOG_LEVEL | INFO | Logging level | Uppercase |
+| LOG_JSON | false | JSON vs plain logs | 1/true/yes accepted |
+| APP_VERSION | 0.1.0 | Reported via /status | Override at deploy |
+| HTTP_TIMEOUT | 15.0 | Per attempt timeout (s) | Float seconds |
+| GLOBAL_RETRIES | 10 | Total retry attempts per request | Applies across wrappers |
+| THROTTLE_SCALE | 0.5 | Base multiplier for delays | Increase to slow globally |
+| THROTTLE_JITTER | 0.25 | Random fractional jitter | 0 disables |
+| FAST_THROTTLE_SCALE | 0.1 | "Fast mode" scale | For low-lat runs |
+| SLOW_THROTTLE_SCALE | 1.0 | "Slow mode" scale | Recovery / politeness |
+| ADAPTIVE_MIN_FACTOR | 1.0 | Min adaptive factor | Lower bound |
+| ADAPTIVE_MAX_FACTOR | 8.0 | Max adaptive factor | Upper bound |
+| ADAPTIVE_GROW | 1.5 | Growth multiplier on failures | Exponential-ish |
+| ADAPTIVE_DECAY | 1.1 | Decay factor on success streak | Shrinks factor |
+| ADAPTIVE_SUCCESSES_FOR_DECAY | 10 | Successes to apply decay | Integer |
+| BREAKER_FAIL_THRESHOLD | 10 | Fail count to trip breaker | Within window |
+| BREAKER_WINDOW_SIZE | 50 | Sample window size | Rolling |
+| BREAKER_ERROR_RATE_THRESHOLD | 0.5 | Error ratio to open breaker | 0-1 |
+| BREAKER_COOLDOWN_SECONDS | 120 | Time breaker stays open | Seconds |
+| BREAKER_PROBE_INTERVAL_SECONDS | 30 | Probe interval while open | Seconds |
 
-## Notes & Small Gotchas
-- `manualPrefixes.json` is optional. The publisher skips uploading it if the local file is missing.
+## 7. Local Development
+Create a venv and install runtime + optional dev deps:
+```
+python -m venv .venv
+.venv/Scripts/Activate.ps1  # Windows PowerShell
+python -m pip install -r requirements.txt -r requirements-dev.txt
+cp .env.example .env  # then fill required secrets
+python -m flask --app src/app run -p 3000
+```
+
+Useful commands:
+```
+ruff check src
+black src
+mypy src
+```
+
+## 8. Deployment
+- Provide environment via platform secret store (e.g. `flyctl secrets set ACCESS_KEY=...`).
+- Install only production requirements if you want lean images.
+- Run under a WSGI server:
+```
+gunicorn 'app:app' -b 0.0.0.0:3000 --workers 1 --threads 4 --timeout 180
+```
+
+## 9. Operations & Observability
+Artifacts:
+- S3 bucket (configured in `config.app_constants.s3_bucket_name`) stores JSON.
+- `status.json` communicates system state to operators and frontend.
+
+Logging:
+- Plain text (default) or structured JSON with `LOG_JSON=1`.
+- Daily rotation (TR timezone) performed by logging configuration.
+
+## 10. Failure Modes & Resilience
+| Scenario | Mitigation |
+|----------|------------|
+| Upstream latency spike | Adaptive factor grows; delays increase |
+| Burst of 5xx/429 | Retries with backoff; may trip breaker |
+| Sustained errors | Breaker opens; periodic probes to resume |
+| Partial upload failure | `lastUpdated.json` not replaced → previous snapshot remains |
+| Musts requested early | Queued until first successful scrape completes |
+
+## 11. Contributing / Style
+- Keep synchronous model (avoid premature async/concurrency).
+- Add new env vars to: `config.py`, `.env.example`, and this README table.
+- Run ruff/black/mypy before PRs.
+
+## 12. Troubleshooting FAQ
+| Symptom | Explanation | Action |
+|---------|-------------|--------|
+| 503 BUSY on /run-scrape | A run is already active | Retry later / check /status |
+| 202 QUEUED from /run-musts | Data not ready | Run scrape first or wait |
+| Slow progress | Adaptive backoff elevated | Inspect logs for failures |
+| No new data published | Upload failed before final commit | Check error logs |
+
+## License
+MIT (see root `LICENSE`).
+
