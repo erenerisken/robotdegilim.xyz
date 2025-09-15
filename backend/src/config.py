@@ -94,12 +94,15 @@ class app_constants:
     http_timeout = float(os.environ.get("HTTP_TIMEOUT", "15.0"))
 
     # Global retry count to unify all HTTP retries
-    global_retries = int(os.environ.get("GLOBAL_RETRIES", "5"))
+    global_retries = int(os.environ.get("GLOBAL_RETRIES", "10"))
 
     # Throttling/Backoff tuning (adaptive and circuit-breaker)
     # Scale multiplies all caller-provided base delays (e.g., 1.0 -> unchanged)
-    throttle_scale = float(os.environ.get("THROTTLE_SCALE", "1.0"))
+    throttle_scale = float(os.environ.get("THROTTLE_SCALE", "0.5"))
     throttle_jitter = float(os.environ.get("THROTTLE_JITTER", "0.25"))
+    # Preset scales for runtime toggles
+    fast_throttle_scale = float(os.environ.get("FAST_THROTTLE_SCALE", "0.1"))
+    slow_throttle_scale = float(os.environ.get("SLOW_THROTTLE_SCALE", "1.0"))
 
     # Adaptive backoff factors (faster on good network, harsher on failures)
     adaptive_min_factor = float(os.environ.get("ADAPTIVE_MIN_FACTOR", "1.0"))

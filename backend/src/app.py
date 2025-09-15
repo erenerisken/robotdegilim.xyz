@@ -26,6 +26,7 @@ from src.utils.emailer import get_email_handler
 from src.utils.s3 import get_s3_client
 from src.services.status_service import get_status, set_status, init_status
 from src.utils.logging import JsonFormatter
+from src.utils.timing import set_speed_mode, get_speed_mode
 
 # Set up structured logging split: app, jobs, and errors
 fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -284,3 +285,29 @@ def status():
     except Exception as e:
         _logger.error(f"status check failed: {e}")
         return {"status": "unknown", "error": "status check failed"}, 500
+
+@app.route("/speed", methods=["GET", "POST"])
+def speed():
+    """Get or set throttling speed mode: fast | slow | normal.
+
+    GET: returns current mode and scale.
+    POST: accepts ONLY a JSON body: {"mode": "<value>"}
+    """
+    if request.method == "POST":
+        if not request.is_json:
+            return {"ok": False, "error": "JSON body required"}, 400
+        data = request.get_json(silent=True) or {}
+        mode = data.get("mode")
+        if mode is None:
+            return {"ok": False, "error": "Missing 'mode' in JSON body"}, 400
+        try:
+            state = set_speed_mode(mode)
+        except ValueError as ve:
+            return {"ok": False, "error": str(ve)}, 400
+        except Exception as e:
+            _logger.error(f"speed toggle failed: {e}")
+            return {"ok": False, "error": "speed toggle failed"}, 500
+        return {"ok": True, **state}, 200
+
+    # GET
+    return get_speed_mode(), 200

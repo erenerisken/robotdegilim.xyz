@@ -117,13 +117,23 @@ class CircuitBreaker:
 adaptive = AdaptiveBackoff()
 breaker = CircuitBreaker()
 
+# Runtime override to adjust speed without restart
+_speed_mode: str = "normal"  # normal | fast | slow
+_scale_override: float | None = None
+
+
+def _current_scale() -> float:
+    if _scale_override is not None:
+        return _scale_override
+    return app_constants.throttle_scale
+
 
 def throttle_before_request(base_delay: float = 1.0) -> None:
     # Circuit breaker: pause if needed
     while breaker.should_pause():
         time.sleep(1)
     # Adaptive backoff delay with jitter
-    delay = adaptive.compute_delay(base_delay * app_constants.throttle_scale)
+    delay = adaptive.compute_delay(base_delay * _current_scale())
     _check_delay(delay)
 
 
@@ -136,6 +146,38 @@ def reset_throttling() -> None:
     breaker.state = "closed"
     breaker._opened_at = None
     breaker._last_probe = None
+
+
+def set_speed_mode(mode: str) -> dict:
+    """Set global speed mode: 'fast' | 'slow' | 'normal'. Returns state.
+
+    - fast: lower throttle scale (env FAST_THROTTLE_SCALE)
+    - slow: higher throttle scale (env SLOW_THROTTLE_SCALE)
+    - normal: use THROTTLE_SCALE from env
+    Resets adaptive/breaker state on change.
+    """
+    global _speed_mode, _scale_override
+    mode = (mode or "").strip().lower()
+    if mode not in ("fast", "slow", "normal"):
+        raise ValueError("mode must be one of: fast, slow, normal")
+    _speed_mode = mode
+    if mode == "fast":
+        _scale_override = app_constants.fast_throttle_scale
+    elif mode == "slow":
+        _scale_override = app_constants.slow_throttle_scale
+    else:
+        _scale_override = None
+    reset_throttling()
+    return get_speed_mode()
+
+
+def get_speed_mode() -> dict:
+    return {
+        "mode": _speed_mode,
+        "scale": _current_scale(),
+        "adaptive_factor": adaptive.factor,
+        "breaker_state": breaker.state,
+    }
 
 
 def report_success():
