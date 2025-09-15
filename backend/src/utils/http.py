@@ -12,7 +12,7 @@ def get_http_session(
     total: int = app_constants.global_retries,
     backoff_factor: float = 0.5,
     status_forcelist: Optional[tuple[int, ...]] = (429, 500, 502, 503, 504),
-    timeout: float = 15.0,
+    timeout: float = app_constants.http_timeout,
 ) -> requests.Session:
     """Return a requests Session with retry/backoff and a default timeout via mount.
 
@@ -63,7 +63,7 @@ def request(
         try:
             throttle_before_request(base_delay)
             if "timeout" not in kwargs:
-                kwargs["timeout"] = 15.0
+                kwargs["timeout"] = app_constants.http_timeout
             resp = session.request(method, url, params=params, data=data, json=json, **kwargs)
             if resp.status_code == ok_status:
                 report_success()

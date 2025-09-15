@@ -88,6 +88,10 @@ class app_constants:
     allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*")  # comma-separated or *
     log_json = os.environ.get("LOG_JSON", "false").lower() in ("1", "true", "yes")
     app_version = os.environ.get("APP_VERSION", "0.1.0")
+    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
+
+    # HTTP default timeout (seconds)
+    http_timeout = float(os.environ.get("HTTP_TIMEOUT", "15.0"))
 
     # Global retry count to unify all HTTP retries
     global_retries = int(os.environ.get("GLOBAL_RETRIES", "5"))

@@ -36,10 +36,11 @@ app_logger = logging.getLogger(app_constants.log_app)
 scrape_logger = logging.getLogger(app_constants.log_scrape)
 musts_logger = logging.getLogger(app_constants.log_musts)
 
-parent_logger.setLevel(logging.INFO)
-app_logger.setLevel(logging.INFO)
-scrape_logger.setLevel(logging.INFO)
-musts_logger.setLevel(logging.INFO)
+_lvl = getattr(logging, app_constants.log_level, logging.INFO)
+parent_logger.setLevel(_lvl)
+app_logger.setLevel(_lvl)
+scrape_logger.setLevel(_lvl)
+musts_logger.setLevel(_lvl)
 
 # app.log (INFO+) - rotate daily at TR midnight, keep 5 days
 _log_days = 5
