@@ -2,8 +2,8 @@ from contextlib import contextmanager
 import logging
 import boto3
 
-from services.status_service import set_busy, set_idle
-from config import app_constants
+from src.services.status_service import set_busy, set_idle
+from src.config import app_constants
 
 
 logger = logging.getLogger(app_constants.log_app)

@@ -1,14 +1,14 @@
 import logging
 from bs4 import BeautifulSoup
 
-from config import app_constants
-from musts.io import load_departments, write_musts
-from musts.fetch import get_department_page
-from musts.parse import extract_dept_node
-from utils.s3 import upload_to_s3, is_idle, get_s3_client
-from utils.run import busy_idle
-from errors import RecoverError
-from utils.http import get_http_session
+from src.config import app_constants
+from src.musts.io import load_departments, write_musts
+from src.musts.fetch import get_department_page
+from src.musts.parse import extract_dept_node
+from src.utils.s3 import upload_to_s3, is_idle, get_s3_client
+from src.utils.run import busy_idle
+from src.errors import RecoverError
+from src.utils.http import get_http_session
 
 
 logger = logging.getLogger(app_constants.log_musts)

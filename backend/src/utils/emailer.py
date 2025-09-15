@@ -1,7 +1,7 @@
 import logging
 from logging.handlers import SMTPHandler
 
-from config import app_constants
+from src.config import app_constants
 
 
 def get_email_handler():

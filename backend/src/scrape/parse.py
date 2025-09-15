@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 import requests
 
-from config import app_constants
-from errors import RecoverError
-from scrape.fetch import get_section
+from src.config import app_constants
+from src.errors import RecoverError
+from src.scrape.fetch import get_section
 
 
 def _strip_upper(s) -> str:

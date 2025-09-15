@@ -4,8 +4,8 @@ from typing import Dict
 
 import boto3
 
-from config import app_constants
-from errors import RecoverError
+from src.config import app_constants
+from src.errors import RecoverError
 import time
 import random
 

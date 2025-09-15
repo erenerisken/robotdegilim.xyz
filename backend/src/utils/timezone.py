@@ -3,7 +3,7 @@ from logging.handlers import TimedRotatingFileHandler
 from typing import Optional
 import pytz
 
-from config import app_constants
+from src.config import app_constants
 
 # Istanbul timezone via pytz (present in requirements)
 TZ_TR = pytz.timezone("Europe/Istanbul")

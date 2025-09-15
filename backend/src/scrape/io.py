@@ -3,9 +3,9 @@ import logging
 import os
 from typing import Dict, Any
 
-from config import app_constants
-from errors import RecoverError
-from scrape.__init__ import _strip_upper
+from src.config import app_constants
+from src.errors import RecoverError
+from src.scrape.parse import _strip_upper
 
 
 logger = logging.getLogger(app_constants.log_scrape)

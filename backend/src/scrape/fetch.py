@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 import requests
 from requests import Response
 
-from config import app_constants
-from utils.http import get as http_get, post_oibs, get_catalog
+from src.config import app_constants
+from src.utils.http import get as http_get, post_oibs, get_catalog
 
 
 logger = logging.getLogger(app_constants.log_scrape)

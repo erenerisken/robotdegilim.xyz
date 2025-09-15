@@ -2,9 +2,9 @@ import json
 from typing import Dict, Any, cast
 import boto3
 
-from config import app_constants
-from errors import RecoverError
-from utils.s3 import upload_to_s3
+from src.config import app_constants
+from src.errors import RecoverError
+from src.utils.s3 import upload_to_s3
 
 
 def write_status(status: Dict[str, str]) -> str:

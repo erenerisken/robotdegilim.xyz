@@ -3,13 +3,13 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
-from scrape.fetch import (
+from src.scrape.fetch import (
     get_main_page,
     get_dept,
     get_department_prefix,
     get_course,
 )
-from scrape.parse import (
+from src.scrape.parse import (
     any_course,
     extract_courses,
     extract_sections,
@@ -17,13 +17,13 @@ from scrape.parse import (
     extract_current_semester,
     deptify,
 )
-from scrape.io import write_json, load_prefixes_combined
-from utils.s3 import is_idle, get_s3_client
-from utils.publish import publish_files
-from utils.run import busy_idle
-from config import app_constants
-from errors import RecoverError
-from utils.http import get_http_session
+from src.scrape.io import write_json, load_prefixes_combined
+from src.utils.s3 import is_idle, get_s3_client
+from src.utils.publish import publish_files
+from src.utils.run import busy_idle
+from src.config import app_constants
+from src.errors import RecoverError
+from src.utils.http import get_http_session
 
 logger = logging.getLogger(app_constants.log_scrape)
 

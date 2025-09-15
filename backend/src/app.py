@@ -7,7 +7,7 @@ import logging
 import os
 from werkzeug.exceptions import HTTPException
 
-from utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
+from src.utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
 from pathlib import Path
 
 # Load backend/.env early in dev so env vars are available before importing app_constants
@@ -18,13 +18,13 @@ try:
     load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 except Exception:
     pass
-from config import app_constants
-from scrape.scrape import run_scrape
-from musts.musts import run_musts
-from utils.emailer import get_email_handler
-from utils.s3 import get_s3_client
-from services.status_service import get_status, set_status, init_status
-from utils.logging import JsonFormatter
+from src.config import app_constants
+from src.scrape.scrape import run_scrape
+from src.musts.musts import run_musts
+from src.utils.emailer import get_email_handler
+from src.utils.s3 import get_s3_client
+from src.services.status_service import get_status, set_status, init_status
+from src.utils.logging import JsonFormatter
 
 # Set up structured logging split: app, jobs, and errors
 fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")

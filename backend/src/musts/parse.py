@@ -2,7 +2,7 @@ from urllib.parse import urlparse, parse_qs
 
 from bs4 import BeautifulSoup
 
-from errors import RecoverError
+from src.errors import RecoverError
 
 
 def extract_course_code(course_link: str):

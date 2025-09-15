@@ -3,9 +3,9 @@ from typing import Optional
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from config import app_constants
-from errors import RecoverError
-from utils.timing import throttle_before_request, report_success, report_failure
+from src.config import app_constants
+from src.errors import RecoverError
+from src.utils.timing import throttle_before_request, report_success, report_failure
 
 
 def get_http_session(

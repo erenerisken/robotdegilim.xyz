@@ -2,7 +2,7 @@ import logging
 from typing import Iterable, Tuple
 import boto3
 
-from utils.s3 import upload_to_s3
+from src.utils.s3 import upload_to_s3
 
 
 def publish_files(

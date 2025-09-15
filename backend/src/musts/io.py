@@ -3,8 +3,8 @@ import os
 import logging
 from typing import Dict, Any
 
-from config import app_constants
-from errors import RecoverError
+from src.config import app_constants
+from src.errors import RecoverError
 
 
 logger = logging.getLogger(app_constants.log_musts)

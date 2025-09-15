@@ -1,9 +1,9 @@
 import logging
 import requests
 
-from config import app_constants
-from errors import RecoverError
-from utils.timing import throttle_before_request, report_success, report_failure
+from src.config import app_constants
+from src.errors import RecoverError
+from src.utils.timing import throttle_before_request, report_success, report_failure
 
 
 logger = logging.getLogger(app_constants.log_musts)
