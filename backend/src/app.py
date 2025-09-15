@@ -6,6 +6,7 @@ from flask_cors import CORS
 import logging
 import os
 from werkzeug.exceptions import HTTPException
+from src.errors import AppError
 
 from src.utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
 from pathlib import Path
@@ -166,6 +167,17 @@ def _access_log_end(response):
 @app.errorhandler(Exception)
 def _handle_error(e):
     req_id = getattr(request, "_request_id", None)
+    # Application errors with structured details
+    if isinstance(e, AppError):
+        _logger.error(str(e))
+        payload = {
+            "error": e.__class__.__name__,
+            "message": e.message,
+            "code": e.code or "ERROR",
+            "details": e.details,
+            "request_id": req_id,
+        }
+        return payload, 500
     if isinstance(e, HTTPException):
         code = e.code or 500
         _logger.error(f"http_error status={code} path={request.path} msg={e}")
