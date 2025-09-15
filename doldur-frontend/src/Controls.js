@@ -185,8 +185,8 @@ export const Controls = (props) => {
         if (data && data.length > 0) {
           const newCourses = data
             .filter((code) => !selectedCourses.some((c) => c?.code === code))
-            .map(getCourseByCode);
-
+            .map((code) => getCourseByCode(code))
+            .filter((course) => course !== null);
           handleAddCourses(newCourses);
         }
       })
