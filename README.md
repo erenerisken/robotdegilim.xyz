@@ -45,11 +45,10 @@ Primary variables live in `backend/.env.example`. Key ones: `ACCESS_KEY`, `SECRE
 - Frontend build: `npm run build`
 
 ## Deployment Overview
-- Backend container or Fly.io app sets env secrets and runs the Flask app via Gunicorn.
-- Default runtime: Python 3.12, Gunicorn workers=2, timeout=0 (no timeout).
+- Backend runs on Fly.io with Python 3.12 via Gunicorn (default: workers=2, timeout=0) and `/status` health checks, with env defaults including `ALLOWED_ORIGINS=*`.
 - Only `backend/storage/data/manualPrefixes.json` is bundled into the deploy image when present.
 - Outputs JSON to S3 (bucket name defined in backend config).
-- Frontend can be a static site (Netlify, S3+CloudFront, etc.) pointing to the public JSON endpoints.
+- Frontend can be a static site (Netlify, S3+CloudFront, etc.) consuming the published JSON.
 
 ## Contributing
 1. Create a feature branch.

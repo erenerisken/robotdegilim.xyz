@@ -118,6 +118,13 @@ mypy src
 gunicorn 'app:app' -b 0.0.0.0:3000 --workers 1 --threads 4 --timeout 180
 ```
 
+### 8.0 Environment on Fly
+- Non-secret runtime defaults are written to `fly.toml [env]` by the generator:
+  - `LOG_LEVEL=INFO`, `LOG_JSON=false`, `APP_VERSION=0.1.0`, `ALLOWED_ORIGINS=*`
+- Secrets must be set via Fly:
+  - `fly secrets set ACCESS_KEY=... SECRET_ACCESS_KEY=... MAIL_USERNAME=... MAIL_PASSWORD=...`
+- Health check: The generator adds an HTTP check on `/status` (10s interval, 2s timeout).
+
 ### 8.1 Generate Fly.io deploy folder
 Use the helper script to assemble a clean deployable directory (Dockerfile, fly.toml, requirements.txt, src/):
 
@@ -150,6 +157,13 @@ Data files included:
 
 Notes:
 - A `pyproject.toml` is not required for deployment since we install with `requirements.txt`. Keep `pyproject.toml` only if you move to PDM/Poetry or need build-system metadata.
+
+### 8.2 Fly deployment checklist
+1. `fly auth login`
+2. `fly apps create <app-name>` (first time)
+3. Set secrets: `fly secrets set ACCESS_KEY=... SECRET_ACCESS_KEY=... [MAIL_USERNAME=... MAIL_PASSWORD=...]`
+4. `fly deploy`
+5. Verify `/status` on the deployed app and check Fly health checks.
 
 ## 9. Operations & Observability
 Artifacts:
