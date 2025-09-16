@@ -57,7 +57,7 @@ RUN mkdir -p storage/logs storage/data
 EXPOSE 8080
 
 # Use src.app:app where `app` is the Flask app object in backend/src/app.py
-CMD ["gunicorn", "-w", "{workers}", "-b", "0.0.0.0:8080", "--timeout", "{timeout}", "src.app:app"]
+CMD ["gunicorn", "-w", "{workers}", "-b", "[::]:8080", "--timeout", "{timeout}", "src.app:app"]
 """
 
 
@@ -170,6 +170,8 @@ def patch_dockerfile(content: str, python_version: str, *, workers: int, timeout
             line = _replace_arg_in_json_cmd(line, "-w", str(workers))
             # normalize timeout
             line = _replace_arg_in_json_cmd(line, "--timeout", str(timeout))
+            # normalize bind address to IPv6 any ([::])
+            line = line.replace("0.0.0.0:8080", "[::]:8080")
         # Track FROM line index
         if line.strip().startswith("FROM "):
             from_idx = len(out)
