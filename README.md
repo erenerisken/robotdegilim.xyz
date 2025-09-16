@@ -37,7 +37,7 @@ npm start
 Visit http://localhost:3000 (backend) and the CRA dev server (default http://localhost:3001 or 3000 depending on your setup).
 
 ## Environment
-Primary variables live in `backend/.env.example`. Key ones: `ACCESS_KEY`, `SECRET_ACCESS_KEY`, optional mail creds, and tuning knobs (timeouts, retries, breaker thresholds). See `backend/README.md` or `backend/docs/environment.md` (after generated) for the full table.
+Primary variables live in `backend/.env.example`. Key ones: `ACCESS_KEY`, `SECRET_ACCESS_KEY`, optional mail creds, and tuning knobs (timeouts, retries, breaker thresholds). See `backend/README.md` for the full table. A `pyproject.toml` is not required for deployment; the image installs from `requirements.txt`.
 
 ## Scripts & Tooling
 - Lint/type (backend): `ruff`, `black`, `mypy`
@@ -45,7 +45,9 @@ Primary variables live in `backend/.env.example`. Key ones: `ACCESS_KEY`, `SECRE
 - Frontend build: `npm run build`
 
 ## Deployment Overview
-- Backend container or Fly.io app sets env secrets, runs a single worker process.
+- Backend container or Fly.io app sets env secrets and runs the Flask app via Gunicorn.
+- Default runtime: Python 3.12, Gunicorn workers=2, timeout=0 (no timeout).
+- Only `backend/storage/data/manualPrefixes.json` is bundled into the deploy image when present.
 - Outputs JSON to S3 (bucket name defined in backend config).
 - Frontend can be a static site (Netlify, S3+CloudFront, etc.) pointing to the public JSON endpoints.
 

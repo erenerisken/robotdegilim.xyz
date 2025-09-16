@@ -118,6 +118,39 @@ mypy src
 gunicorn 'app:app' -b 0.0.0.0:3000 --workers 1 --threads 4 --timeout 180
 ```
 
+### 8.1 Generate Fly.io deploy folder
+Use the helper script to assemble a clean deployable directory (Dockerfile, fly.toml, requirements.txt, src/):
+
+- From repo root, PowerShell:
+  - `python backend/scripts/make_fly_deploy.py --force`
+
+Defaults:
+- Output: `fly-io/robotdegilim`
+- App name: `robotdegilim-xyz` (override with `--app-name <name>`)
+- Region: `otp` (override with `--region <code>`)
+- Python: `3.12` (override with `--python-version <x.y.z>`)
+
+Then deploy from the generated folder:
+- `fly auth login` (if needed)
+- `fly apps create <app-name>` (first time)
+- `fly secrets set ACCESS_KEY=... SECRET_ACCESS_KEY=... MAIL_USERNAME=... MAIL_PASSWORD=...`
+- `fly deploy`
+
+Using previous templates:
+- If you have a prior deploy folder (e.g., `C:\Users\3alka\Masaustu\Projects\fly-io\robotdegilim`), you can import its Dockerfile and fly.toml and patch them:
+  - `python backend/scripts/make_fly_deploy.py --force --from-templates "C:\\Users\\3alka\\Masaustu\\Projects\\fly-io\\robotdegilim"`
+  - You may still override `--app-name`, `--region`, or `--python-version`.
+
+Runtime config baked into Dockerfile:
+- Gunicorn workers: `--gunicorn-workers N` (default 2). A worker is a process handling requests; 2 keeps /status responsive while one worker runs a long job.
+- Gunicorn timeout: `--gunicorn-timeout S` (default 0 for no timeout). 0 avoids killing long-running scrape/musts; set a large finite value if you prefer a safety net.
+
+Data files included:
+- Only `storage/data/manualPrefixes.json` is copied into the deploy folder (if present). Other generated data/log files are excluded by the `.dockerignore`.
+
+Notes:
+- A `pyproject.toml` is not required for deployment since we install with `requirements.txt`. Keep `pyproject.toml` only if you move to PDM/Poetry or need build-system metadata.
+
 ## 9. Operations & Observability
 Artifacts:
 - S3 bucket (configured in `config.app_constants.s3_bucket_name`) stores JSON.

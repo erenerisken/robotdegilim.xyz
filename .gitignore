@@ -36,3 +36,6 @@ backend/.ruff_cache/
 
 # Environment files
 backend/.env
+
+# Deployment
+fly-io
