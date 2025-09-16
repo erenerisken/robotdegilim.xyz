@@ -68,6 +68,12 @@ primary_region = '{region}'
 
 [build]
 
+[env]
+    LOG_LEVEL = "INFO"
+    LOG_JSON = "false"
+    APP_VERSION = "0.1.0"
+    ALLOWED_ORIGINS = "*"
+
 [http_service]
   internal_port = 8080
   force_https = true
@@ -75,6 +81,15 @@ primary_region = '{region}'
   auto_start_machines = false
   min_machines_running = 1
   processes = ['app']
+
+    # Optional HTTP health check for /status
+    [[http_service.checks]]
+        type = "http"
+        interval = "10s"
+        timeout = "2s"
+        grace_period = "10s"
+        method = "get"
+        path = "/status"
 
 [[vm]]
   memory = '1gb'
@@ -213,7 +228,7 @@ def _replace_arg_in_json_cmd(line: str, flag: str, value: str) -> str:
 
 
 def patch_fly_toml(content: str, app_name: str, region: str) -> str:
-    """Patch fly.toml to set app name, region and ensure internal port 8080."""
+    """Patch fly.toml to set app name, region, ensure internal port 8080, add [env] defaults and /status check."""
     lines = content.splitlines()
     out = []
     for line in lines:
@@ -232,6 +247,21 @@ def patch_fly_toml(content: str, app_name: str, region: str) -> str:
             "\n[http_service]\n  internal_port = 8080\n  force_https = true\n"
             "  auto_stop_machines = 'off'\n  auto_start_machines = false\n  min_machines_running = 1\n"
             "  processes = ['app']\n"
+        )
+    # Ensure [env] block with defaults exists
+    if "\n[env]\n" not in content:
+        content += (
+            "\n[env]\n  LOG_LEVEL = \"INFO\"\n  LOG_JSON = \"false\"\n  APP_VERSION = \"0.1.0\"\n  ALLOWED_ORIGINS = \"*\"\n"
+        )
+    # Ensure an HTTP /status check exists; try adding under [http_service]
+    if "/status" not in content and "http_service" in content:
+        content = content.replace(
+            "[http_service]",
+            (
+                "[http_service]\n  [[http_service.checks]]\n    type = \"http\"\n    interval = \"10s\"\n"
+                "    timeout = \"2s\"\n    grace_period = \"10s\"\n    method = \"get\"\n    path = \"/status\"\n"
+            ),
+            1,
         )
     return content
 
