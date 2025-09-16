@@ -316,7 +316,5 @@ def speed():
 # For local debugging, uncomment the below lines
 """
 if __name__ == "__main__":
-    from src.debug_helper import run_debug
-    app.run(host="localhost", port=5000, debug=True)
-    run_debug()
+    app.run(host="localhost", port=8000)
 """
