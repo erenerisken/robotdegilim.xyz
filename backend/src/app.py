@@ -311,3 +311,12 @@ def speed():
 
     # GET
     return get_speed_mode(), 200
+
+
+# For local debugging, uncomment the below lines
+"""
+if __name__ == "__main__":
+    from src.debug_helper import run_debug
+    run_debug()
+    app.run(host="localhost", port=5000, debug=True)
+"""
