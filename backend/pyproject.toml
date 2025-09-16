@@ -21,7 +21,7 @@ include = ["musts*", "scrape*", "utils*", "services*"]
 
 # Also install top-level single-file modules under src/
 # (so `import app`, `import config`, etc. will work)
-py-modules = ["app", "config", "errors"]
+py-modules = ["app", "config", "errors", "debug_helper"]
 
 [tool.black]
 line-length = 100
