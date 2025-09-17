@@ -89,9 +89,7 @@ export const Controls = (props) => {
       props.onLoadingCompleted();
     });
     clientRef.current.getLastUpdated().then((lu) => setLastUpdated(lu));
-    if (isMobile) {
-      document.body.style.zoom = "60%";
-    }
+    // Remove legacy zoom hack on mobile; rely on responsive CSS instead
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -512,8 +510,6 @@ export const Controls = (props) => {
             onChange={(e) => setDepartment(e.target.value.toUpperCase())}
           />
         </div>
-      </div>
-      <div className="control-row">
         <div className="textfield-wrapper">
           <FormControl variant="outlined" size="small" className="form-control">
             <InputLabel style={{ background: "white" }}>Semester</InputLabel>
@@ -528,6 +524,8 @@ export const Controls = (props) => {
             <FormHelperText>Ex: 2nd year Fall semester -{">"} 3</FormHelperText>
           </FormControl>
         </div>
+      </div>
+      <div className="control-row">
         <div className="control-button">
           <Button
             variant="contained"
@@ -606,6 +604,11 @@ export const Controls = (props) => {
         )}
       </div>
       <Divider />
+      <AddCourseWidget
+        courses={allCourses}
+        onCourseAdd={(c) => handleAddCourses([c])}
+      />
+      <Divider />
       <div className="control-row">
         <div className="centered-row">Added Courses</div>
       </div>
@@ -627,10 +630,6 @@ export const Controls = (props) => {
           ) : null
         )}
       </div>
-      <AddCourseWidget
-        courses={allCourses}
-        onCourseAdd={(c) => handleAddCourses([c])}
-      />
       <AddDontFillWidget startHour={8} startMin={40} endHour={17} endMin={30} />
       {loading && <LoadingDialog text={loadingMessage} />}
       {lastUpdated ? (

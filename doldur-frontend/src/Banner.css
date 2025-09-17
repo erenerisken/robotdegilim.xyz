@@ -1,11 +1,35 @@
+/* Modern banner styles are now handled by styled components */
 .banner-wrapper {
-    background: #CCD0F1;
-    display: inline-flex;
-    width: 100%;
-    border-style: groove;
+  position: relative;
+  z-index: 10;
 }
 
-.banner-typo {
-    margin-top: auto;
-    margin-bottom: auto;
+/* Animation utilities for banner */
+.banner-fade-in {
+  opacity: 0;
+  animation: bannerFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes bannerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 768px) {
+  .banner-wrapper {
+    padding: 16px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-wrapper {
+    padding: 12px 0;
+  }
 }
