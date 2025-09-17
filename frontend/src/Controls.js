@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import {
   TextField,
   Select,
@@ -34,11 +34,8 @@ import { Colorset } from "./Colorset";
 import { LoadingDialog } from "./LoadingDialog/LoadingDialog";
 import "./Controls.css";
 import { resetDontFills } from "./slices/dontFillsSlice";
-import NTEDialog from "./NTEDialog";
-import SchoolIcon from "@material-ui/icons/School";
 
 export const Controls = (props) => {
-  const { currentScenario } = props;
   const [surname, setSurname] = useState("");
   const [department, setDepartment] = useState("");
   const [semester, setSemester] = useState(0);
@@ -70,10 +67,8 @@ export const Controls = (props) => {
   const [lastUpdated, setLastUpdated] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
-  const [nteDialogOpen, setNteDialogOpen] = useState(false);
 
   const dispatch = useDispatch();
-  const scenariosState = useSelector((state) => state.scenariosState);
 
   const clientRef = useRef(new Client());
 
@@ -89,7 +84,9 @@ export const Controls = (props) => {
       props.onLoadingCompleted();
     });
     clientRef.current.getLastUpdated().then((lu) => setLastUpdated(lu));
-    // Remove legacy zoom hack on mobile; rely on responsive CSS instead
+    if (isMobile) {
+      document.body.style.zoom = "60%";
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -292,6 +289,7 @@ export const Controls = (props) => {
   };
 
   const handleScheduleBegin = () => {
+    console.log("Schedule button clicked");
     setAlertMsg("");
     setErrorDept(false);
     setErrorSemester(false);
@@ -308,8 +306,10 @@ export const Controls = (props) => {
     }
     const courseData = [];
     const dontFillsArr = [];
+    console.log("2")
     selectedCourses.forEach((c) => {
       if (c === null || c.settings.disableCourse) return;
+      console.log("2.1")
       const currentCourse = getCourseByCode(c.code);
       const courseToPush = {
         code: c.code,
@@ -320,6 +320,7 @@ export const Controls = (props) => {
         sections: [],
       };
       for (let i = 0; i < currentCourse.sections.length; i++) {
+        console.log("2.1.1")
         const sectionToPush = {
           sectionNumber: currentCourse.sections[i].sectionNumber,
           minYear: currentCourse.sections[i].minYear,
@@ -351,6 +352,7 @@ export const Controls = (props) => {
       const formattedDf = formatDf(df);
       dontFillsArr.push({ times: [formattedDf] });
     });
+    console.log("1")
     setLoading(true);
     setLoadingMessage("Computing schedule...");
     setTimeout(() => {
@@ -362,6 +364,7 @@ export const Controls = (props) => {
         dontFillsArr
       );
       setLoading(false);
+      console.log("Schedule computed:", calculatedSchedule);
       handleScheduleComplete(calculatedSchedule);
     }, 500);
   };
@@ -375,98 +378,6 @@ export const Controls = (props) => {
   const openInNewTab = (url) => {
     const newWindow = window.open(url, "_blank", "noopener,noreferrer");
     if (newWindow) newWindow.opener = null;
-  };
-
-  const calculateOccupiedSlots = () => {
-    const occupiedSlots = [];
-    
-    // Eğer schedule hesaplanmışsa, aktif scenario'yu kullan
-    if (scenariosState.result && scenariosState.result.length > currentScenario) {
-      const currentScenarioData = scenariosState.result[currentScenario]; // Aktif scenario'yu kullan
-      
-      currentScenarioData.forEach((courseInScenario) => {
-        courseInScenario.section.lectureTimes.forEach((lectureTime) => {
-          occupiedSlots.push({
-            day: lectureTime.day,
-            startHour: lectureTime.startHour,
-            startMin: lectureTime.startMin,
-            endHour: lectureTime.endHour,
-            endMin: lectureTime.endMin,
-            source: 'scheduled_course',
-            courseCode: courseInScenario.abbreviation,
-            sectionNumber: courseInScenario.section.sectionNumber
-          });
-        });
-      });
-      
-      // console.log('Using SCHEDULED courses for NTE filtering:', occupiedSlots);
-    } else {
-      // Schedule henüz hesaplanmamışsa, seçili derslerin aktif şubelerini kullan
-      selectedCourses.forEach((c) => {
-        if (c === null || c.settings?.disableCourse) return;
-        const currentCourse = getCourseByCode(c.code);
-        if (!currentCourse) return;
-        
-        currentCourse.sections.forEach((section, sectionIndex) => {
-          if (!c.sections[sectionIndex]) return; // Bu section seçili değil
-          
-          section.lectureTimes.forEach((lectureTime) => {
-            occupiedSlots.push({
-              day: lectureTime.day,
-              startHour: lectureTime.startHour,
-              startMin: lectureTime.startMin,
-              endHour: lectureTime.endHour,
-              endMin: lectureTime.endMin,
-              source: 'selected_course',
-              courseCode: currentCourse.abbreviation,
-              sectionNumber: section.sectionNumber
-            });
-          });
-        });
-      });
-      
-      // console.log('Using SELECTED courses for NTE filtering:', occupiedSlots);
-    }
-    
-    // DontFill bloklarını da ekle
-    props.dontFills.forEach((df) => {
-      occupiedSlots.push({
-        day: df.startDate.getDay(),
-        startHour: df.startDate.getHours(),
-        startMin: df.startDate.getMinutes(),
-        endHour: df.endDate.getHours(),
-        endMin: df.endDate.getMinutes(),
-        source: 'dontfill'
-      });
-    });
-    
-    return occupiedSlots;
-  };
-
-  const handleGetAvailableNTE = () => {
-    setNteDialogOpen(true);
-  };
-
-  const handleNTEDialogClose = () => {
-    setNteDialogOpen(false);
-  };
-
-  const handleAddNTECourse = (nteCourse) => {
-    // NTE dersleri için özel handler - sadece seçilen şube aktif olsun
-    const newSelected = [...selectedCourses];
-    newSelected.push({
-      code: nteCourse.code,
-      sections: [true], // NTE'de sadece 1 şube var ve o aktif
-      color: colorset.getNextColor(),
-      settings: {
-        checkSurname: true,
-        checkDepartment: true,
-        checkCollision: true,
-        disableCourse: false,
-      },
-    });
-    setSelectedCourses(newSelected);
-    setNteDialogOpen(false);
   };
 
   return (
@@ -510,6 +421,8 @@ export const Controls = (props) => {
             onChange={(e) => setDepartment(e.target.value.toUpperCase())}
           />
         </div>
+      </div>
+      <div className="control-row">
         <div className="textfield-wrapper">
           <FormControl variant="outlined" size="small" className="form-control">
             <InputLabel style={{ background: "white" }}>Semester</InputLabel>
@@ -524,8 +437,6 @@ export const Controls = (props) => {
             <FormHelperText>Ex: 2nd year Fall semester -{">"} 3</FormHelperText>
           </FormControl>
         </div>
-      </div>
-      <div className="control-row">
         <div className="control-button">
           <Button
             variant="contained"
@@ -549,19 +460,9 @@ export const Controls = (props) => {
         <div className="control-button">
           <Button
             variant="contained"
-            style={{ backgroundColor: "#FF9800", color: "white" }}
-            startIcon={<SchoolIcon style={{ color: "white" }} />}
-            onClick={handleGetAvailableNTE}
-          >
-            Get Available NTE
-          </Button>
-        </div>
-        <div className="control-button">
-          <Button
-            variant="contained"
             color="primary"
             startIcon={<EventAvailableIcon />}
-            onClick={handleScheduleBegin}
+            onClick={() => handleScheduleBegin()}
           >
             Schedule
           </Button>
@@ -604,11 +505,6 @@ export const Controls = (props) => {
         )}
       </div>
       <Divider />
-      <AddCourseWidget
-        courses={allCourses}
-        onCourseAdd={(c) => handleAddCourses([c])}
-      />
-      <Divider />
       <div className="control-row">
         <div className="centered-row">Added Courses</div>
       </div>
@@ -630,6 +526,10 @@ export const Controls = (props) => {
           ) : null
         )}
       </div>
+      <AddCourseWidget
+        courses={allCourses}
+        onCourseAdd={(c) => handleAddCourses([c])}
+      />
       <AddDontFillWidget startHour={8} startMin={40} endHour={17} endMin={30} />
       {loading && <LoadingDialog text={loadingMessage} />}
       {lastUpdated ? (
@@ -639,13 +539,6 @@ export const Controls = (props) => {
           {"   Last added Semester: " + lastUpdated.t.split(":")[1]}
         </Typography>
       ) : null}
-      
-      <NTEDialog
-        open={nteDialogOpen}
-        onClose={handleNTEDialogClose}
-        occupiedSlots={calculateOccupiedSlots()}
-        onAddCourse={handleAddNTECourse}
-      />
     </Paper>
   );
 };

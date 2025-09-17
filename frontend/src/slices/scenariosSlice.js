@@ -12,6 +12,7 @@ const scenariosSlice = createSlice({
   reducers: {
     setScenarios: (state, action) => {
       state.result = action.payload;
+      console.log("Scenarios set:", state.result);
     },
     resetScenarios: (state, _action) => {
       state.result = [];
