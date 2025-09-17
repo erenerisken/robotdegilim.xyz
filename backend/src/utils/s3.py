@@ -19,30 +19,40 @@ def get_s3_client() -> boto3.client:
     Falls back to environment/instance credentials if keys are not set.
     """
     try:
-        kwargs = {}
+        kwargs = {"region_name": app_constants.s3_region}
         if app_constants.aws_access_key_id and app_constants.aws_secret_access_key:
-            kwargs = {
+            kwargs.update({
                 "aws_access_key_id": app_constants.aws_access_key_id,
                 "aws_secret_access_key": app_constants.aws_secret_access_key,
-            }
+            })
         return boto3.client("s3", **kwargs)
     except Exception as e:
         logger.error(f"failed to create s3 client: {e}")
         raise e from None
 
 
-def upload_to_s3(s3_client: boto3.client, file_path: str, s3_key: str, retries: int = 5):
-    """Uploads a file to the S3 bucket and makes it public, with retries."""
+def upload_to_s3(s3_client: boto3.client, file_path: str, s3_key: str, retries: int = 5, bucket_name: str = None):
+    """Uploads a file to the S3 bucket with retries."""
+    bucket = bucket_name or app_constants.s3_bucket_name
     attempt = 0
     last_error = None
     while attempt <= retries:
         try:
-            s3_client.upload_file(
-                file_path,
-                app_constants.s3_bucket_name,
-                s3_key,
-                ExtraArgs={"ACL": "public-read"},
-            )
+            # Try with ACL first, fallback to no ACL if bucket doesn't support it
+            try:
+                s3_client.upload_file(
+                    file_path,
+                    bucket,
+                    s3_key,
+                    ExtraArgs={"ACL": "public-read"},
+                )
+            except Exception as acl_error:
+                # If ACL fails, try without ACL
+                if "does not allow ACLs" in str(acl_error) or "AccessControlListNotSupported" in str(acl_error):
+                    logger.warning(f"ACL not supported for bucket {bucket}, uploading without ACL")
+                    s3_client.upload_file(file_path, bucket, s3_key)
+                else:
+                    raise acl_error
             return
         except Exception as e:
             last_error = e
@@ -52,7 +62,7 @@ def upload_to_s3(s3_client: boto3.client, file_path: str, s3_key: str, retries: 
             time.sleep(delay)
             attempt += 1
     raise RecoverError(
-        "Failed to upload to S3", {"path": file_path, "error": str(last_error)}
+        "Failed to upload to S3", {"path": file_path, "bucket": bucket, "error": str(last_error)}
     ) from None
 
 
