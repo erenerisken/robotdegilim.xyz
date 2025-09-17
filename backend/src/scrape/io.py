@@ -79,6 +79,12 @@ def load_manual_prefixes() -> Dict[str, str]:
     Returns a mapping of DEPT_CODE -> PREFIX. Skips entries without a valid 'p'.
     """
     file_path = app_constants.data_dir / app_constants.manual_prefixes_json
+    if not os.path.exists(file_path):
+        logger.warning(
+            "manualPrefixes.json not found at %s; proceeding without manual overrides",
+            str(file_path),
+        )
+        return {}
     return _load_prefix_map(str(file_path), label="manual")
 
 

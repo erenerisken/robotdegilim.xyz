@@ -54,6 +54,9 @@ COPY src ./src
 # Pre-create runtime folders (logs/data are created at runtime too, but ensures path exists)
 RUN mkdir -p storage/logs storage/data
 
+# Include manual department prefix overrides in the image
+COPY storage/data/manualPrefixes.json storage/data/manualPrefixes.json
+
 EXPOSE 8080
 
 # Use src.app:app where `app` is the Flask app object in backend/src/app.py
@@ -202,6 +205,21 @@ def patch_dockerfile(content: str, python_version: str, *, workers: int, timeout
     # Ensure EXPOSE 8080 exists (avoid duplicates)
     if "EXPOSE 8080" not in content:
         content += "\n\nEXPOSE 8080\n"
+    
+    # Ensure the manualPrefixes.json is copied if present in build context
+    if "storage/data/manualPrefixes.json" not in content:
+        # Insert after mkdir -p storage lines if present; else append before EXPOSE
+        anchor = "RUN mkdir -p storage/logs storage/data"
+        if anchor in content:
+            content = content.replace(
+                anchor,
+                anchor + "\n\n# Include manual department prefix overrides in the image\nCOPY storage/data/manualPrefixes.json storage/data/manualPrefixes.json",
+            )
+        else:
+            content = content.replace(
+                "EXPOSE 8080",
+                "# Include manual department prefix overrides in the image\nCOPY storage/data/manualPrefixes.json storage/data/manualPrefixes.json\n\nEXPOSE 8080",
+            )
     return content
 
 
@@ -395,6 +413,13 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=int(os.environ.get("GUNICORN_TIMEOUT", "0")),
         help="Gunicorn timeout seconds (0 means no timeout; default 0)",
     )
+    parser.add_argument(
+        "--require-manual-prefixes",
+        action="store_true",
+        help=(
+            "If set, exit with non-zero status when backend/storage/data/manualPrefixes.json is missing."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -429,6 +454,21 @@ def main(argv: list[str]) -> int:
         dst_manual.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src_manual, dst_manual)
         # Ensure .dockerignore allows it (already configured by template above)
+    else:
+        msg = (
+            "WARNING: backend/storage/data/manualPrefixes.json not found. "
+            "The image will not contain manual prefix overrides unless you add it before building/deploying."
+        )
+        print(msg)
+        if args.require_manual_prefixes:
+            print("ERROR: --require-manual-prefixes was set; aborting.")
+            return 2
+
+    # Secondary check: if the file wasn't copied for any reason, warn
+    if not dst_manual.exists():
+        print(
+            "WARNING: Deploy folder missing storage/data/manualPrefixes.json. Ensure your .dockerignore allows it and run deploy from this folder."
+        )
 
     rel = os.path.relpath(built, repo_root)
     print(f"Fly deploy folder created: {built} (repo-relative: {rel})")

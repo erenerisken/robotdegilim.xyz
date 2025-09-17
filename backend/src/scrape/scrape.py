@@ -156,14 +156,22 @@ def run_scrape():
             write_json(last_updated_info, last_updated_path)
 
             # Upload files to S3: data files first, lastUpdated last
+            upload_list = [
+                (departments_noprefix_path, app_constants.departments_noprefix_json),
+                (departments_path, app_constants.departments_json),
+                (data_path, app_constants.data_json),
+            ]
+            if manual_prefixes_path.exists():
+                upload_list.append((manual_prefixes_path, app_constants.manual_prefixes_json))
+            else:
+                logger.warning(
+                    "manualPrefixes.json missing at %s; skipping upload",
+                    str(manual_prefixes_path),
+                )
+
             publish_files(
                 s3_client,
-                files=[
-                    (departments_noprefix_path, app_constants.departments_noprefix_json),
-                    (departments_path, app_constants.departments_json),
-                    (data_path, app_constants.data_json),
-                    (manual_prefixes_path, app_constants.manual_prefixes_json),
-                ],
+                files=upload_list,
                 last_updated=(last_updated_path, app_constants.last_updated_json),
                 logger=logger,
             )
