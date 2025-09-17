@@ -44,3 +44,16 @@
   width: 100%;
   flex-wrap: wrap;
 }
+
+.column {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+  }
+}

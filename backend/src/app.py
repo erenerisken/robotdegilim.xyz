@@ -22,6 +22,7 @@ except Exception:
 from src.config import app_constants
 from src.scrape.scrape import run_scrape
 from src.musts.musts import run_musts
+from src.nte.nte import run_nte_processing
 from src.utils.emailer import get_email_handler
 from src.utils.s3 import get_s3_client
 from src.services.status_service import get_status, set_status, init_status
@@ -36,12 +37,14 @@ parent_logger = logging.getLogger(app_constants.log_parent)
 app_logger = logging.getLogger(app_constants.log_app)
 scrape_logger = logging.getLogger(app_constants.log_scrape)
 musts_logger = logging.getLogger(app_constants.log_musts)
+nte_logger = logging.getLogger(app_constants.log_nte)
 
 _lvl = getattr(logging, app_constants.log_level, logging.INFO)
 parent_logger.setLevel(_lvl)
 app_logger.setLevel(_lvl)
 scrape_logger.setLevel(_lvl)
 musts_logger.setLevel(_lvl)
+nte_logger.setLevel(_lvl)
 
 # app.log (INFO+) - rotate daily at TR midnight, keep 5 days
 _log_days = 5
@@ -65,9 +68,9 @@ if not any(
     h.setFormatter(fmt)
     app_logger.addHandler(h)
 
-# jobs.log (INFO+) for scrape and musts - rotate daily at TR midnight, keep 5 days
+# jobs.log (INFO+) for scrape, musts and nte - rotate daily at TR midnight, keep 5 days
 jobs_file = str(_log_dir / app_constants.jobs_log_file)
-for job_logger in (scrape_logger, musts_logger):
+for job_logger in (scrape_logger, musts_logger, nte_logger):
     if not any(
         isinstance(h, TzTimedRotatingFileHandler)
         and os.path.basename(getattr(h, "baseFilename", "")) == app_constants.jobs_log_file
@@ -114,7 +117,7 @@ _logger = app_logger
 # Optional JSON log formatting
 if app_constants.log_json:
     jf = JsonFormatter(converter=fmt.converter)
-    for lg in (app_logger, scrape_logger, musts_logger, parent_logger):
+    for lg in (app_logger, scrape_logger, musts_logger, nte_logger, parent_logger):
         for h in lg.handlers:
             h.setFormatter(jf)
 
@@ -193,7 +196,7 @@ def index():
     """Root endpoint for API server (no static files)."""
     return {
         "service": "robotdegilim-backend",
-        "endpoints": ["/run-scrape", "/run-musts", "/status"],
+        "endpoints": ["/run-scrape", "/run-musts", "/run-nte", "/status"],
     }, 200
 
 
@@ -205,6 +208,16 @@ class RunScrape(Resource):
             # mark departments ready and check queued musts
             s3 = get_s3_client()
             st = set_status(s3, depts_ready=True)
+            
+            # Run NTE processing after successful scrape
+            try:
+                _logger.info("running NTE processing after scrape completion")
+                run_nte_processing()
+                _logger.info("NTE processing completed successfully")
+            except Exception as e:
+                _logger.error(f"NTE processing failed: {e}")
+                # Don't fail the whole scrape if NTE fails
+            
             # If a musts run was queued during busy period, run it now
             if st.get("queued_musts"):
                 _logger.info("musts run was queued; running after scrape completion")
@@ -212,13 +225,13 @@ class RunScrape(Resource):
                     result = run_musts()
                     if result != "busy":
                         set_status(s3, queued_musts=False)
-                        return {"status": "Scraping completed; musts completed successfully"}, 200
+                        return {"status": "Scraping and NTE completed; musts completed successfully"}, 200
                     # Very unlikely: still busy
-                    return {"status": "Scraping completed; musts still busy", "code": "BUSY"}, 503
+                    return {"status": "Scraping and NTE completed; musts still busy", "code": "BUSY"}, 503
                 except Exception as e:
                     _logger.error(f"queued musts run failed: {e}")
-                    return {"status": "Scraping completed; musts failed", "code": "ERROR"}, 500
-            return {"status": "Scraping completed successfully"}, 200
+                    return {"status": "Scraping and NTE completed; musts failed", "code": "ERROR"}, 500
+            return {"status": "Scraping and NTE completed successfully"}, 200
         except Exception as e:
             _logger.error(str(e))
             return {"error": "Error running scrape process", "code": "ERROR"}, 500
@@ -265,9 +278,22 @@ class RunMusts(Resource):
             return {"error": "Error running get musts process", "code": "ERROR"}, 500
 
 
+class RunNTE(Resource):
+    def get(self):
+        try:
+            _logger.info("running standalone NTE processing")
+            run_nte_processing()
+            _logger.info("NTE processing completed successfully")
+            return {"status": "NTE processing completed successfully", "code": "OK"}, 200
+        except Exception as e:
+            _logger.error(f"NTE processing failed: {e}")
+            return {"error": "Error running NTE process", "code": "ERROR"}, 500
+
+
 # Add API resources
 api.add_resource(RunScrape, "/run-scrape")
 api.add_resource(RunMusts, "/run-musts")
+api.add_resource(RunNTE, "/run-nte")
 
 
 @app.route("/status")

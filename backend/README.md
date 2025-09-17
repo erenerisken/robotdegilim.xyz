@@ -55,6 +55,7 @@ src/
   services/status_service.py
   scrape/               # Scrape orchestration + fetch/parse/io
   musts/                # Musts orchestration + helpers
+  nte/                  # Non-Technical Electives processing
   utils/                # http, timing, s3, publish, logging, run helpers
 storage/
   data/                 # Generated JSON artifacts (local) 
@@ -167,7 +168,7 @@ Notes:
 
 ## 9. Operations & Observability
 Artifacts:
-- S3 bucket (configured in `config.app_constants.s3_bucket_name`) stores JSON.
+- S3 bucket `robotd` (eu-central-1 region) stores all JSON files.
 - `status.json` communicates system state to operators and frontend.
 
 Logging:

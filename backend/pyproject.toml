@@ -17,7 +17,7 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 # Find packages under src/
 where = ["src"]
-include = ["musts*", "scrape*", "utils*", "services*"]
+include = ["musts*", "scrape*", "nte*", "utils*", "services*"]
 
 # Also install top-level single-file modules under src/
 # (so `import app`, `import config`, etc. will work)

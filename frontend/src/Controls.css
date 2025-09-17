@@ -1,29 +1,188 @@
-.control-wrapper {
-    border-style: groove;
-    margin: 6pt;
-    width: fit-content;
-    height: fit-content;
-}
-.control-mobile {
-    border-style: groove;
-    margin: 6pt;
-    width: 100%;
-}
+/* Modern controls styles */
 .control-row {
-    display: inline-flex;
-    width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;  /* Changed to flex-start to align from top */
+  flex-wrap: nowrap;
+  gap: 12px;
+  justify-content: center;
+  padding: 6px 0;
 }
+
 .textfield-wrapper {
-    margin: 6pt;
+  flex: 0 0 260px;
+  min-width: 220px;
+  max-width: 260px;
+  margin-right: 0;
+  width: 260px;
+  display: flex;
+  align-items: center;
+  height: 40px; /* Fixed height to match other inputs */
 }
+
+.textfield-wrapper:last-child {
+  margin-right: 0;
+  height: auto; /* Allow last wrapper (semester) to be taller for helper text */
+}
+
+.form-control {
+  width: 100%;
+  min-width: 220px;
+}
+
+/* Make the inputs more compact and aligned */
+.MuiOutlinedInput-root {
+  margin: 0 !important;
+  height: 40px !important; /* Fixed height for all inputs */
+}
+
+.MuiFormControl-root {
+  margin: 0 !important;
+}
+
+/* Align FormHelperText */
+.MuiFormHelperText-root {
+  margin: 0 !important;
+  padding-top: 4px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Use default Material-UI label transforms to avoid layout jumps on small screens */
+
 .control-button {
-    margin-left: 8pt;
-    margin-top: 14pt;
+  margin: 8px 4px;
 }
-.centered-row {
-    text-align: center;
-    width: 100%;
+
+/* Modern utility classes for controls */
+.controls-container {
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 16px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
-.control-courses {
+
+.controls-section {
+  margin-bottom: 32px;
+}
+
+.controls-section-header {
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #1f2937;
+}
+
+.controls-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0;
+  justify-content: center;
+}
+
+/* Save Image Button styles */
+.save-image-button {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+.save-image-button button {
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.save-image-button button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Update info styles */
+.update-info {
+  text-align: center;
+  margin: 24px 0;
+  padding: 16px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Divider spacing */
+.section-divider {
+  margin: 32px 0;
+}
+
+/* Course section header */
+.course-section-header {
+  text-align: center;
+  padding: 16px 0;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.controls-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .controls-container {
+    margin: 8px;
+    padding: 16px;
+  }
+  
+  .controls-button-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .controls-form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .textfield-wrapper {
+    margin-right: 0;
+    margin-bottom: 8px;
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
     width: 100%;
+    height: auto; /* allow taller container if helper text wraps */
+  }
+
+  .control-row {
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  /* keep outlined inputs compact on small screens */
+  .MuiOutlinedInput-root {
+    height: 40px !important;
+  }
+}
+
+/* Animation for controls */
+.controls-fade-in {
+  animation: controlsFadeIn 0.6s ease-out;
+}
+
+@keyframes controlsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

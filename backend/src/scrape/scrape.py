@@ -154,6 +154,9 @@ def run_scrape():
             write_json(departments_json, departments_path)
             write_json(data, data_path)
             write_json(last_updated_info, last_updated_path)
+            
+            # Write manual prefixes (empty dict if none exist)
+            write_json({}, manual_prefixes_path)
 
             # Upload files to S3: data files first, lastUpdated last
             upload_list = [
