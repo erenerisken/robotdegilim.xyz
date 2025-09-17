@@ -196,7 +196,7 @@ def index():
     """Root endpoint for API server (no static files)."""
     return {
         "service": "robotdegilim-backend",
-        "endpoints": ["/run-scrape", "/run-musts", "/status"],
+        "endpoints": ["/run-scrape", "/run-musts", "/run-nte", "/status"],
     }, 200
 
 
@@ -278,9 +278,22 @@ class RunMusts(Resource):
             return {"error": "Error running get musts process", "code": "ERROR"}, 500
 
 
+class RunNTE(Resource):
+    def get(self):
+        try:
+            _logger.info("running standalone NTE processing")
+            run_nte_processing()
+            _logger.info("NTE processing completed successfully")
+            return {"status": "NTE processing completed successfully", "code": "OK"}, 200
+        except Exception as e:
+            _logger.error(f"NTE processing failed: {e}")
+            return {"error": "Error running NTE process", "code": "ERROR"}, 500
+
+
 # Add API resources
 api.add_resource(RunScrape, "/run-scrape")
 api.add_resource(RunMusts, "/run-musts")
+api.add_resource(RunNTE, "/run-nte")
 
 
 @app.route("/status")
