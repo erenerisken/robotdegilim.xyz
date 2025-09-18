@@ -11,7 +11,11 @@ const dontFillsSlice = createSlice({
   initialState: initialState,
   reducers: {
     handleDontFillAdd: (state, action) => {
-      state.result.push(action.payload);
+      if (
+        !state.result.some((df) => action.payload.startDate === df.startDate)
+      ) {
+        state.result.push(action.payload);
+      }
     },
     handleDontFillDelete: (state, action) => {
       state.result = state.result.filter(
@@ -43,6 +47,6 @@ export const {
   handleChangeDontFillDescription,
   handleDontFillAdd,
   handleDontFillDelete,
-  resetDontFills
+  resetDontFills,
 } = dontFillsSlice.actions;
 export default dontFillsSlice.reducer;
