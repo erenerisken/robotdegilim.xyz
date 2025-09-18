@@ -18,6 +18,7 @@
   border-radius: 8px !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   transition: all 0.2s ease-in-out;
+  background: transparent !important;
 }
 
 .custom-appointment:hover {
@@ -34,6 +35,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
 }
 
 /* DontFill Block Styles */
@@ -44,57 +46,169 @@
   align-items: center;
   justify-content: center;
   background: transparent !important;
-  padding: 4px;
+  padding: 2px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.program-text-container-df.expanded-layout {
+  flex-direction: column;
+  gap: 2px;
+}
+
+.program-text-container-df.compact-layout {
+  flex-direction: row;
+  gap: 0;
+}
+
+.df-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 6px;
+  border-radius: 6px 6px 0 0;
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+  min-height: 32px;
+  box-sizing: border-box;
+}
+
+.df-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 3px 6px;
+  border-radius: 0 0 6px 6px;
+  background: rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(1px);
+  min-height: 24px;
+  box-sizing: border-box;
 }
 
 .program-row-df {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 4px;
   width: 100%;
-  padding: 2px 4px;
+  padding: 4px 6px;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+  min-height: 24px;
+  box-sizing: border-box;
 }
 
 /* DontFill Controls */
 .df-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .df-control-button {
-  min-width: 24px !important;
-  width: 24px !important;
-  height: 24px !important;
-  padding: 4px !important;
-  border-radius: 4px !important;
-  background: rgba(255, 255, 255, 0.2) !important;
+  min-width: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 6px !important;
+  border-radius: 6px !important;
+  background: rgba(0, 0, 0, 0.3) !important;
   backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
 }
 
 .df-control-button:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.df-control-button:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.df-control-button:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .df-control-button svg {
-  font-size: 16px !important;
+  font-size: 18px !important;
+}
+
+/* Specific styles for delete button */
+.df-delete-button {
+  background: rgba(239, 68, 68, 0.8) !important;
+}
+
+.df-delete-button:hover {
+  background: rgba(239, 68, 68, 0.9) !important;
+  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.4) !important;
+}
+
+.df-delete-button:focus {
+  background: rgba(239, 68, 68, 0.85) !important;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Specific styles for palette button */
+.df-palette-button {
+  background: rgba(59, 130, 246, 0.8) !important;
+}
+
+.df-palette-button:hover {
+  background: rgba(59, 130, 246, 0.9) !important;
+  box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4) !important;
+}
+
+.df-palette-button:focus {
+  background: rgba(59, 130, 246, 0.85) !important;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
 }
 
 /* DontFill Text Field */
 .df-description-text-field {
   flex: 1;
   min-width: 0;
+  margin: 0 2px;
 }
 
 .df-description-text-field input {
-  padding: 4px 8px !important;
+  padding: 6px 8px !important;
   font-size: 0.875rem !important;
   text-align: center !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   border-radius: 4px !important;
+  border: none !important;
+}
+
+.df-description-text-field .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.df-description-text-field .MuiOutlinedInput-root {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.df-description-text-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.df-description-text-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+  outline: none !important;
 }
 
 /* DontFill Title */
@@ -105,16 +219,162 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin: 0 2px;
+  min-width: 40px;
 }
 
 .program-title-dont-fill:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
+
+/* Expanded DontFill Title */
+.program-title-dont-fill-expanded {
+  width: 100%;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 60px;
+  max-width: 100%;
+}
+
+.program-title-dont-fill-expanded:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
+
+/* Expanded DontFill Text Field */
+.df-description-text-field-expanded {
+  width: 100%;
+  min-width: 0;
+}
+
+.df-description-text-field-expanded input {
+  padding: 4px 8px !important;
+  font-size: 0.875rem !important;
+  text-align: center !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px !important;
+  border: none !important;
+}
+
+.df-description-text-field-expanded .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.df-description-text-field-expanded .MuiOutlinedInput-root {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.df-description-text-field-expanded .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.df-description-text-field-expanded .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Compact Single Row Layout */
+.df-single-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+  min-height: 28px;
+  box-sizing: border-box;
+}
+
+/* Compact Control Buttons */
+.df-control-button.compact {
+  min-width: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+  padding: 4px !important;
+  border-radius: 4px !important;
+}
+
+.df-control-button.compact svg {
+  font-size: 14px !important;
+}
+
+/* Compact Title */
+.program-title-dont-fill-compact {
+  flex: 1;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 2px;
+  min-width: 30px;
+}
+
+.program-title-dont-fill-compact:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
+
+/* Compact Text Field */
+.df-description-text-field-compact {
+  flex: 1;
+  min-width: 0;
+  margin: 0 2px;
+}
+
+.df-description-text-field-compact input {
+  padding: 4px 6px !important;
+  font-size: 0.8rem !important;
+  text-align: center !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px !important;
+  border: none !important;
+}
+
+.df-description-text-field-compact .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.df-description-text-field-compact .MuiOutlinedInput-root {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.df-description-text-field-compact .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+.df-description-text-field-compact .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border: none !important;
+  outline: none !important;
 }
 
 /* Color Palette Menu */
@@ -249,37 +509,173 @@
   }
 
   .program-row-df {
-    padding: 2px;
-    gap: 4px;
+    padding: 3px 4px;
+    gap: 3px;
+    min-height: 28px;
   }
 
-  .df-control-button {
+  .df-controls-row {
+    padding: 2px 4px;
+    gap: 4px;
+    min-height: 28px;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .df-title-row {
+    padding: 2px 4px;
+    min-height: 20px;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .program-title-dont-fill-expanded {
+    font-size: 0.8rem;
+    padding: 3px 6px;
+    min-width: 50px;
+  }
+
+  .df-description-text-field-expanded input {
+    padding: 3px 6px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .df-single-row {
+    padding: 1px 3px;
+    gap: 3px;
+    min-height: 24px;
+  }
+
+  .df-control-button.compact {
     min-width: 20px !important;
     width: 20px !important;
     height: 20px !important;
+    padding: 3px !important;
+  }
+
+  .df-control-button.compact svg {
+    font-size: 12px !important;
+  }
+
+  .program-title-dont-fill-compact {
+    font-size: 0.75rem;
+    padding: 3px 4px;
+    min-width: 25px;
+  }
+
+  .df-description-text-field-compact input {
+    padding: 3px 4px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .df-control-button {
+    min-width: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    padding: 4px !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 4px !important;
+  }
+
+  .df-control-button svg {
+    font-size: 16px !important;
   }
 
   .program-title-dont-fill {
-    font-size: 0.75rem;
-    padding: 2px 4px;
+    font-size: 0.8rem;
+    padding: 4px 6px;
+    min-width: 30px;
+  }
+
+  .df-description-text-field input {
+    padding: 4px 6px !important;
+    font-size: 0.8rem !important;
   }
 }
 
 /* Small screen adjustments */
 @media (max-width: 480px) {
   .program-row-df {
-    padding: 1px;
+    padding: 2px 3px;
     gap: 2px;
+    min-height: 26px;
   }
 
-  .df-control-button {
+  .df-controls-row {
+    padding: 1px 3px;
+    gap: 3px;
+    min-height: 26px;
+    border-radius: 3px 3px 0 0;
+  }
+
+  .df-title-row {
+    padding: 1px 3px;
+    min-height: 18px;
+    border-radius: 0 0 3px 3px;
+  }
+
+  .program-title-dont-fill-expanded {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    min-width: 40px;
+  }
+
+  .df-description-text-field-expanded input {
+    padding: 2px 4px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .df-single-row {
+    padding: 1px 2px;
+    gap: 2px;
+    min-height: 22px;
+  }
+
+  .df-control-button.compact {
     min-width: 18px !important;
     width: 18px !important;
     height: 18px !important;
+    padding: 2px !important;
+  }
+
+  .df-control-button.compact svg {
+    font-size: 11px !important;
+  }
+
+  .program-title-dont-fill-compact {
+    font-size: 0.7rem;
+    padding: 2px 3px;
+    min-width: 20px;
+  }
+
+  .df-description-text-field-compact input {
+    padding: 2px 3px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .df-control-button {
+    min-width: 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    padding: 3px !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 3px !important;
+  }
+
+  .df-control-button svg {
+    font-size: 14px !important;
   }
 
   .program-title-dont-fill {
-    font-size: 0.7rem;
-    padding: 2px;
+    font-size: 0.75rem;
+    padding: 3px 4px;
+    min-width: 25px;
+  }
+
+  .df-description-text-field input {
+    padding: 3px 4px !important;
+    font-size: 0.75rem !important;
   }
 }

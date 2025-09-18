@@ -13,7 +13,10 @@ import {
 
 export const DontFillBlock = ({ data }) => {
   const [editing, setEditing] = useState(false);
+  const [localTitle, setLocalTitle] = useState(data.title); // Local state for editing
   const [anchorEl, setAnchorEl] = useState(null);
+  const [containerRef, setContainerRef] = useState(null);
+  const [isCompact, setIsCompact] = useState(true); // Start with compact as default
   const dispatch = useDispatch();
 
   const colorset = new Colorset();
@@ -37,99 +40,211 @@ export const DontFillBlock = ({ data }) => {
     setAnchorEl(null);
   };
 
+  // Sync local title with props when not editing
+  React.useEffect(() => {
+    if (!editing) {
+      setLocalTitle(data.title);
+    }
+  }, [data.title, editing]);
+
   const handleDescriptionChange = (e) => {
-    dispatch(
-      handleChangeDontFillDescription({
-        startDate: data.startDate,
-        description: e.target.value,
-      })
-    );
+    setLocalTitle(e.target.value); // Update local state only
   };
 
   const handleTextFieldKeyDown = (e) => {
     if (e.keyCode === 13) {
-      setEditing(false);
+      handleStopEditing();
     }
   };
 
+  const handleStartEditing = () => {
+    setLocalTitle(data.title); // Initialize local state with current value
+    setEditing(true);
+  };
+
+  const handleStopEditing = () => {
+    // Update Redux state when editing finishes
+    if (localTitle !== data.title) {
+      dispatch(
+        handleChangeDontFillDescription({
+          startDate: data.startDate,
+          description: localTitle,
+        })
+      );
+    }
+    setEditing(false);
+  };
+
+  // Check container height to determine layout
+  React.useEffect(() => {
+    if (containerRef && !editing) { // Only check height when not editing
+      const checkHeight = () => {
+        const height = containerRef.clientHeight;
+        // If height is less than 60px, use compact layout
+        setIsCompact(height < 60);
+      };
+      
+      checkHeight();
+      
+      // Check on resize, but debounce it
+      let timeoutId;
+      const debouncedCheckHeight = () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(checkHeight, 100);
+      };
+      
+      const resizeObserver = new ResizeObserver(debouncedCheckHeight);
+      resizeObserver.observe(containerRef);
+      
+      return () => {
+        resizeObserver.disconnect();
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [containerRef, editing]); // Add editing to dependencies
+
   return (
-    <div className="program-text-container-df">
-      <div className="program-row-df">
-        <IconButton onClick={handleDeleteDontFill} style={{ padding: 0 }}>
-          <CloseIcon fontSize="small" style={{ color: data.color.text }} />
-        </IconButton>
-        {editing ? (
-          <TextField
-            value={data.title}
-            className="df-description-text-field"
-            InputProps={{ style: { color: data.color.text } }}
-            onChange={handleDescriptionChange}
-            onKeyDown={handleTextFieldKeyDown}
-            onBlur={() => setEditing(false)}
-          />
-        ) : (
-          <div
-            className="program-title-dont-fill"
-            style={{ color: data.color.text }}
-            onClick={() => setEditing(true)}
+    <div 
+      ref={setContainerRef}
+      className={`program-text-container-df ${isCompact ? 'compact-layout' : 'expanded-layout'}`}
+    >
+      {isCompact ? (
+        // Compact single-row layout for small cells
+        <div className="df-single-row">
+          <IconButton 
+            className="df-control-button df-delete-button compact"
+            onClick={handleDeleteDontFill}
           >
-            {data.title}
+            <CloseIcon style={{ color: '#ffffff' }} />
+          </IconButton>
+          {editing ? (
+            <TextField
+              value={localTitle}
+              className="df-description-text-field-compact"
+              InputProps={{ 
+                style: { color: data.color.text },
+                disableUnderline: true
+              }}
+              variant="standard"
+              onChange={handleDescriptionChange}
+              onKeyDown={handleTextFieldKeyDown}
+              onBlur={handleStopEditing}
+              autoFocus
+            />
+          ) : (
+            <div
+              className="program-title-dont-fill-compact"
+              style={{ color: data.color.text }}
+              onClick={handleStartEditing}
+              title={data.title}
+            >
+              {data.title}
+            </div>
+          )}
+          <IconButton
+            className="df-control-button df-palette-button compact"
+            id="palette-button"
+            aria-controls={open ? "palette-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+            onClick={handleOpenColorPalette}
+          >
+            <PaletteIcon style={{ color: '#ffffff' }} />
+          </IconButton>
+        </div>
+      ) : (
+        // Expanded two-row layout for larger cells
+        <>
+          <div className="df-controls-row">
+            <IconButton 
+              className="df-control-button df-delete-button"
+              onClick={handleDeleteDontFill}
+            >
+              <CloseIcon style={{ color: '#ffffff' }} />
+            </IconButton>
+            <IconButton
+              className="df-control-button df-palette-button"
+              id="palette-button"
+              aria-controls={open ? "palette-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+              onClick={handleOpenColorPalette}
+            >
+              <PaletteIcon style={{ color: '#ffffff' }} />
+            </IconButton>
           </div>
-        )}
-        <IconButton
-          style={{ padding: 0 }}
-          id="palette-button"
-          aria-controls={open ? "palette-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
-          onClick={handleOpenColorPalette}
-        >
-          <PaletteIcon fontSize="small" style={{ color: data.color.text }} />
-        </IconButton>
-        <Menu
-          id="palette-menu"
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          MenuListProps={{
-            "aria-labelledby": "palette-button",
-          }}
-          PaperProps={{
-            style: {
-              backgroundColor: "black",
-            },
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "5px",
-              padding: "5px",
-              paddingTop: "0px",
-              paddingBottom: "0px",
-              backgroundColor: "black",
-            }}
-          >
-            {colors.map((color) => (
-              <MenuItem
-                key={color.main}
-                onClick={() => handleColorSelect(color)}
-                style={{ padding: 0 }}
+          <div className="df-title-row">
+            {editing ? (
+              <TextField
+                value={localTitle}
+                className="df-description-text-field-expanded"
+                InputProps={{ 
+                  style: { color: data.color.text },
+                  disableUnderline: true
+                }}
+                variant="standard"
+                onChange={handleDescriptionChange}
+                onKeyDown={handleTextFieldKeyDown}
+                onBlur={handleStopEditing}
+                autoFocus
+              />
+            ) : (
+              <div
+                className="program-title-dont-fill-expanded"
+                style={{ color: data.color.text }}
+                onClick={handleStartEditing}
+                title={data.title}
               >
-                <div
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    backgroundColor: color.main,
-                    borderRadius: "4px",
-                  }}
-                ></div>
-              </MenuItem>
-            ))}
+                {data.title}
+              </div>
+            )}
           </div>
-        </Menu>
-      </div>
+        </>
+      )}
+      
+      <Menu
+        id="palette-menu"
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        MenuListProps={{
+          "aria-labelledby": "palette-button",
+        }}
+        PaperProps={{
+          style: {
+            backgroundColor: "black",
+          },
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "5px",
+            padding: "5px",
+            paddingTop: "0px",
+            paddingBottom: "0px",
+            backgroundColor: "black",
+          }}
+        >
+          {colors.map((color) => (
+            <MenuItem
+              key={color.main}
+              onClick={() => handleColorSelect(color)}
+              style={{ padding: 0 }}
+            >
+              <div
+                style={{
+                  width: "30px",
+                  height: "30px",
+                  backgroundColor: color.main,
+                  borderRadius: "4px",
+                }}
+              ></div>
+            </MenuItem>
+          ))}
+        </div>
+      </Menu>
     </div>
   );
 };

@@ -7,6 +7,8 @@ import {
   Typography,
   IconButton,
   TextField,
+  useMediaQuery,
+  useTheme,
 } from "@material-ui/core";
 import AddBoxIcon from "@material-ui/icons/AddBox";
 import "./AddDontFillWidget.css";
@@ -15,6 +17,8 @@ import { useDispatch } from "react-redux";
 
 export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [day, setDay] = useState(0);
   const [startH, setStartH] = useState(startHour);
   const [startM, setStartM] = useState(startMin);
@@ -120,36 +124,83 @@ export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
         </Typography>
       </div>
       <div className="add-df-row">
-        {renderDayPick(day, setDay)}
-        {renderHourPick(startH, setStartH)}
-        <div className="df-typo">
-          <Typography>:</Typography>
-        </div>
-        {renderMinPick(startM, setStartM)}
-        <div className="df-typo">
-          <Typography>-</Typography>
-        </div>
-        {renderHourPick(endH, setEndH)}
-        <div className="df-typo">
-          <Typography>:</Typography>
-        </div>
-        {renderMinPick(endM, setEndM)}
-        <div className="df-typo">
-          <Typography>is</Typography>
-        </div>
-        <div className="df-textfield">
-          <TextField
-            label="Event"
-            value={description}
-            inputProps={{ maxLength: 8 }}
-            variant="outlined"
-            size="small"
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        <IconButton onClick={handleAddDontFill}>
-          <AddBoxIcon fontSize="large" color="primary" />
-        </IconButton>
+        {isMobile ? (
+          <>
+            <div className="df-time-row">
+              {renderDayPick(day, setDay)}
+              {renderHourPick(startH, setStartH)}
+              <div className="df-typo">
+                <Typography>:</Typography>
+              </div>
+              {renderMinPick(startM, setStartM)}
+              <div className="df-typo">
+                <Typography>-</Typography>
+              </div>
+              {renderHourPick(endH, setEndH)}
+              <div className="df-typo">
+                <Typography>:</Typography>
+              </div>
+              {renderMinPick(endM, setEndM)}
+            </div>
+            <div className="df-action-row">
+              <div className="df-typo">
+                <Typography>is</Typography>
+              </div>
+              <div className="df-textfield">
+                <TextField
+                  label="Event"
+                  value={description}
+                  inputProps={{ maxLength: 8 }}
+                  variant="outlined"
+                  size="small"
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+              <IconButton 
+                className="df-add-button"
+                onClick={handleAddDontFill}
+              >
+                <AddBoxIcon style={{ color: 'white' }} />
+              </IconButton>
+            </div>
+          </>
+        ) : (
+          <>
+            {renderDayPick(day, setDay)}
+            {renderHourPick(startH, setStartH)}
+            <div className="df-typo">
+              <Typography>:</Typography>
+            </div>
+            {renderMinPick(startM, setStartM)}
+            <div className="df-typo">
+              <Typography>-</Typography>
+            </div>
+            {renderHourPick(endH, setEndH)}
+            <div className="df-typo">
+              <Typography>:</Typography>
+            </div>
+            {renderMinPick(endM, setEndM)}
+            <div className="df-typo">
+              <Typography>is</Typography>
+            </div>
+            <div className="df-textfield">
+              <TextField
+                label="Event"
+                value={description}
+                inputProps={{ maxLength: 8 }}
+                variant="outlined"
+                size="small"
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <IconButton 
+              className="df-add-button"
+              onClick={handleAddDontFill}
+            >
+              <AddBoxIcon style={{ color: 'white' }} />
+            </IconButton>
+          </>
+        )}
       </div>
     </Paper>
   );

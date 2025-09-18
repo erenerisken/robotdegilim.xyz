@@ -536,6 +536,8 @@ export const Controls = (props) => {
             onChange={(e) => setDepartment(e.target.value.toUpperCase())}
           />
         </div>
+      </div>
+      <div className="control-row">
         <div className="textfield-wrapper">
           <FormControl
             variant="outlined"
@@ -603,6 +605,8 @@ export const Controls = (props) => {
             Get Available NTE
           </Button>
         </div>
+      </div>
+      <div className="control-row">
         <div className="control-button">
           <Button
             variant="contained"
