@@ -190,12 +190,10 @@ export const Controls = (props) => {
     getMusts(department, semester)
       .then((data) => {
         if (data && data.length > 0) {
-          const newCourses = data.filter(
-            (code) => !selectedCourses.some((c) => c?.code === code)
-          );
-          map((code) => getCourseByCode(code)).filter(
-            (course) => course !== null
-          );
+          const newCourses = data
+            .filter((code) => !selectedCourses.some((c) => c?.code === code))
+            .map((code) => getCourseByCode(code))
+            .filter((course) => course !== null);
 
           handleAddCourses(newCourses);
         }
