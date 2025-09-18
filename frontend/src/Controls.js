@@ -503,7 +503,7 @@ export const Controls = (props) => {
             inputProps={{ maxLength: 12 }}
             variant="outlined"
             size="small"
-            placeholder="e.g. YILMAZ"
+            placeholder="e.g. KORKMAZ"
             className="pretty-textfield"
             InputProps={{
               startAdornment: (
@@ -524,7 +524,7 @@ export const Controls = (props) => {
             inputProps={{ maxLength: 12 }}
             variant="outlined"
             size="small"
-            placeholder="e.g. CENG"
+            placeholder="e.g. IE"
             className="pretty-textfield"
             InputProps={{
               startAdornment: (
@@ -536,6 +536,8 @@ export const Controls = (props) => {
             onChange={(e) => setDepartment(e.target.value.toUpperCase())}
           />
         </div>
+      </div>
+      <div className="control-row">
         <div className="textfield-wrapper">
           <FormControl
             variant="outlined"
@@ -603,6 +605,8 @@ export const Controls = (props) => {
             Get Available NTE
           </Button>
         </div>
+      </div>
+      <div className="control-row">
         <div className="control-button">
           <Button
             variant="contained"
