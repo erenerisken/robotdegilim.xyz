@@ -130,14 +130,8 @@ export async function getMusts(dept, semester){
 
 // NTE fonksiyonları
 export async function getNTECourses(){
-    try {
-        const response = await fetch('/data/nte.json');
-        const nteData = await response.json();
-        return nteData;
-    } catch (error) {
-        console.error('Error loading NTE data:', error);
-        return [];
-    }
+    const client = new Client();
+    return await client.getNTEs();
 }
 
 export function filterAvailableNTEs(nteData, occupiedSlots) {
