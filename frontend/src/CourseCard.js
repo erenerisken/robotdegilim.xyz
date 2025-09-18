@@ -240,7 +240,7 @@ export const CourseCard = ({
         <ModernButton
           variant="outlined"
           size="small"
-          onClick={toggleSections}
+          onClick={(e) => { e.stopPropagation(); toggleSections(); }}
           style={{
             borderColor: color.main,
             color: color.main,
@@ -255,14 +255,28 @@ export const CourseCard = ({
   const cardStyle = {
     border: `2px solid ${color.main}`,
     background: `linear-gradient(135deg, ${color.main}10, ${color.main}05)`,
+    cursor: 'pointer',
   };
 
   const beforeStyle = {
     background: `linear-gradient(90deg, ${color.main}, ${color.light || color.main})`,
   };
 
+  const handleCardClick = (event) => {
+    // Eğer delete butonu veya diğer interactive elementlere tıklanmışsa, card click'i çalıştırma
+    if (event.target.closest('.MuiIconButton-root') || 
+        event.target.closest('.MuiAccordionSummary-root') ||
+        event.target.closest('.MuiAccordion-root') ||
+        event.target.closest('.MuiButton-root') ||
+        event.target.closest('.MuiCheckbox-root') ||
+        event.target.closest('.MuiFormControlLabel-root')) {
+      return;
+    }
+    setExpanded(!expanded);
+  };
+
   return (
-    <ModernCard style={cardStyle} className="fade-in">
+    <ModernCard style={cardStyle} className="fade-in" onClick={handleCardClick}>
       <div style={beforeStyle} className="course-card-top-border" />
       <CardHeader>
         <Box style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
@@ -285,13 +299,13 @@ export const CourseCard = ({
             label={course.code}
             size="small"
           />
-          <ModernIconButton onClick={onDelete} size="small">
+          <ModernIconButton onClick={(e) => { e.stopPropagation(); onDelete(); }} size="small">
             <DeleteIcon fontSize="small" style={{ color: '#ef4444' }} />
           </ModernIconButton>
         </Box>
       </CardHeader>
 
-      <ModernAccordion onChange={() => setExpanded(!expanded)}>
+      <ModernAccordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
         <ModernAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <SectionTitle>
             Course Details & Sections

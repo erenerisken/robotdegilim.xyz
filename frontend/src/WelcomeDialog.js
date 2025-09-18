@@ -31,7 +31,9 @@ const ModernDialog = withStyles((theme) => ({
       : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
     padding: theme.spacing(2),
     maxWidth: 500,
+    maxHeight: '90vh',
     margin: theme.spacing(2),
+    overflow: 'hidden',
   },
 }))(Dialog);
 
@@ -69,6 +71,11 @@ const WelcomeContent = withStyles((theme) => ({
   root: {
     padding: theme.spacing(0, 1, 2, 1),
     textAlign: 'center',
+    overflow: 'visible',
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
+    scrollbarWidth: 'none',
   },
 }))(DialogContent);
 
@@ -130,6 +137,8 @@ export const WelcomeDialog = () => {
       aria-describedby="welcome-dialog-description"
       maxWidth="sm"
       fullWidth
+      scroll="body"
+      disableScrollLock
     >
       <ModernDialogTitle id="welcome-dialog-title">
         <Box style={{ display: 'flex', alignItems: 'center', gap: 8, zIndex: 1 }}>
