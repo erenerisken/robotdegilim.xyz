@@ -503,7 +503,7 @@ export const Controls = (props) => {
             inputProps={{ maxLength: 12 }}
             variant="outlined"
             size="small"
-            placeholder="e.g. YILMAZ"
+            placeholder="e.g. KORKMAZ"
             className="pretty-textfield"
             InputProps={{
               startAdornment: (
@@ -524,7 +524,7 @@ export const Controls = (props) => {
             inputProps={{ maxLength: 12 }}
             variant="outlined"
             size="small"
-            placeholder="e.g. CENG"
+            placeholder="e.g. IE"
             className="pretty-textfield"
             InputProps={{
               startAdornment: (
