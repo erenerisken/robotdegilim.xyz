@@ -610,7 +610,7 @@ export const Controls = (props) => {
         <div className="control-button">
           <Button
             variant="contained"
-            className="pretty-button pretty-secondary"
+            className="pretty-button pretty-ternary"
             startIcon={<ImportContactsIcon />}
             onClick={() => openInNewTab("https://metu-non.tech")}
           >

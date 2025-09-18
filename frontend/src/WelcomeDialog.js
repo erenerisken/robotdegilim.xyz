@@ -17,6 +17,7 @@ import {
   EmojiEvents as CelebrationIcon,
 } from "@material-ui/icons";
 import { withStyles } from "@material-ui/core/styles";
+import "./WelcomeDialog.css";
 
 const ModernDialog = withStyles((theme) => ({
   paper: {
@@ -154,8 +155,11 @@ export const WelcomeDialog = () => {
       </ModernDialogTitle>
       
       <WelcomeContent>
-        <Typography variant="body2" style={{ color: '#6b7280', marginBottom: 24 }}>
-          Have suggestions or feedback? We'd love to hear from you!
+        <Typography variant="h6" className="colorAnimation" style={{ fontSize: 18 }}>
+          RobotDegilim team is looking for new maintainers!
+        </Typography>
+        <Typography variant="h6" style={{ color: '#6b7280', marginBottom: 24, fontSize: 18 }}>
+            We'd love to hear from you!
         </Typography>
 
         <Tooltip 

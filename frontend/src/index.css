@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 * {
   box-sizing: border-box;
@@ -6,8 +6,8 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -19,7 +19,7 @@ html {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
@@ -48,8 +48,14 @@ code {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .scale-hover {
@@ -73,15 +79,18 @@ code {
 }
 
 .shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .shadow-xl {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Responsive utilities */
@@ -101,11 +110,13 @@ code {
   background: #ffffff !important;
   color: #111827 !important;
   border: 1px solid #e5e7eb !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
   transition: background-color 0.15s ease, border-color 0.15s ease !important;
 }
 
-.pretty-button .MuiButton-startIcon { margin-right: 8px; }
+.pretty-button .MuiButton-startIcon {
+  margin-right: 8px;
+}
 
 .pretty-button:hover {
   background: #f9fafb !important;
@@ -119,7 +130,9 @@ code {
   border-color: transparent !important;
 }
 
-.pretty-primary:hover { background: #1d4ed8 !important; }
+.pretty-primary:hover {
+  background: #1d4ed8 !important;
+}
 
 .pretty-secondary {
   background: #16a34a !important; /* green-600 */
@@ -127,17 +140,49 @@ code {
   border-color: transparent !important;
 }
 
-.pretty-secondary:hover { background: #15803d !important; }
+.pretty-secondary:hover {
+  background: #15803d !important;
+}
 
-.pretty-warning { background: #f59e0b !important; color: #ffffff !important; border-color: transparent !important; }
-.pretty-danger { background: #ef4444 !important; color: #ffffff !important; border-color: transparent !important; }
+.pretty-ternary {
+  background: #6a1b9a !important; /* green-600 */
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+.pretty-ternary:hover {
+  background: #5a0b8a !important;
+}
+
+.pretty-warning {
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+.pretty-warning:hover {
+  background: #e58e00 !important;
+}
+
+.pretty-danger {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+.pretty-danger:hover {
+  background: #df3434 !important;
+}
 
 .pretty-outline {
   border-radius: 8px !important;
   border-width: 1px !important;
 }
 
-.pretty-button.small { padding: 6px 10px !important; font-size: 0.85rem !important; }
+.pretty-button.small {
+  padding: 6px 10px !important;
+  font-size: 0.85rem !important;
+}
 
 /* Focus styles */
 button:focus,
@@ -157,8 +202,12 @@ select:focus {
 }
 
 @keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Modern card styles - theme will be applied via styled components */
@@ -170,5 +219,6 @@ select:focus {
 
 /* Banner specific styles */
 .banner {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }

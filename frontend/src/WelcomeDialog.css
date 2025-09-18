@@ -7,6 +7,17 @@
   overflow: hidden;
 }
 
+.colorAnimation {
+  animation: colorChange 1s infinite alternate;
+}
+
+@keyframes colorChange {
+  0%   { color: #be0000; } /* pink */
+  50%  { color: #1100ff; } /* indigo */
+  100% { color: #00b406; } /* green */
+}
+
+
 .welcome-title {
   display: flex;
   align-items: center;
