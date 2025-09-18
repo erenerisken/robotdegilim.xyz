@@ -25,7 +25,7 @@ from src.musts.musts import run_musts
 from src.nte.nte import run_nte
 from src.utils.emailer import get_email_handler
 from src.utils.s3 import get_s3_client
-from src.services.status_service import get_status, set_status, init_status
+from src.services.status_service import get_status, set_status, init_status, set_busy, set_idle
 from src.utils.logging import JsonFormatter
 from src.utils.timing import set_speed_mode, get_speed_mode
 
@@ -196,19 +196,25 @@ def index():
     """Root endpoint for API server (no static files)."""
     return {
         "service": "robotdegilim-backend",
-        "endpoints": ["/run-scrape", "/run-musts", "/status"],
+        "endpoints": ["/run-scrape", "/run-musts", "/status", "/speed"],
     }, 200
 
 
 class RunScrape(Resource):
     def get(self):
+        s3 = get_s3_client()
+        # Reject if already busy
+        current = get_status(s3)
+        if current.get("status") == "busy":
+            return {"status": "System is busy", "code": "BUSY"}, 503
         try:
-            if run_scrape() == "busy":
-                return {"status": "System is busy", "code": "BUSY"}, 503
-            # mark departments ready and check queued musts
-            s3 = get_s3_client()
+            # Mark busy early
+            set_busy(s3)
+            # Run scrape (now purely functional w.r.t busy state)
+            run_scrape()
+            # Mark departments ready
             st = set_status(s3, depts_ready=True)
-            
+
             # Run NTE processing after successful scrape
             try:
                 _logger.info("running NTE processing after scrape completion")
@@ -216,18 +222,18 @@ class RunScrape(Resource):
                 _logger.info("NTE processing completed successfully")
             except Exception as e:
                 _logger.error(f"NTE processing failed: {e}")
-                # Don't fail the whole scrape if NTE fails
-            
+                # Do not fail the whole scrape if NTE fails
+
             # If a musts run was queued during busy period, run it now
             if st.get("queued_musts"):
                 _logger.info("musts run was queued; running after scrape completion")
                 try:
                     result = run_musts()
-                    if result != "busy":
-                        set_status(s3, queued_musts=False)
-                        return {"status": "Scraping and NTE completed; musts completed successfully"}, 200
-                    # Very unlikely: still busy
-                    return {"status": "Scraping and NTE completed; musts still busy", "code": "BUSY"}, 503
+                    if result == "busy":
+                        # Should not happen now, but handle defensively
+                        return {"status": "Scraping completed; musts still busy", "code": "BUSY"}, 503
+                    set_status(s3, queued_musts=False)
+                    return {"status": "Scraping and NTE completed; musts completed successfully"}, 200
                 except Exception as e:
                     _logger.error(f"queued musts run failed: {e}")
                     return {"status": "Scraping and NTE completed; musts failed", "code": "ERROR"}, 500
@@ -235,6 +241,12 @@ class RunScrape(Resource):
         except Exception as e:
             _logger.error(str(e))
             return {"error": "Error running scrape process", "code": "ERROR"}, 500
+        finally:
+            try:
+                # Always attempt to mark idle unless another request changed state
+                set_idle(s3)
+            except Exception as e:
+                _logger.error(f"failed to set idle after scrape: {e}")
 
 
 class RunMusts(Resource):
