@@ -52,6 +52,6 @@ def run_musts():
 
         logger.info("Process to fetch must courses has ended.")
     except RecoverError as e:
-        raise RecoverError("Musts process failed") from e
+        raise RecoverError(f"Musts process failed, error: {str(e)}") from e
     except Exception as e:
         raise e

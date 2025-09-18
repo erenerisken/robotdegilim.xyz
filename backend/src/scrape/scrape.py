@@ -115,7 +115,7 @@ def run_scrape():
 
             except Exception as e:
                 raise RecoverError(
-                    f"Failed to process dept: dept_code: {dept_code}"
+                    f"Failed to process dept, dept_code: {dept_code}, error: {str(e)}"
                 ) from e
 
         departments_json = {}
@@ -176,6 +176,6 @@ def run_scrape():
 
         logger.info("Scraping process completed successfully and files uploaded to S3.")
     except RecoverError as e:
-        raise RecoverError("Scraping proccess failed") from e
+        raise RecoverError(f"Scraping process failed, error: {str(e)}") from e
     except Exception as e:
         raise e

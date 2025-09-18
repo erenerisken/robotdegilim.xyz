@@ -68,7 +68,7 @@ def get_department_prefix(session: requests.Session, dept_code: str, course_code
         if dept_prefix:
             return dept_prefix
     except Exception as e:
-        logger.warning(f"Error getting dept prefix for {dept_code}-{course_code}: {e}")
+        logger.warning(f"Error getting dept prefix for {dept_code}-{course_code}, error: {e}")
         return None
 
 

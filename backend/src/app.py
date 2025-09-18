@@ -126,7 +126,7 @@ try:
     s3 = get_s3_client()
     init_status(s3)
 except Exception as e:
-    app_logger.warning(f"Could not initialize status in S3: {e}")
+    app_logger.warning(f"Could not initialize status in S3, error: {str(e)}")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -221,7 +221,7 @@ class RunScrape(Resource):
                 run_nte()
                 _logger.info("NTE processing completed successfully")
             except Exception as e:
-                _logger.error(f"NTE processing failed: {e}")
+                _logger.error(f"NTE processing failed, error: {str(e)}")
                 # Do not fail the whole scrape if NTE fails
 
             # If a musts run was queued during busy period, run it now
@@ -232,7 +232,7 @@ class RunScrape(Resource):
                     set_status(s3, queued_musts=False)
                     return {"status": "Scraping and NTE completed; musts completed successfully"}, 200
                 except Exception as e:
-                    _logger.error(f"queued musts run failed: {e}")
+                    _logger.error(f"queued musts run failed, error: {str(e)}")
                     return {"status": "Scraping and NTE completed; musts failed", "code": "ERROR"}, 500
             return {"status": "Scraping and NTE completed successfully"}, 200
         except Exception as e:
@@ -243,7 +243,7 @@ class RunScrape(Resource):
                 # Always attempt to mark idle unless another request changed state
                 set_idle(s3)
             except Exception as e:
-                _logger.error(f"failed to set idle after scrape: {e}")
+                _logger.error(f"failed to set idle after scrape, error: {str(e)}")
 
 
 class RunMusts(Resource):
@@ -292,7 +292,7 @@ class RunMusts(Resource):
             try:
                 set_idle(s3)
             except Exception as ie:
-                _logger.error(f"failed to set idle after musts: {ie}")
+                _logger.error(f"failed to set idle after musts, error: {str(ie)}")
 
 
 # Add API resources
@@ -313,7 +313,7 @@ def status():
             "version": app_constants.app_version,
         }, 200
     except Exception as e:
-        _logger.error(f"status check failed: {e}")
+        _logger.error(f"status check failed, error: {str(e)}")
         return {"status": "unknown", "error": "status check failed"}, 500
 
 @app.route("/speed", methods=["GET", "POST"])
@@ -335,7 +335,7 @@ def speed():
         except ValueError as ve:
             return {"ok": False, "error": str(ve)}, 400
         except Exception as e:
-            _logger.error(f"speed toggle failed: {e}")
+            _logger.error(f"speed toggle failed, error: {str(e)}")
             return {"ok": False, "error": "speed toggle failed"}, 500
         return {"ok": True, **state}, 200
 

@@ -22,4 +22,4 @@ def busy_idle(s3_client: boto3.client):
         try:
             set_idle(s3_client)
         except Exception as e:
-            logger.error(f"failed to set idle: {e}")
+            logger.error(f"failed to set idle, error: {str(e)}")
