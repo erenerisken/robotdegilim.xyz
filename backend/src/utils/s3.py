@@ -27,7 +27,7 @@ def get_s3_client() -> boto3.client:
             }
         return boto3.client("s3", **kwargs)
     except Exception as e:
-        logger.error(f"failed to create s3 client: {e}")
+        logger.error(f"failed to create s3 client, error: {str(e)}")
         raise e
 
 
@@ -66,5 +66,5 @@ def is_idle(s3_client: boto3.client) -> bool:
         status_json: Dict[str, str] = json.loads(status_data)
         return status_json.get("status") == "idle"
     except Exception as e:
-        logger.error(f"Error fetching or reading status.json: {e}")
+        logger.error(f"Error fetching or reading status.json, error: {str(e)}")
         return False

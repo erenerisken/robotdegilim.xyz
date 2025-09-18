@@ -13,7 +13,7 @@ def extract_course_code(course_link: str):
         return course_code
     except Exception as e:
         raise RecoverError(
-            f"Failed to extract course code: course_link: {course_link}"
+            f"Failed to extract course code, course_link: {course_link}, error: {str(e)}"
         ) from e
 
 
@@ -47,5 +47,5 @@ def extract_dept_node(dept_soup: BeautifulSoup):
             if courses:
                 dept_node[sem_no] = courses
     except Exception as e:
-        raise RecoverError("Failed to extract the node") from e
+        raise RecoverError(f"Failed to extract the node, error: {str(e)}") from e
     return dept_node

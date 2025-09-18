@@ -18,4 +18,4 @@ def get_department_page(dept_code: str, tries: int = app_constants.global_retrie
         resp.encoding = "utf-8"
         return resp
     except Exception as e:
-        raise RecoverError(f"Failed to get department page: dept_code: {dept_code}") from e
+        raise RecoverError(f"Failed to get department page, dept_code: {dept_code}, error: {str(e)}") from e

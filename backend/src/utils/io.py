@@ -33,7 +33,7 @@ def write_json(data: dict, file_path: PathLike) -> None:
         with open(path_str, "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
     except Exception as e:
-        raise RecoverError(f"Failed to write json: file_path: {path_str}") from e
+        raise RecoverError(f"Failed to write json, file_path: {path_str}, error: {str(e)}") from e
 
 
 def load_json_safe(file_path: PathLike) -> Dict[str, Any]:
@@ -49,7 +49,7 @@ def load_json_safe(file_path: PathLike) -> Dict[str, Any]:
             data = json.load(file)
             return data if isinstance(data, dict) else {}
     except Exception as e:
-        logger.error(f"Failed to read json file {path_str}: {e}")
+        logger.error(f"Failed to read json file {path_str}, error: {str(e)}")
         return {}
 
 
@@ -90,5 +90,5 @@ def load_json_local_then_s3(
             )
             return data
     except Exception as e:
-        logger.warning(f"could not load {label} from S3: {e}")
+        logger.warning(f"could not load {label} from S3, error: {str(e)}")
     return {}

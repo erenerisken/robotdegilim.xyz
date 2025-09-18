@@ -189,4 +189,4 @@ def run_nte():
         logger.info(f"NTE processing completed successfully. Matched: {matched}, Missed: {missed}")
         
     except Exception as e:
-        raise RecoverError("NTE processing failed") from e 
+        raise RecoverError(f"NTE processing failed, error: {str(e)}") from e

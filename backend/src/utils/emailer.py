@@ -27,7 +27,7 @@ def get_email_handler():
     except Exception as e:
         # Use a local logger only if available; otherwise, swallow error quietly
         try:
-            logging.getLogger(app_constants.log_utils).error(f"Failed to create email handler: {e}")
+            logging.getLogger(app_constants.log_utils).error(f"Failed to create email handler, error: {str(e)}")
         except Exception:
             pass
         return None

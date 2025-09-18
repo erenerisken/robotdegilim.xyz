@@ -130,7 +130,7 @@ def extract_sections(
             sections[section_code] = section_node
 
     except Exception as e:
-        raise RecoverError("Failed to extract sections") from e
+        raise RecoverError(f"Failed to extract sections, error: {str(e)}") from e
 
 
 def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) -> None:
@@ -147,7 +147,7 @@ def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) 
                 }
             )
     except Exception as e:
-        logger.error(f"Error extracting constraints: {e}")
+        logger.error(f"Error extracting constraints, error: {str(e)}")
 
 
 def any_course(soup: BeautifulSoup) -> bool:
@@ -197,6 +197,6 @@ def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List
             cindex += 1
 
     except Exception as e:
-        raise RecoverError("Failed to extract tags") from e
+        raise RecoverError(f"Failed to extract tags, error: {str(e)}") from e
 
     return tags
