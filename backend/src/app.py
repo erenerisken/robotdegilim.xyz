@@ -22,7 +22,7 @@ except Exception:
 from src.config import app_constants
 from src.scrape.scrape import run_scrape
 from src.musts.musts import run_musts
-from src.nte.nte import run_nte_processing
+from src.nte.nte import run_nte
 from src.utils.emailer import get_email_handler
 from src.utils.s3 import get_s3_client
 from src.services.status_service import get_status, set_status, init_status
@@ -196,7 +196,7 @@ def index():
     """Root endpoint for API server (no static files)."""
     return {
         "service": "robotdegilim-backend",
-        "endpoints": ["/run-scrape", "/run-musts", "/run-nte", "/status"],
+        "endpoints": ["/run-scrape", "/run-musts", "/status"],
     }, 200
 
 
@@ -212,7 +212,7 @@ class RunScrape(Resource):
             # Run NTE processing after successful scrape
             try:
                 _logger.info("running NTE processing after scrape completion")
-                run_nte_processing()
+                run_nte()
                 _logger.info("NTE processing completed successfully")
             except Exception as e:
                 _logger.error(f"NTE processing failed: {e}")
@@ -278,22 +278,9 @@ class RunMusts(Resource):
             return {"error": "Error running get musts process", "code": "ERROR"}, 500
 
 
-class RunNTE(Resource):
-    def get(self):
-        try:
-            _logger.info("running standalone NTE processing")
-            run_nte_processing()
-            _logger.info("NTE processing completed successfully")
-            return {"status": "NTE processing completed successfully", "code": "OK"}, 200
-        except Exception as e:
-            _logger.error(f"NTE processing failed: {e}")
-            return {"error": "Error running NTE process", "code": "ERROR"}, 500
-
-
 # Add API resources
 api.add_resource(RunScrape, "/run-scrape")
 api.add_resource(RunMusts, "/run-musts")
-api.add_resource(RunNTE, "/run-nte")
 
 
 @app.route("/status")

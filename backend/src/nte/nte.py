@@ -4,8 +4,7 @@ import json
 from typing import Dict, List, Any, Optional
 
 from src.config import app_constants
-from src.nte.fetch import fetch_nte_data, fetch_departments_data, fetch_courses_data
-from src.nte.io import write_nte_available
+from src.nte.io import load_data, load_departments, load_nte_list, write_nte_available
 from src.utils.s3 import get_s3_client, upload_to_s3
 from src.utils.run import busy_idle
 from src.errors import RecoverError
@@ -57,19 +56,10 @@ def build_available_index(courses: Dict[str, Any], dept_map: Dict[str, Any]) -> 
             continue
         
         course_name = course.get("Course Name", "") or ""
-        display_name = course_name
-        
-        # Add prefix to display name if not already present
-        head = display_name.split(" - ", 1)[0]
-        if head.isdigit() or head == display_name:
-            if " - " in course_name:
-                display_name = f"{prefixed_code} - {course_name.split(' - ', 1)[-1]}"
-            else:
-                display_name = f"{prefixed_code} - {course_name}"
         
         index[prefixed_code] = {
             "numeric": str(numeric_id),
-            "name": display_name
+            "name": course_name
         }
     
     return index
@@ -131,20 +121,20 @@ def build_course_output(numeric_id: str, prefixed_code: str, display_name: str,
     }
 
 
-def run_nte_processing():
+def run_nte():
     """Main NTE processing function."""
     try:
         logger.info("Starting NTE processing.")
         
         # Fetch required data
         logger.info("Fetching courses data from S3...")
-        courses_data = fetch_courses_data()
+        courses_data = load_data()
         
         logger.info("Fetching departments data from S3...")
-        departments_data = fetch_departments_data()
+        departments_data = load_departments()
         
         logger.info("Fetching NTE list from S3...")
-        nte_data = fetch_nte_data()
+        nte_data = load_nte_list()
         
         # Build available courses index
         logger.info("Building available courses index...")
@@ -199,4 +189,4 @@ def run_nte_processing():
         logger.info(f"NTE processing completed successfully. Matched: {matched}, Missed: {missed}")
         
     except Exception as e:
-        raise RecoverError("NTE processing failed", {"error": str(e)}) from e 
+        raise RecoverError("NTE processing failed") from e 

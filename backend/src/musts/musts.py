@@ -33,7 +33,7 @@ def run_musts():
 
             departments = load_departments()
             if not departments:
-                raise RecoverError(app_constants.noDeptsErrMsg) from None
+                raise RecoverError(app_constants.noDeptsErrMsg)
 
             data = {}
             dept_len = len(departments.keys())
@@ -57,6 +57,6 @@ def run_musts():
         logger.info("Process to fetch must courses has ended.")
 
     except RecoverError as e:
-        raise RecoverError("Musts process failed", {"error": str(e)}) from None
+        raise RecoverError("Musts process failed") from e
     except Exception as e:
-        raise e from None
+        raise e

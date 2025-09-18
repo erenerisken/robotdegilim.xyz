@@ -14,11 +14,11 @@ class app_constants:
     MAIL_RECIPIENT = "info.robotdegilim@gmail.com"  # Where to send the email
     MAIL_ERROR_SUBJECT = "Robotdegilim.xyz Error Alert"
 
-    # s3 - Using robotd bucket for all operations
-    s3_bucket_name = "robotd"
-    s3_region = "eu-central-1"
+    # s3
+    s3_bucket_name = "cdn.robotdegilim.xyz"
     aws_access_key_id = os.environ.get("ACCESS_KEY")
     aws_secret_access_key = os.environ.get("SECRET_ACCESS_KEY")
+    # aws_region_name = os.environ.get('AWS_REGION')
 
     # Log file names
     app_log_file = "app.log"
@@ -47,7 +47,8 @@ class app_constants:
     status_json = "status.json"
     departments_noprefix_json = "departmentsNoPrefix.json"
     manual_prefixes_json = "manualPrefixes.json"
-    nte_available_json = "nte-available.json"
+    nte_available_json = "nteAvailable.json"
+    nte_list_json = "nteList.json"
 
     # No department data error message
     noDeptsErrMsg = "No departments data available."
@@ -119,8 +120,3 @@ class app_constants:
     breaker_error_rate_threshold = float(os.environ.get("BREAKER_ERROR_RATE_THRESHOLD", "0.5"))
     breaker_cooldown_seconds = int(os.environ.get("BREAKER_COOLDOWN_SECONDS", "120"))
     breaker_probe_interval_seconds = int(os.environ.get("BREAKER_PROBE_INTERVAL_SECONDS", "30"))
-
-    # S3 URLs for NTE processing - All using robotd bucket
-    courses_s3_url = "https://robotd.s3.eu-central-1.amazonaws.com/data.json"
-    departments_s3_url = "https://robotd.s3.eu-central-1.amazonaws.com/departments.json"
-    nte_list_s3_url = "https://robotd.s3.eu-central-1.amazonaws.com/nte-list.json"

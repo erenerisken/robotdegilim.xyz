@@ -1,39 +1,13 @@
-import json
 import logging
 import os
-from typing import Dict, Any
+from typing import Dict
 
 from src.config import app_constants
-from src.errors import RecoverError
 from src.scrape.parse import _strip_upper
+from src.utils.io import load_json_safe
 
 
 logger = logging.getLogger(app_constants.log_scrape)
-
-
-def write_json(data: dict, file_path: str) -> None:
-    """Write a JSON object to the given path with UTF-8 and indentation."""
-    try:
-        os.makedirs(os.path.dirname(file_path) or ".", exist_ok=True)
-        with open(file_path, "w", encoding="utf-8") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
-    except Exception as e:
-        raise RecoverError(
-            "Failed to write json", {"file_path": file_path, "error": str(e)}
-        ) from None
-
-
-def _load_json_safe(file_path: str) -> Dict[str, Any]:
-    """Load JSON dict from a file, returning {} on any failure."""
-    if not os.path.exists(file_path):
-        return {}
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            data = json.load(file)
-            return data if isinstance(data, dict) else {}
-    except Exception as e:
-        logger.error(f"Failed to read json file {file_path}: {e}")
-        return {}
 
 
 def _load_prefix_map(file_path: str, label: str) -> Dict[str, str]:
@@ -43,7 +17,7 @@ def _load_prefix_map(file_path: str, label: str) -> Dict[str, str]:
     - Skips missing/empty prefixes
     - Logs a one-line summary with kept/skipped counts
     """
-    data = _load_json_safe(file_path)
+    data = load_json_safe(file_path)
     total = len(data)
     kept = 0
     result: Dict[str, str] = {}

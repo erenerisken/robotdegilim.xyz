@@ -41,7 +41,7 @@ def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
             value = _strip_upper(current_semester_option.get("value"))
             text = (current_semester_option.get_text() or "").strip()
             return (value, text)
-    raise RecoverError("Could not extract current semester") from None
+    raise RecoverError("Could not extract current semester")
 
 
 def extract_courses(
@@ -130,7 +130,7 @@ def extract_sections(
             sections[section_code] = section_node
 
     except Exception as e:
-        raise RecoverError("Failed to extract sections", {"error": str(e)}) from None
+        raise RecoverError("Failed to extract sections") from e
 
 
 def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) -> None:
@@ -197,6 +197,6 @@ def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List
             cindex += 1
 
     except Exception as e:
-        raise RecoverError("Failed to extract tags", {"error": str(e)}) from None
+        raise RecoverError("Failed to extract tags") from e
 
     return tags

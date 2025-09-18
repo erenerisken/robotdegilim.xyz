@@ -1,24 +1,54 @@
-import json
+import logging
 from pathlib import Path
 from typing import List, Dict, Any
 
 from src.config import app_constants
-from src.errors import RecoverError
+from src.utils.io import load_json_local_then_s3, write_json
 
+logger = logging.getLogger(app_constants.log_nte)
 
 def write_nte_available(nte_data: List[Dict[str, Any]]) -> Path:
     """Write NTE available courses to JSON file and return path."""
-    # Ensure directory exists
-    app_constants.data_dir.mkdir(parents=True, exist_ok=True)
-    
     output_path = app_constants.data_dir / app_constants.nte_available_json
+    write_json(output_path, nte_data)
+    return output_path
     
-    try:
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(nte_data, f, ensure_ascii=False, indent=4)
-        return output_path
-    except Exception as e:
-        raise RecoverError(
-            "Failed to write NTE available courses",
-            {"path": str(output_path), "error": str(e)}
-        ) from e 
+
+def load_data() -> Dict[str, Any]:
+    """Load data.json used by nte.
+
+    Returns an object mapping course codes to course info. Missing or invalid
+    files return an empty dict. This function does not modify keys or values.
+    """
+    return load_json_local_then_s3(
+        app_constants.data_dir / app_constants.data_json,
+        app_constants.data_json,
+        label="courses data",
+        logger=logger,
+    )
+
+def load_departments() -> Dict[str, Any]:
+    """Load departments.json used by nte.
+
+    Returns an object mapping department codes to metadata. Missing or invalid
+    files return an empty dict. This function does not modify keys or values.
+    """
+    return load_json_local_then_s3(
+        app_constants.data_dir / app_constants.departments_json,
+        app_constants.departments_json,
+        label="departments",
+        logger=logger,
+    )
+
+def load_nte_list() -> Dict[str, Any]:
+    """Load nte_list.json used by nte.
+
+    Returns an object mapping department to NTE courses and their informations. Missing or invalid
+    files return an empty dict. This function does not modify keys or values.
+    """
+    return load_json_local_then_s3(
+        app_constants.data_dir / app_constants.nte_list_json,
+        app_constants.nte_list_json,
+        label="nte_list",
+        logger=logger,
+    )

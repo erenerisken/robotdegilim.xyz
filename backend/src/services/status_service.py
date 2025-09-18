@@ -17,7 +17,7 @@ def write_status(status: Dict[str, str]) -> str:
             json.dump(status, data_file, ensure_ascii=False, indent=4)
             return str(data_path)
     except Exception as e:
-        raise RecoverError("Failed to export status", {"error": str(e)}) from None
+        raise RecoverError("Failed to export status") from e
 
 
 def set_busy(s3_client: boto3.client) -> str:

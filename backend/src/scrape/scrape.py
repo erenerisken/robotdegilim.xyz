@@ -17,7 +17,8 @@ from src.scrape.parse import (
     extract_current_semester,
     deptify,
 )
-from src.scrape.io import write_json, load_prefixes_combined
+from src.scrape.io import load_prefixes_combined
+from src.utils.io import write_json
 from src.utils.s3 import is_idle, get_s3_client
 from src.utils.publish import publish_files
 from src.utils.run import busy_idle
@@ -117,8 +118,8 @@ def run_scrape():
 
                 except Exception as e:
                     raise RecoverError(
-                        "Failed to process dept", {"dept_code": dept_code, "error": str(e)}
-                    ) from None
+                        f"Failed to process dept: dept_code: {dept_code}"
+                    ) from e
 
             departments_json = {}
             departments_noprefix = {}
@@ -154,9 +155,6 @@ def run_scrape():
             write_json(departments_json, departments_path)
             write_json(data, data_path)
             write_json(last_updated_info, last_updated_path)
-            
-            # Write manual prefixes (empty dict if none exist)
-            write_json({}, manual_prefixes_path)
 
             # Upload files to S3: data files first, lastUpdated last
             upload_list = [
@@ -182,6 +180,6 @@ def run_scrape():
         logger.info("Scraping process completed successfully and files uploaded to S3.")
 
     except RecoverError as e:
-        raise RecoverError("Scraping proccess failed", {"error": str(e)}) from None
+        raise RecoverError("Scraping proccess failed") from e
     except Exception as e:
-        raise e from None
+        raise e

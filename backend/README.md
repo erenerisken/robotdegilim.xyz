@@ -42,9 +42,15 @@ If a failure occurs mid-upload: restart is safe; clients keep prior snapshot.
 ## 4. Endpoints
 | Method | Path         | Description | Success Response | Busy/Deferred |
 |--------|--------------|-------------|------------------|---------------|
-| GET    | /run-scrape  | Run full scrape + optional queued musts | 200 `{status:"Scraping completed successfully"}` | 503 `{code:"BUSY"}` |
+| GET    | /            | Root; service info and listed endpoints | 200 JSON | — |
+| GET    | /run-scrape  | Run full scrape, then NTE; run queued musts if any | 200 `{status:"Scraping and NTE completed successfully"}` | 503 `{code:"BUSY"}` |
 | GET    | /run-musts   | Generate musts if data ready else queue | 200 `{code:"OK"}` | 202 `{code:"QUEUED"}` |
 | GET    | /status      | Current status + version + flags | 200 JSON | — |
+| GET/POST | /speed     | Get or set throttling mode: fast | slow | normal | 200 `{mode, scale, ...}` | — |
+
+Notes on /speed:
+- GET returns current mode, effective scale, adaptive factor, and breaker state.
+- POST requires a JSON body: `{ "mode": "fast" | "slow" | "normal" }`.
 
 ## 5. Directory Layout
 ```
@@ -55,7 +61,7 @@ src/
   services/status_service.py
   scrape/               # Scrape orchestration + fetch/parse/io
   musts/                # Musts orchestration + helpers
-  nte/                  # Non-Technical Electives processing
+  nte/                  # NTE processing (reads data.json, departments.json, nteList.json; writes nteAvailable.json)
   utils/                # http, timing, s3, publish, logging, run helpers
 storage/
   data/                 # Generated JSON artifacts (local) 
@@ -94,14 +100,46 @@ Primary variables (see also `../.env.example`):
 | BREAKER_COOLDOWN_SECONDS | 120 | Time breaker stays open | Seconds |
 | BREAKER_PROBE_INTERVAL_SECONDS | 30 | Probe interval while open | Seconds |
 
+Tip (Windows PowerShell): copy the example env file with:
+```
+Copy-Item .env.example .env
+```
+
 ## 7. Local Development
 Create a venv and install runtime + optional dev deps:
 ```
+# Create and activate venv (PowerShell)
 python -m venv .venv
-.venv/Scripts/Activate.ps1  # Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+
+# Install deps
 python -m pip install -r requirements.txt -r requirements-dev.txt
-cp .env.example .env  # then fill required secrets
+
+# Create local env file
+Copy-Item .env.example .env  # then fill required secrets
+
+# Run dev server
 python -m flask --app src/app run -p 3000
+```
+
+Optional (if you have Make):
+```
+make dev-install
+make run PORT=3000
+```
+
+Speed controls during dev (throttling):
+- Using helper script:
+```
+python .\scripts\speed.py --base-url http://localhost:3000         # show
+python .\scripts\speed.py fast --base-url http://localhost:3000    # set fast
+python .\scripts\speed.py slow --base-url http://localhost:3000    # set slow
+python .\scripts\speed.py normal --base-url http://localhost:3000  # set normal
+```
+- Direct API calls (PowerShell):
+```
+Invoke-RestMethod -Uri http://localhost:3000/speed -Method Get
+Invoke-RestMethod -Uri http://localhost:3000/speed -Method Post -ContentType 'application/json' -Body '{"mode":"fast"}'
 ```
 
 Useful commands:
@@ -116,7 +154,10 @@ mypy src
 - Install only production requirements if you want lean images.
 - Run under a WSGI server:
 ```
-gunicorn 'app:app' -b 0.0.0.0:3000 --workers 1 --threads 4 --timeout 180
+# From project root or backend/, either of these forms:
+gunicorn 'app:app' -b 0.0.0.0:3000 --chdir ./src --workers 1 --threads 4 --timeout 180
+# or explicitly reference the module path:
+gunicorn 'src.app:app' -b 0.0.0.0:3000 --workers 1 --threads 4 --timeout 180
 ```
 
 ### 8.0 Environment on Fly
@@ -153,6 +194,10 @@ Runtime config baked into Dockerfile:
 - Gunicorn workers: `--gunicorn-workers N` (default 2). A worker is a process handling requests; 2 keeps /status responsive while one worker runs a long job.
 - Gunicorn timeout: `--gunicorn-timeout S` (default 0 for no timeout). 0 avoids killing long-running scrape/musts; set a large finite value if you prefer a safety net.
 
+NTE artifacts:
+- Input expected (from S3 or local cache): `data.json`, `departments.json`, `nteList.json`.
+- Output produced after successful scrape: `nteAvailable.json` (uploaded to S3 and written under `storage/data/`).
+
 Data files included:
 - Only `storage/data/manualPrefixes.json` is copied into the deploy folder (if present). Other generated data/log files are excluded by the `.dockerignore`.
 
@@ -168,8 +213,9 @@ Notes:
 
 ## 9. Operations & Observability
 Artifacts:
-- S3 bucket `robotd` (eu-central-1 region) stores all JSON files.
+- S3 bucket (configured in `config.app_constants.s3_bucket_name`) stores JSON.
 - `status.json` communicates system state to operators and frontend.
+ - `nteAvailable.json` contains currently available NTE courses (built post-scrape).
 
 Logging:
 - Plain text (default) or structured JSON with `LOG_JSON=1`.
@@ -183,6 +229,7 @@ Logging:
 | Sustained errors | Breaker opens; periodic probes to resume |
 | Partial upload failure | `lastUpdated.json` not replaced → previous snapshot remains |
 | Musts requested early | Queued until first successful scrape completes |
+| Speed switch invalid body | 400 with validation error | Ensure JSON body with mode is provided |
 
 ## 11. Contributing / Style
 - Keep synchronous model (avoid premature async/concurrency).
@@ -196,6 +243,8 @@ Logging:
 | 202 QUEUED from /run-musts | Data not ready | Run scrape first or wait |
 | Slow progress | Adaptive backoff elevated | Inspect logs for failures |
 | No new data published | Upload failed before final commit | Check error logs |
+| 400 from POST /speed | Missing or invalid JSON body | Send `{ "mode": "fast|slow|normal" }` |
+| NTE output missing | No available sections matched or missing inputs | Verify `nteList.json`, `departments.json`, and `data.json` are present |
 
 ## License
 MIT (see root `LICENSE`).

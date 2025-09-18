@@ -12,11 +12,11 @@ def get_http_session(
     total: int = app_constants.global_retries,
     backoff_factor: float = 0.5,
     status_forcelist: Optional[tuple[int, ...]] = (429, 500, 502, 503, 504),
-    timeout: float = app_constants.http_timeout,
 ) -> requests.Session:
-    """Return a requests Session with retry/backoff and a default timeout via mount.
+    """Return a requests Session with retry/backoff configured.
 
-    Note: Callers should still pass explicit timeouts where appropriate.
+    Note: Callers should still pass explicit timeouts where appropriate (we set
+    a default per-request timeout in request() if none is provided).
     """
     session = requests.Session()
     retry = Retry(
@@ -72,16 +72,12 @@ def request(
             if 400 <= resp.status_code < 500 and resp.status_code != 429:
                 report_failure()
                 raise RecoverError(
-                    f"HTTP {resp.status_code} on {name or method}",
-                    {"url": url, "status": resp.status_code},
-                    code="FETCH_4XX",
-                ) from None
+                    f"HTTP {resp.status_code} on {name or method}: url: {url}, status: {resp.status_code}, code=FETCH_4XX"
+                )
             # Else retry (5xx or 429)
             report_failure()
             last_exc = RecoverError(
-                f"HTTP {resp.status_code} on {name or method}",
-                {"url": url, "status": resp.status_code},
-                code="FETCH_RETRY",
+                f"HTTP {resp.status_code} on {name or method}: url: {url}, status: {resp.status_code}, code=FETCH_RETRY"
             )
         except Exception as e:  # network/timeout or other
             report_failure()
@@ -89,12 +85,10 @@ def request(
             # continue to retry
     # Exhausted retries
     if isinstance(last_exc, RecoverError):
-        raise last_exc from None
+        raise last_exc
     raise RecoverError(
-        f"Request failed for {name or method}",
-        {"url": url, "error": str(last_exc) if last_exc else "unknown"},
-        code="FETCH_FAIL",
-    ) from None
+        f"Request failed for {name or method}: url: {url}, error: {str(last_exc) if last_exc else 'unknown'}, code=FETCH_FAIL"
+    )
 
 
 def get(
@@ -122,39 +116,3 @@ def post(
     return request(
         session, "POST", url, data=data, tries=tries, base_delay=base_delay, name=name, **kwargs
     )
-
-
-def post_oibs(
-    session: requests.Session,
-    data: dict,
-    *,
-    tries: int = app_constants.global_retries,
-    base_delay: float = 0.9,
-    name: str = "oibs_post",
-) -> requests.Response:
-    return post(
-        session, app_constants.oibs64_url, data=data, tries=tries, base_delay=base_delay, name=name
-    )
-
-
-def get_catalog(
-    session: requests.Session,
-    dept_code: str,
-    course_code: str,
-    *,
-    tries: int = app_constants.global_retries,
-    base_delay: float = 1.0,
-) -> requests.Response:
-    url = app_constants.course_catalog_url.replace("{dept_code}", dept_code).replace(
-        "{course_code}", course_code
-    )
-    return get(session, url, tries=tries, base_delay=base_delay, name="catalog_get")
-
-
-def _wrap_with_timeout(request_func, timeout: float):
-    def wrapped(method, url, **kwargs):
-        if "timeout" not in kwargs:
-            kwargs["timeout"] = timeout
-        return request_func(method, url, **kwargs)
-
-    return wrapped
