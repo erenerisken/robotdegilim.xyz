@@ -226,12 +226,9 @@ class RunScrape(Resource):
 
             # If a musts run was queued during busy period, run it now
             if st.get("queued_musts"):
-                _logger.info("musts run was queued; running after scrape completion")
+                _logger.info("musts run was queued; running after scrape completion (same busy window)")
                 try:
-                    result = run_musts()
-                    if result == "busy":
-                        # Should not happen now, but handle defensively
-                        return {"status": "Scraping completed; musts still busy", "code": "BUSY"}, 503
+                    run_musts()  # already busy from earlier
                     set_status(s3, queued_musts=False)
                     return {"status": "Scraping and NTE completed; musts completed successfully"}, 200
                 except Exception as e:
@@ -251,36 +248,39 @@ class RunScrape(Resource):
 
 class RunMusts(Resource):
     def get(self):
-        try:
-            s3 = get_s3_client()
-            st = get_status(s3)
-            # If departments data is not ready yet, queue and exit
-            if not st.get("depts_ready"):
-                if not st.get("queued_musts"):
-                    set_status(s3, queued_musts=True)
-                    return {
-                        "status": "Departments data unavailable; musts queued to run after scrape",
-                        "code": "QUEUED",
-                    }, 202
+        s3 = get_s3_client()
+        st = get_status(s3)
+        # If departments data is not ready yet, queue and exit
+        if not st.get("depts_ready"):
+            if not st.get("queued_musts"):
+                set_status(s3, queued_musts=True)
                 return {
-                    "status": "Musts already queued; waiting for scrape to produce data",
+                    "status": "Departments data unavailable; musts queued to run after scrape",
                     "code": "QUEUED",
                 }, 202
+            return {
+                "status": "Musts already queued; waiting for scrape to produce data",
+                "code": "QUEUED",
+            }, 202
 
-            if run_musts() == "busy":
-                if not st.get("queued_musts"):
-                    set_status(s3, queued_musts=True)
-                    return {
-                        "status": "System busy; musts queued to run after scrape",
-                        "code": "QUEUED",
-                    }, 202
-                return {"status": "System busy; musts already queued", "code": "QUEUED"}, 202
+        # If system currently busy (e.g., scrape in progress), queue
+        if st.get("status") == "busy":
+            if not st.get("queued_musts"):
+                set_status(s3, queued_musts=True)
+                return {
+                    "status": "System busy; musts queued to run after scrape",
+                    "code": "QUEUED",
+                }, 202
+            return {"status": "System busy; musts already queued", "code": "QUEUED"}, 202
+
+        try:
+            set_busy(s3)
+            run_musts()
             set_status(s3, queued_musts=False)
             return {"status": "Get musts completed successfully", "code": "OK"}, 200
         except Exception as e:
             _logger.error(str(e))
             if app_constants.noDeptsErrMsg in str(e):
-                s3 = get_s3_client()
                 set_status(s3, depts_ready=False, queued_musts=True)
                 _logger.info("departments data missing; queued musts until after scrape")
                 return {
@@ -288,6 +288,11 @@ class RunMusts(Resource):
                     "code": "QUEUED",
                 }, 202
             return {"error": "Error running get musts process", "code": "ERROR"}, 500
+        finally:
+            try:
+                set_idle(s3)
+            except Exception as ie:
+                _logger.error(f"failed to set idle after musts: {ie}")
 
 
 # Add API resources
