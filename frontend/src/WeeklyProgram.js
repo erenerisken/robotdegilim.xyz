@@ -66,7 +66,11 @@ export const WeeklyProgram = ({ currentScenario, setCurrentScenario }) => {
   const doCapture = useCallback(() => {
     const node = document.getElementById("screenshot");
 
-    toJpeg(node, { quality: 0.95 })
+    toJpeg(node, {
+      quality: 0.95,
+      cacheBust: true,
+      skipFonts: true,
+    })
       .then((dataUrl) => {
         const link = document.createElement("a");
         link.download = "schedule.jpeg";
@@ -127,7 +131,7 @@ export const WeeklyProgram = ({ currentScenario, setCurrentScenario }) => {
         />
       );
     },
-[dispatch, onColorChange]
+    [dispatch, onColorChange]
   );
 
   return (
