@@ -1,0 +1,285 @@
+/* Modern scheduler styles */
+.dayscale-row {
+  display: flex;
+  flex-direction: row;
+  background: #f8fafc;
+  border-radius: 16px 16px 0 0;
+  padding: 8px 0;
+}
+
+.dayscale-label {
+  width: 20%;
+  text-align: center;
+  padding: 4px;
+}
+
+.custom-appointment {
+  margin: 2px;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-appointment:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.program-appointment {
+  height: 100%;
+  text-align: center;
+  border-radius: 8px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* DontFill Block Styles */
+.program-text-container-df {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  padding: 4px;
+}
+
+.program-row-df {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* DontFill Controls */
+.df-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.df-control-button {
+  min-width: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 4px !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(4px);
+}
+
+.df-control-button:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.df-control-button svg {
+  font-size: 16px !important;
+}
+
+/* DontFill Text Field */
+.df-description-text-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.df-description-text-field input {
+  padding: 4px 8px !important;
+  font-size: 0.875rem !important;
+  text-align: center !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px !important;
+}
+
+/* DontFill Title */
+.program-title-dont-fill {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.program-title-dont-fill:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Color Palette Menu */
+.df-color-palette {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 8px;
+  background: #1f2937;
+  border-radius: 8px;
+  min-width: 120px;
+}
+
+.df-color-option {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.df-color-option:hover {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Regular Program Styles */
+.program-text-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.program-title {
+  font-family: 'Inter', 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.program-title-bottom {
+  font-size: 0.7rem;
+  opacity: 0.9;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* Scenario Navigation Styles */
+.program-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.program-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.program-typo-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 0 4px;
+}
+
+.program-textfield-wrapper {
+  width: 60px;
+  margin: 0 4px;
+}
+
+.program-textfield {
+  width: 100%;
+}
+
+.program-textfield input {
+  text-align: center;
+  padding: 6px 0;
+}
+
+/* Save Image Button styles */
+.save-image-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.save-image-button button {
+  padding: 8px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.save-image-button button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Calendar wrapper styles */
+.program-calendar-wrapper {
+  margin-top: 16px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .program-row {
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+  
+  .program-textfield-wrapper {
+    width: 50px;
+  }
+  
+  .program-vertical {
+    padding: 8px;
+  }
+
+  .program-row-df {
+    padding: 2px;
+    gap: 4px;
+  }
+
+  .df-control-button {
+    min-width: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .program-title-dont-fill {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+  }
+}
+
+/* Small screen adjustments */
+@media (max-width: 480px) {
+  .program-row-df {
+    padding: 1px;
+    gap: 2px;
+  }
+
+  .df-control-button {
+    min-width: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .program-title-dont-fill {
+    font-size: 0.7rem;
+    padding: 2px;
+  }
+}

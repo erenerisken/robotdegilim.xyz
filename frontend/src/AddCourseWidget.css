@@ -1,0 +1,44 @@
+.add-course-wrapper {
+    border-style: groove;
+    margin: 6pt;
+    padding: 6pt;
+    text-align: left;
+    background: aliceblue;
+}
+.add-course-row {
+    display: inline-flex;
+    width: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+}
+.add-course-name {
+    background: #FFFFFF;
+    flex: 1 1 auto;
+}
+
+/* Pretty autocomplete refinements */
+.pretty-autocomplete .MuiOutlinedInput-root {
+  border-radius: 10px;
+}
+
+.pretty-autocomplete .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(0,0,0,0.15);
+}
+
+.pretty-autocomplete:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(0,0,0,0.25);
+}
+
+.pretty-autocomplete .MuiInputBase-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .add-course-row {
+    flex-direction: column;
+    gap: 6pt;
+    flex-wrap: wrap;
+  }
+}

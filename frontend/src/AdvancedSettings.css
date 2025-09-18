@@ -1,0 +1,57 @@
+/* Use the same class names as in the component */
+.course-settings-wrapper {
+    margin: 8px 6pt;
+    padding: 0;
+}
+.course-settings-row {
+    display: inline-flex;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.course-settings-accordion {
+    width: 100%;
+}
+.course-settings-typo {
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 6pt;
+}
+
+/* Flat accordion look */
+.adv-accordion .MuiAccordion-root {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.adv-accordion .MuiAccordion-root:before { display: none; }
+
+.adv-accordion .MuiAccordionSummary-root {
+  padding: 0 12px;
+  min-height: 44px;
+}
+
+.adv-accordion .MuiAccordionSummary-content {
+  margin: 8px 0;
+}
+
+.adv-accordion .MuiAccordionDetails-root {
+  border-top: 1px solid #e5e7eb;
+  padding: 12px;
+}
+
+.adv-accordion .MuiFormControlLabel-root {
+  margin-right: 12px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .course-settings-row {
+    flex-direction: column;
+    gap: 6pt;
+  }
+  .course-settings-accordion {
+    width: 100%;
+  }
+}
