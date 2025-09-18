@@ -190,9 +190,12 @@ export const Controls = (props) => {
     getMusts(department, semester)
       .then((data) => {
         if (data && data.length > 0) {
-          const newCourses = data
-            .filter((code) => !selectedCourses.some((c) => c?.code === code))
-            .map(getCourseByCode);
+          const newCourses = data.filter(
+            (code) => !selectedCourses.some((c) => c?.code === code)
+          );
+          map((code) => getCourseByCode(code)).filter(
+            (course) => course !== null
+          );
 
           handleAddCourses(newCourses);
         }
@@ -383,11 +386,14 @@ export const Controls = (props) => {
 
   const calculateOccupiedSlots = () => {
     const occupiedSlots = [];
-    
+
     // Eğer schedule hesaplanmışsa, aktif scenario'yu kullan
-    if (scenariosState.result && scenariosState.result.length > currentScenario) {
+    if (
+      scenariosState.result &&
+      scenariosState.result.length > currentScenario
+    ) {
       const currentScenarioData = scenariosState.result[currentScenario]; // Aktif scenario'yu kullan
-      
+
       currentScenarioData.forEach((courseInScenario) => {
         courseInScenario.section.lectureTimes.forEach((lectureTime) => {
           occupiedSlots.push({
@@ -396,13 +402,13 @@ export const Controls = (props) => {
             startMin: lectureTime.startMin,
             endHour: lectureTime.endHour,
             endMin: lectureTime.endMin,
-            source: 'scheduled_course',
+            source: "scheduled_course",
             courseCode: courseInScenario.abbreviation,
-            sectionNumber: courseInScenario.section.sectionNumber
+            sectionNumber: courseInScenario.section.sectionNumber,
           });
         });
       });
-      
+
       // console.log('Using SCHEDULED courses for NTE filtering:', occupiedSlots);
     } else {
       // Schedule henüz hesaplanmamışsa, seçili derslerin aktif şubelerini kullan
@@ -410,10 +416,10 @@ export const Controls = (props) => {
         if (c === null || c.settings?.disableCourse) return;
         const currentCourse = getCourseByCode(c.code);
         if (!currentCourse) return;
-        
+
         currentCourse.sections.forEach((section, sectionIndex) => {
           if (!c.sections[sectionIndex]) return; // Bu section seçili değil
-          
+
           section.lectureTimes.forEach((lectureTime) => {
             occupiedSlots.push({
               day: lectureTime.day,
@@ -421,17 +427,17 @@ export const Controls = (props) => {
               startMin: lectureTime.startMin,
               endHour: lectureTime.endHour,
               endMin: lectureTime.endMin,
-              source: 'selected_course',
+              source: "selected_course",
               courseCode: currentCourse.abbreviation,
-              sectionNumber: section.sectionNumber
+              sectionNumber: section.sectionNumber,
             });
           });
         });
       });
-      
+
       // console.log('Using SELECTED courses for NTE filtering:', occupiedSlots);
     }
-    
+
     // DontFill bloklarını da ekle
     props.dontFills.forEach((df) => {
       occupiedSlots.push({
@@ -440,10 +446,10 @@ export const Controls = (props) => {
         startMin: df.startDate.getMinutes(),
         endHour: df.endDate.getHours(),
         endMin: df.endDate.getMinutes(),
-        source: 'dontfill'
+        source: "dontfill",
       });
     });
-    
+
     return occupiedSlots;
   };
 
@@ -533,7 +539,11 @@ export const Controls = (props) => {
           />
         </div>
         <div className="textfield-wrapper">
-          <FormControl variant="outlined" size="small" className="form-control pretty-select">
+          <FormControl
+            variant="outlined"
+            size="small"
+            className="form-control pretty-select"
+          >
             <InputLabel style={{ background: "white" }}>Semester</InputLabel>
             <Select
               error={errorSemester}
@@ -685,9 +695,14 @@ export const Controls = (props) => {
       <div className="controls-section">
         <div className="controls-section-header">Free Electives</div>
         <div className="control-row" style={{ justifyContent: "center" }}>
-          <Typography variant="body2" color="textSecondary" style={{ maxWidth: 720 }}>
-            Help us crowdsource Free Elective courses. Share the elective courses you have taken or know about.
-            We will use these submissions to build an upcoming Free Electives section for everyone.
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            style={{ maxWidth: 720 }}
+          >
+            Help us crowdsource Free Elective courses. Share the elective
+            courses you have taken or know about. We will use these submissions
+            to build an upcoming Free Electives section for everyone.
           </Typography>
         </div>
         <div className="control-row">
@@ -696,14 +711,16 @@ export const Controls = (props) => {
               variant="contained"
               className="pretty-button pretty-secondary"
               startIcon={<AssignmentIcon />}
-              onClick={() => openInNewTab("https://forms.gle/RgpEk9vETPKZUGXt5")}
+              onClick={() =>
+                openInNewTab("https://forms.gle/RgpEk9vETPKZUGXt5")
+              }
             >
               Free Elective Form
             </Button>
           </div>
         </div>
       </div>
-      
+
       <NTEDialog
         open={nteDialogOpen}
         onClose={handleNTEDialogClose}

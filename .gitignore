@@ -27,6 +27,7 @@ frontend/.parcel-cache/
 frontend/dist/
 frontend/build/
 *.tsbuildinfo
+package-lock.json
 
 # Project-specific
 backend/.venv/
