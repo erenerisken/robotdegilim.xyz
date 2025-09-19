@@ -11,6 +11,8 @@ export class Client {
     this.statusUrl =
       "https://s3.amazonaws.com/cdn.robotdegilim.xyz/status.json";
     this.scrapeUrl = "https://robotdegilim-xyz.fly.dev/run-scrape";
+    this.nteUrl =
+      "https://s3.amazonaws.com/cdn.robotdegilim.xyz/nteAvailable.json";
   }
   async getLastUpdated() {
     const data = (await axios.get(this.lastUpdatedUrl)).data;
@@ -73,6 +75,10 @@ export class Client {
       courses.push(courseToPush);
     });
     return courses;
+  }
+  async getNTEs() {
+    const data = (await axios.get(this.nteUrl)).data;
+    return data;
   }
 
   async sendUpdateRequest() {
