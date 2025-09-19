@@ -10,7 +10,7 @@ logger = logging.getLogger(app_constants.log_nte)
 def write_nte_available(nte_data: List[Dict[str, Any]]) -> Path:
     """Write NTE available courses to JSON file and return path."""
     output_path = app_constants.data_dir / app_constants.nte_available_json
-    write_json(output_path, nte_data)
+    write_json(nte_data, output_path)
     return output_path
     
 

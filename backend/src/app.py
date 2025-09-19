@@ -128,8 +128,12 @@ try:
 except Exception as e:
     app_logger.warning(f"Could not initialize status in S3, error: {str(e)}")
 
-# Initialize Flask app
-app = Flask(__name__)
+# Initialize Flask app (serve static assets from src/public under /static)
+app = Flask(
+    __name__,
+    static_folder=app_constants.static_folder,
+    static_url_path='/'
+)
 api = Api(app)
 origins = app_constants.allowed_origins
 if origins and origins != "*":

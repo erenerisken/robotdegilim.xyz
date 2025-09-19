@@ -120,3 +120,5 @@ class app_constants:
     breaker_error_rate_threshold = float(os.environ.get("BREAKER_ERROR_RATE_THRESHOLD", "0.5"))
     breaker_cooldown_seconds = int(os.environ.get("BREAKER_COOLDOWN_SECONDS", "120"))
     breaker_probe_interval_seconds = int(os.environ.get("BREAKER_PROBE_INTERVAL_SECONDS", "30"))
+
+    static_folder = backend_dir / "public"
