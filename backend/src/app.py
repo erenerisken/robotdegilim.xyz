@@ -221,9 +221,7 @@ class RunScrape(Resource):
 
             # Run NTE processing after successful scrape
             try:
-                _logger.info("running NTE processing after scrape completion")
                 run_nte()
-                _logger.info("NTE processing completed successfully")
             except Exception as e:
                 _logger.error(f"NTE processing failed, error: {str(e)}")
                 # Do not fail the whole scrape if NTE fails

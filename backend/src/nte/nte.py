@@ -125,28 +125,18 @@ def run_nte():
     """Main NTE processing function."""
     try:
         logger.info("Starting NTE processing.")
-        
-        # Fetch required data
-        logger.info("Fetching courses data from S3...")
         courses_data = load_data()
-        
-        logger.info("Fetching departments data from S3...")
         departments_data = load_departments()
-        
-        logger.info("Fetching NTE list from S3...")
         nte_data = load_nte_list()
         
         # Build available courses index
-        logger.info("Building available courses index...")
+        logger.info("Building available courses index.")
         available_index = build_available_index(courses_data, departments_data)
         
         matched = 0
         missed = 0
         output = []
-        
-        # Process NTE list
-        logger.info("Processing NTE courses...")
-        
+                
         # Handle both dict and list formats for NTE data
         if isinstance(nte_data, dict):
             iterable = (course for course_list in nte_data.values() for course in course_list)
@@ -178,8 +168,6 @@ def run_nte():
             output.append(course_output)
             matched += 1
         
-        # Write and upload result
-        logger.info(f"Writing NTE available courses (matched: {matched}, missed: {missed})...")
         output_path = write_nte_available(output)
         
         # Upload to S3
