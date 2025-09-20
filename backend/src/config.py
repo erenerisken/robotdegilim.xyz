@@ -121,4 +121,5 @@ class app_constants:
     breaker_cooldown_seconds = int(os.environ.get("BREAKER_COOLDOWN_SECONDS", "120"))
     breaker_probe_interval_seconds = int(os.environ.get("BREAKER_PROBE_INTERVAL_SECONDS", "30"))
 
-    static_folder = backend_dir / "public"
+    # Static folder: Flask app runs with package root at backend/src, we need absolute path to src/public
+    static_folder = backend_dir / "src" / "public"
