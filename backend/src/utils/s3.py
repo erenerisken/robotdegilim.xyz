@@ -1,6 +1,7 @@
 import json
 import logging
-from typing import Dict
+import os
+from typing import Dict, Optional
 
 import boto3
 
@@ -9,26 +10,46 @@ from src.errors import RecoverError
 import time
 import random
 
+# Internal module-level cache for the S3 client. We avoid @lru_cache so we can
+# expose an explicit reset hook (useful for tests / credential rotation).
+_S3_CLIENT: Optional[boto3.client] = None
+
 
 logger = logging.getLogger(app_constants.log_utils)
 
 
-def get_s3_client() -> boto3.client:
-    """Create and return a boto3 S3 client using configured credentials.
+def get_s3_client(*, refresh: bool = False) -> boto3.client:
+    """Return a cached boto3 S3 client.
 
-    Falls back to environment/instance credentials if keys are not set.
+    If ACCESS_KEY / SECRET_ACCESS_KEY (or standard AWS var names) are present at the
+    time of first call they are used; otherwise the default credential chain is
+    relied upon. Pass refresh=True to force recreation (e.g., after rotating
+    credentials in the environment).
     """
+    global _S3_CLIENT
+    if _S3_CLIENT is not None and not refresh:
+        return _S3_CLIENT
     try:
+        # Prefer explicit custom names, then fall back to standard AWS names.
+        access = app_constants.aws_access_key_id
+        secret = app_constants.aws_secret_access_key
         kwargs = {}
-        if app_constants.aws_access_key_id and app_constants.aws_secret_access_key:
+        if access and secret:
             kwargs = {
-                "aws_access_key_id": app_constants.aws_access_key_id,
-                "aws_secret_access_key": app_constants.aws_secret_access_key,
+                "aws_access_key_id": access,
+                "aws_secret_access_key": secret,
             }
-        return boto3.client("s3", **kwargs)
+        _S3_CLIENT = boto3.client("s3", **kwargs)
+        return _S3_CLIENT
     except Exception as e:
         logger.error(f"failed to create s3 client, error: {str(e)}")
         raise e
+
+
+def reset_s3_client():
+    """Clear the cached S3 client (used in tests or after credential rotation)."""
+    global _S3_CLIENT
+    _S3_CLIENT = None
 
 
 def upload_to_s3(s3_client: boto3.client, file_path: str, s3_key: str, retries: int = 5):

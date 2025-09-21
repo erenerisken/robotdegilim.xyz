@@ -8,16 +8,25 @@ from src.errors import RecoverError
 from src.utils.timing import throttle_before_request, report_success, report_failure
 
 
+_HTTP_SESSION: Optional[requests.Session] = None
+
+
 def get_http_session(
     total: int = app_constants.global_retries,
     backoff_factor: float = 0.5,
     status_forcelist: Optional[tuple[int, ...]] = (429, 500, 502, 503, 504),
+    *,
+    refresh: bool = False,
 ) -> requests.Session:
-    """Return a requests Session with retry/backoff configured.
+    """Return a cached requests Session with retry/backoff configured.
 
-    Note: Callers should still pass explicit timeouts where appropriate (we set
-    a default per-request timeout in request() if none is provided).
+    Pass refresh=True to rebuild the session (e.g., if headers or retry policy
+    must change during runtime). Subsequent calls return the same instance for
+    connection pooling efficiency.
     """
+    global _HTTP_SESSION
+    if _HTTP_SESSION is not None and not refresh:
+        return _HTTP_SESSION
     session = requests.Session()
     retry = Retry(
         total=total,
@@ -31,12 +40,18 @@ def get_http_session(
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
-    # Set default headers from config (e.g., User-Agent, Accept, etc.)
     try:
         session.headers.update(app_constants.headers)
     except Exception:
         pass
+    _HTTP_SESSION = session
     return session
+
+
+def reset_http_session():
+    """Clear cached HTTP session (tests or dynamic policy reload)."""
+    global _HTTP_SESSION
+    _HTTP_SESSION = None
 
 
 # Centralized request wrappers
