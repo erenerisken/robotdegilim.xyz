@@ -19,11 +19,9 @@ from src.scrape.parse import (
 )
 from src.scrape.io import load_prefixes_combined
 from src.utils.io import write_json
-from src.utils.s3 import get_s3_client
 from src.utils.publish import publish_files
 from src.config import app_constants
 from src.errors import RecoverError
-from src.utils.http import get_http_session
 
 logger = logging.getLogger(app_constants.log_scrape)
 
@@ -35,14 +33,12 @@ def run_scrape():
     This function assumes the caller has already marked the system busy.
     """
     try:
-        s3_client = get_s3_client()
         logger.info("Starting the scraping process.")
 
         data_dir = app_constants.data_dir
         data_dir.mkdir(parents=True, exist_ok=True)
 
-        session = get_http_session()
-        response = get_main_page(session)
+        response = get_main_page()
         main_soup = BeautifulSoup(response.text, "html.parser")
 
         dept_codes = []
@@ -56,7 +52,7 @@ def run_scrape():
         dept_len = len(dept_codes)
         for index, dept_code in enumerate(dept_codes, start=1):
             try:
-                response = get_dept(session, dept_code, current_semester[0])
+                response = get_dept(dept_code, current_semester[0])
                 dept_soup = BeautifulSoup(response.text, "html.parser")
 
                 if not any_course(dept_soup):
@@ -77,7 +73,7 @@ def run_scrape():
                     dept_code not in dept_prefixes
                     or dept_prefixes[dept_code] in app_constants.no_prefix_variants
                 ):
-                    dept_prefix = get_department_prefix(session, dept_code, course_codes[0])
+                    dept_prefix = get_department_prefix(dept_code, course_codes[0])
                     if dept_prefix:
                         dept_prefixes[dept_code] = dept_prefix
                     else:
@@ -86,7 +82,7 @@ def run_scrape():
                 for course_code in course_codes:
                     course_node = {}
 
-                    response = get_course(session, course_code)
+                    response = get_course(course_code)
                     course_soup = BeautifulSoup(response.text, "html.parser")
 
                     course_node["Course Code"] = course_code
@@ -105,7 +101,7 @@ def run_scrape():
                         )
 
                     sections = {}
-                    extract_sections(session, course_soup, sections)
+                    extract_sections(course_soup, sections)
                     course_node["Sections"] = sections
 
                     data[int(course_code)] = course_node
@@ -168,7 +164,6 @@ def run_scrape():
             )
 
         publish_files(
-            s3_client,
             files=upload_list,
             last_updated=(last_updated_path, app_constants.last_updated_json),
             logger=logger,

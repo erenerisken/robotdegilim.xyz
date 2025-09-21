@@ -69,9 +69,7 @@ def extract_courses(
                         course_names[course_code] = course_name
 
 
-def extract_sections(
-    session: requests.Session, soup: BeautifulSoup, sections: Dict[str, Dict]
-) -> None:
+def extract_sections(soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
     try:
         form = soup.find("form")
         if not form:
@@ -116,7 +114,7 @@ def extract_sections(
 
             section_code = info_cells[0].find("input").get("value")
             section_instructors = [info_cells[1].get_text(), info_cells[2].get_text()]
-            response = get_section(session, section_code)
+            response = get_section(section_code)
 
             section_soup = BeautifulSoup(response.text, "html.parser")
             section_constraints: List[Dict[str, str]] = []

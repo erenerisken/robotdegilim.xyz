@@ -6,25 +6,14 @@ from flask_cors import CORS
 import logging
 import os
 from werkzeug.exceptions import HTTPException
+
 from src.errors import AppError
-
 from src.utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
-from pathlib import Path
-
-# Load backend/.env early in dev so env vars are available before importing app_constants
-try:
-    from dotenv import load_dotenv
-
-    # Ensure we load the .env located under backend/.env regardless of CWD
-    load_dotenv(Path(__file__).resolve().parents[1] / ".env")
-except Exception:
-    pass
 from src.config import app_constants
 from src.scrape.scrape import run_scrape
 from src.musts.musts import run_musts
 from src.nte.nte import run_nte
 from src.utils.emailer import get_email_handler
-from src.utils.s3 import get_s3_client
 from src.services.status_service import get_status, set_status, init_status, set_busy, set_idle
 from src.utils.logging import JsonFormatter
 from src.utils.timing import set_speed_mode, get_speed_mode
@@ -123,8 +112,7 @@ if app_constants.log_json:
 
 # Initialize status defaults in S3 at startup
 try:
-    s3 = get_s3_client()
-    init_status(s3)
+    init_status()
 except Exception as e:
     app_logger.warning(f"Could not initialize status in S3, error: {str(e)}")
 
@@ -206,18 +194,17 @@ def index():
 
 class RunScrape(Resource):
     def get(self):
-        s3 = get_s3_client()
         # Reject if already busy
-        current = get_status(s3)
+        current = get_status()
         if current.get("status") == "busy":
             return {"status": "System is busy", "code": "BUSY"}, 503
         try:
             # Mark busy early
-            set_busy(s3)
+            set_busy()
             # Run scrape (now purely functional w.r.t busy state)
             run_scrape()
             # Mark departments ready
-            st = set_status(s3, depts_ready=True)
+            st = set_status(depts_ready=True)
 
             # Run NTE processing after successful scrape
             try:
@@ -231,7 +218,7 @@ class RunScrape(Resource):
                 _logger.info("musts run was queued; running after scrape completion (same busy window)")
                 try:
                     run_musts()  # already busy from earlier
-                    set_status(s3, queued_musts=False)
+                    set_status(queued_musts=False)
                     return {"status": "Scraping and NTE completed; musts completed successfully"}, 200
                 except Exception as e:
                     _logger.error(f"queued musts run failed, error: {str(e)}")
@@ -243,19 +230,18 @@ class RunScrape(Resource):
         finally:
             try:
                 # Always attempt to mark idle unless another request changed state
-                set_idle(s3)
+                set_idle()
             except Exception as e:
                 _logger.error(f"failed to set idle after scrape, error: {str(e)}")
 
 
 class RunMusts(Resource):
     def get(self):
-        s3 = get_s3_client()
-        st = get_status(s3)
+        st = get_status()
         # If departments data is not ready yet, queue and exit
         if not st.get("depts_ready"):
             if not st.get("queued_musts"):
-                set_status(s3, queued_musts=True)
+                set_status(queued_musts=True)
                 return {
                     "status": "Departments data unavailable; musts queued to run after scrape",
                     "code": "QUEUED",
@@ -268,7 +254,7 @@ class RunMusts(Resource):
         # If system currently busy (e.g., scrape in progress), queue
         if st.get("status") == "busy":
             if not st.get("queued_musts"):
-                set_status(s3, queued_musts=True)
+                set_status(queued_musts=True)
                 return {
                     "status": "System busy; musts queued to run after scrape",
                     "code": "QUEUED",
@@ -276,14 +262,14 @@ class RunMusts(Resource):
             return {"status": "System busy; musts already queued", "code": "QUEUED"}, 202
 
         try:
-            set_busy(s3)
+            set_busy()
             run_musts()
-            set_status(s3, queued_musts=False)
+            set_status(queued_musts=False)
             return {"status": "Get musts completed successfully", "code": "OK"}, 200
         except Exception as e:
             _logger.error(str(e))
             if app_constants.noDeptsErrMsg in str(e):
-                set_status(s3, depts_ready=False, queued_musts=True)
+                set_status(depts_ready=False, queued_musts=True)
                 _logger.info("departments data missing; queued musts until after scrape")
                 return {
                     "status": "Departments data missing; musts queued to run after next scrape",
@@ -292,7 +278,7 @@ class RunMusts(Resource):
             return {"error": "Error running get musts process", "code": "ERROR"}, 500
         finally:
             try:
-                set_idle(s3)
+                set_idle()
             except Exception as ie:
                 _logger.error(f"failed to set idle after musts, error: {str(ie)}")
 
@@ -306,8 +292,7 @@ api.add_resource(RunMusts, "/run-musts")
 def status():
     """Report backend readiness and S3 status.json busy/idle state."""
     try:
-        s3 = get_s3_client()
-        st = get_status(s3)
+        st = get_status()
         return {
             "status": st.get("status"),
             "queued_musts": st.get("queued_musts"),

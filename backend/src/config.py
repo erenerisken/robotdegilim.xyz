@@ -1,10 +1,15 @@
 import os
 from pathlib import Path
-
+from dotenv import load_dotenv
 import pytz
 
-
 class app_constants:
+    backend_dir = Path(__file__).resolve().parents[1]  # backend/
+    try:
+        load_dotenv(backend_dir / ".env")
+    except Exception:
+        pass
+
     # Email configuration
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")  # Replace with your email
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")  # Replace with your email password
@@ -35,7 +40,6 @@ class app_constants:
     log_utils = "robotdegilim.utils"
 
     # Directories
-    backend_dir = Path(__file__).resolve().parents[1]  # backend/
     log_dir = backend_dir / "storage" / "logs"
     data_dir = backend_dir / "storage" / "data"
 

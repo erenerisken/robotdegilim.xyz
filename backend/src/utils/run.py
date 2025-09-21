@@ -10,16 +10,16 @@ logger = logging.getLogger(app_constants.log_app)
 
 
 @contextmanager
-def busy_idle(s3_client: boto3.client):
+def busy_idle():
     """Context manager that marks system busy on enter and idle on exit.
 
     Ensures idle even if an exception bubbles out.
     """
     try:
-        set_busy(s3_client)
+        set_busy()
         yield
     finally:
         try:
-            set_idle(s3_client)
+            set_idle()
         except Exception as e:
             logger.error(f"failed to set idle, error: {str(e)}")

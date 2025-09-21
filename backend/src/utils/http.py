@@ -56,7 +56,6 @@ def reset_http_session():
 
 # Centralized request wrappers
 def request(
-    session: requests.Session,
     method: str,
     url: str,
     *,
@@ -74,6 +73,7 @@ def request(
     Raises RecoverError after exhausting retries.
     """
     last_exc: Optional[Exception] = None
+    session = get_http_session()
     for attempt in range(tries):
         try:
             throttle_before_request(base_delay)
@@ -107,7 +107,6 @@ def request(
 
 
 def get(
-    session: requests.Session,
     url: str,
     *,
     tries: int = app_constants.global_retries,
@@ -115,11 +114,10 @@ def get(
     name: Optional[str] = None,
     **kwargs,
 ) -> requests.Response:
-    return request(session, "GET", url, tries=tries, base_delay=base_delay, name=name, **kwargs)
+    return request("GET", url, tries=tries, base_delay=base_delay, name=name, **kwargs)
 
 
 def post(
-    session: requests.Session,
     url: str,
     *,
     data: Optional[dict] = None,
@@ -129,5 +127,5 @@ def post(
     **kwargs,
 ) -> requests.Response:
     return request(
-        session, "POST", url, data=data, tries=tries, base_delay=base_delay, name=name, **kwargs
+        "POST", url, data=data, tries=tries, base_delay=base_delay, name=name, **kwargs
     )

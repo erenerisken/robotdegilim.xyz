@@ -5,8 +5,7 @@ from typing import Dict, List, Any, Optional
 
 from src.config import app_constants
 from src.nte.io import load_data, load_departments, load_nte_list, write_nte_available
-from src.utils.s3 import get_s3_client, upload_to_s3
-from src.utils.run import busy_idle
+from src.utils.s3 import upload_to_s3
 from src.errors import RecoverError
 
 logger = logging.getLogger(app_constants.log_nte)
@@ -171,8 +170,7 @@ def run_nte():
         output_path = write_nte_available(output)
         
         # Upload to S3
-        s3_client = get_s3_client()
-        upload_to_s3(s3_client, str(output_path), app_constants.nte_available_json)
+        upload_to_s3(str(output_path), app_constants.nte_available_json)
         
         logger.info(f"NTE processing completed successfully. Matched: {matched}, Missed: {missed}")
         

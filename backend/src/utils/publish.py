@@ -6,7 +6,6 @@ from src.utils.s3 import upload_to_s3
 
 
 def publish_files(
-    s3_client: boto3.client,
     files: Iterable[Tuple[str, str]],
     last_updated: Tuple[str, str],
     *,
@@ -19,9 +18,9 @@ def publish_files(
     """
     # Upload all files except lastUpdated
     for path, key in files:
-        upload_to_s3(s3_client, path, key)
+        upload_to_s3(path, key)
         logger.info(f"uploaded {key}")
     # Upload the publish signal last
     lu_path, lu_key = last_updated
-    upload_to_s3(s3_client, lu_path, lu_key)
+    upload_to_s3(lu_path, lu_key)
     logger.info(f"uploaded {lu_key} (publish signal)")

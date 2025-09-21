@@ -4,7 +4,7 @@ import boto3
 
 from src.config import app_constants
 from src.errors import RecoverError
-from src.utils.s3 import upload_to_s3
+from src.utils.s3 import get_s3_client, upload_to_s3
 
 
 def write_status(status: Dict[str, str]) -> str:
@@ -20,25 +20,26 @@ def write_status(status: Dict[str, str]) -> str:
         raise RecoverError(f"Failed to export status, error: {str(e)}") from e
 
 
-def set_busy(s3_client: boto3.client) -> str:
+def set_busy() -> str:
     # Preserve existing flags if possible
-    current = get_status(s3_client)
+    current = get_status()
     current["status"] = "busy"
     path = write_status(current)
-    upload_to_s3(s3_client, path, app_constants.status_json)
+    upload_to_s3(path, app_constants.status_json)
     return path
 
 
-def set_idle(s3_client: boto3.client) -> str:
-    current = get_status(s3_client)
+def set_idle() -> str:
+    current = get_status()
     current["status"] = "idle"
     path = write_status(current)
-    upload_to_s3(s3_client, path, app_constants.status_json)
+    upload_to_s3(path, app_constants.status_json)
     return path
 
 
-def get_status(s3_client: boto3.client) -> Dict[str, Any]:
+def get_status() -> Dict[str, Any]:
     try:
+        s3_client = get_s3_client()
         obj = s3_client.get_object(
             Bucket=app_constants.s3_bucket_name, Key=app_constants.status_json
         )
@@ -53,15 +54,15 @@ def get_status(s3_client: boto3.client) -> Dict[str, Any]:
     return parsed
 
 
-def set_status(s3_client: boto3.client, **kwargs) -> Dict[str, Any]:
-    current = get_status(s3_client)
+def set_status(**kwargs) -> Dict[str, Any]:
+    current = get_status()
     current.update(kwargs)
     path = write_status(current)
-    upload_to_s3(s3_client, path, app_constants.status_json)
+    upload_to_s3(path, app_constants.status_json)
     return current
 
 
-def detect_depts_ready(s3_client: boto3.client) -> bool:
+def detect_depts_ready() -> bool:
     """Return True if departments data is available.
 
     Preference order:
@@ -82,6 +83,7 @@ def detect_depts_ready(s3_client: boto3.client) -> bool:
 
     # Fallback to S3 presence
     try:
+        s3_client = get_s3_client()
         s3_client.head_object(
             Bucket=app_constants.s3_bucket_name, Key=app_constants.departments_json
         )
@@ -90,7 +92,7 @@ def detect_depts_ready(s3_client: boto3.client) -> bool:
         return False
 
 
-def init_status(s3_client: boto3.client) -> dict:
+def init_status() -> dict:
     """Initialize status in S3 to safe defaults at startup.
 
     Defaults:
@@ -99,8 +101,7 @@ def init_status(s3_client: boto3.client) -> dict:
     - depts_ready: detected from presence of departments file
     """
     return set_status(
-        s3_client,
         status="idle",
         queued_musts=False,
-        depts_ready=detect_depts_ready(s3_client),
+        depts_ready=detect_depts_ready(),
     )

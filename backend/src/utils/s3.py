@@ -52,10 +52,11 @@ def reset_s3_client():
     _S3_CLIENT = None
 
 
-def upload_to_s3(s3_client: boto3.client, file_path: str, s3_key: str, retries: int = 5):
+def upload_to_s3(file_path: str, s3_key: str, retries: int = 5):
     """Uploads a file to the S3 bucket and makes it public, with retries."""
     attempt = 0
     last_error = None
+    s3_client = get_s3_client()
     while attempt <= retries:
         try:
             s3_client.upload_file(
@@ -77,9 +78,10 @@ def upload_to_s3(s3_client: boto3.client, file_path: str, s3_key: str, retries: 
     )
 
 
-def is_idle(s3_client: boto3.client) -> bool:
+def is_idle() -> bool:
     """Fetches status.json from S3 and checks if the backend is idle."""
     try:
+        s3_client = get_s3_client()
         response = s3_client.get_object(
             Bucket=app_constants.s3_bucket_name, Key=app_constants.status_json
         )
