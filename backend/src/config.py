@@ -1,11 +1,11 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 import pytz
 
 class app_constants:
     backend_dir = Path(__file__).resolve().parents[1]  # backend/
     try:
+        from dotenv import load_dotenv
         load_dotenv(backend_dir / ".env")
     except Exception:
         pass
