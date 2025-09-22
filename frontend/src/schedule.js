@@ -175,15 +175,21 @@ function recursive_computation(courses, dontFills, depth, scenario, scenarios, c
     for(var i = 0 ; i < courses[depth].sections.length ; i++) {
         var collision = false;
         for(var j = 0 ; j < scenario.length ; j++) {
+            // Only check collision if BOTH courses have checkCollision enabled
             if(courses[depth].checkCollision === true && scenario[j].collision === true
                 && check_collision(courses[depth].sections[i], scenario[j].section) === true) {
                 collision = true;
+                break; // No need to check further once collision is found
             }
         }
-        for(var k = 0 ; k < dontFills.length ; k++) {
-            if(check_collision_df(courses[depth].sections[i], dontFills[k]) === true) {
-                collision = true;
-            }  
+        // Only check collision with dontFills if the course has checkCollision enabled
+        if(courses[depth].checkCollision === true) {
+            for(var k = 0 ; k < dontFills.length ; k++) {
+                if(check_collision_df(courses[depth].sections[i], dontFills[k]) === true) {
+                    collision = true;
+                    break; // No need to check further once collision is found
+                }  
+            }
         }
         if(collision === false) {
             scenario.push({
