@@ -13,6 +13,7 @@ from src.config import app_constants
 from src.scrape.scrape import run_scrape
 from src.musts.musts import run_musts
 from src.nte.nte import run_nte
+from src.nte.scrape import run_nte_list_scrape
 from src.utils.emailer import get_email_handler
 from src.services.status_service import get_status, set_status, init_status, set_busy, set_idle
 from src.utils.logging import JsonFormatter
@@ -206,11 +207,12 @@ class RunScrape(Resource):
             # Mark departments ready
             st = set_status(depts_ready=True)
 
-            # Run NTE processing after successful scrape
+            # Run NTE list scraping and processing after successful scrape
             try:
+                run_nte_list_scrape()
                 run_nte()
             except Exception as e:
-                _logger.error(f"NTE processing failed, error: {str(e)}")
+                _logger.error(f"NTE scraping/processing failed, error: {str(e)}")
                 # Do not fail the whole scrape if NTE fails
 
             # If a musts run was queued during busy period, run it now
@@ -329,9 +331,9 @@ def speed():
     # GET
     return get_speed_mode(), 200
 
-
 # For local debugging, uncomment the below lines
-"""
+
 if __name__ == "__main__":
     app.run(host="localhost", port=8000)
-"""
+
+
