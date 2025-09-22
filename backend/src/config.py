@@ -81,6 +81,10 @@ class app_constants:
     department_catalog_url = "http://catalog.metu.edu.tr/program.php?fac_prog={dept_code}"
     oibs64_url = "https://oibs2.metu.edu.tr/View_Program_Course_Details_64/main.php"
 
+    # NTE scraping
+    nte_base_url = "https://muhfd.metu.edu.tr"
+    nte_courses_url = "https://muhfd.metu.edu.tr/en/nte-courses"
+
     days_dict = {
         "Monday": 0,
         "Tuesday": 1,
