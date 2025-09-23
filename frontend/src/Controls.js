@@ -459,12 +459,23 @@ export const Controls = (props) => {
     setNteDialogOpen(false);
   };
 
-  const handleAddNTECourse = (nteCourse) => {
-    // NTE dersleri için özel handler - sadece seçilen şube aktif olsun
+  const handleAddNTECourse = (nteCourse, selectedSectionIndex = 0) => {
+    // NTE dersleri için özel handler
     const newSelected = [...selectedCourses];
+    let sectionsArray;
+    
+    if (selectedSectionIndex === -1) {
+      // Tüm section'ları aktif et
+      sectionsArray = new Array(nteCourse.sections.length).fill(true);
+    } else {
+      // Tüm section'lar için false array oluştur, sadece seçilen index'i true yap
+      sectionsArray = new Array(nteCourse.sections.length).fill(false);
+      sectionsArray[selectedSectionIndex] = true;
+    }
+    
     newSelected.push({
       code: nteCourse.code,
-      sections: [true], // NTE'de sadece 1 şube var ve o aktif
+      sections: sectionsArray,
       color: colorset.getNextColor(),
       settings: {
         checkSurname: true,

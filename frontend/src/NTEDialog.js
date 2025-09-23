@@ -8,18 +8,81 @@ import {
     List,
     ListItem,
     ListItemText,
-
     IconButton,
     Typography,
     Chip,
     Box,
     Divider,
-    CircularProgress
+    CircularProgress,
+    Card,
+    CardContent,
+    ButtonGroup,
+    Grid
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
+import SchoolIcon from '@material-ui/icons/School';
+import LibraryAddIcon from '@material-ui/icons/LibraryAdd';
+import { withStyles } from '@material-ui/core/styles';
 import { getNTECourses, filterAvailableNTEs } from './data/Course';
+
+// Styled Components
+const StyledDialog = withStyles((theme) => ({
+  paper: {
+    borderRadius: '16px',
+    maxHeight: '90vh',
+  },
+}))(Dialog);
+
+const CourseCard = withStyles((theme) => ({
+  root: {
+    borderRadius: '12px',
+    marginBottom: theme.spacing(2),
+    border: '1px solid #e5e7eb',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+      transform: 'translateY(-1px)',
+    },
+  },
+}))(Card);
+
+const SectionChip = withStyles((theme) => ({
+  root: {
+    margin: theme.spacing(0.5, 0.5, 0.5, 0),
+    borderRadius: '6px',
+  },
+}))(Chip);
+
+const ModernButton = withStyles((theme) => ({
+  root: {
+    borderRadius: '8px',
+    fontWeight: 600,
+    textTransform: 'none',
+    padding: theme.spacing(1, 2),
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    '&:hover': {
+      transform: 'translateY(-1px)',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+    },
+    transition: 'all 0.2s ease',
+    margin: theme.spacing(0.5),
+  },
+}))(Button);
+
+const HeaderBox = withStyles((theme) => ({
+  root: {
+    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+    color: 'white',
+    padding: theme.spacing(2, 3, 3, 3), // top, right, bottom, left
+    borderRadius: '16px 16px 0 0',
+    margin: '-24px 0 24px 0',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+}))(Box);
 
 const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
     const [nteData, setNteData] = useState([]);
@@ -57,36 +120,48 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
     const handleAddNTE = (nteCourse, section) => {
         // NTE'yi mevcut ders formatına dönüştür
         const convertedCourse = convertNTEToCourse(nteCourse, section);
-        onAddCourse(convertedCourse);
+        // Seçilen section'ın index'ini bul
+        const selectedSectionIndex = nteCourse.sections.findIndex(s => s.section_id === section.section_id);
+        onAddCourse(convertedCourse, selectedSectionIndex);
+    };
+
+    const handleAddAllSections = (nteCourse) => {
+        // Tüm section'ları aktif olarak ekle
+        const convertedCourse = convertNTEToCourse(nteCourse, nteCourse.sections[0]);
+        // Tüm section'ları seçili olarak işaretle (-1 = all sections)
+        onAddCourse(convertedCourse, -1);
     };
 
     const convertNTEToCourse = (nteCourse, selectedSection) => {
+        // Tüm available section'ları derse ekle, sadece seçilen section'ı toggle=true yap
+        const allSections = nteCourse.sections.map(section => ({
+            instructor: section.instructors.join(', '),
+            sectionNumber: section.section_id,
+            criteria: [{
+                dept: "ALL",
+                surnameStart: "AA",
+                surnameEnd: "ZZ"
+            }],
+            minYear: 0,
+            maxYear: 0,
+            lectureTimes: section.times
+                .filter(time => time.day !== "No Timestamp Added Yet" && time.start && time.end)
+                .map(time => ({
+                    classroom: time.room || "TBA",
+                    day: getDayNumber(time.day),
+                    startHour: parseInt(time.start.split(':')[0]),
+                    startMin: parseInt(time.start.split(':')[1]),
+                    endHour: parseInt(time.end.split(':')[0]),
+                    endMin: parseInt(time.end.split(':')[1])
+                }))
+        }));
+
         return {
             code: nteCourse.code.numeric,
             abbreviation: nteCourse.code.departmental,
             name: nteCourse.name.split(' - ')[1] || nteCourse.name,
             category: 0, // NTE kategorisi
-            sections: [{
-                instructor: selectedSection.instructors.join(', '),
-                sectionNumber: selectedSection.section_id,
-                criteria: [{
-                    dept: "ALL",
-                    surnameStart: "AA",
-                    surnameEnd: "ZZ"
-                }],
-                minYear: 0,
-                maxYear: 0,
-                lectureTimes: selectedSection.times
-                    .filter(time => time.day !== "No Timestamp Added Yet" && time.start && time.end)
-                    .map(time => ({
-                        classroom: time.room || "TBA",
-                        day: getDayNumber(time.day),
-                        startHour: parseInt(time.start.split(':')[0]),
-                        startMin: parseInt(time.start.split(':')[1]),
-                        endHour: parseInt(time.end.split(':')[0]),
-                        endMin: parseInt(time.end.split(':')[1])
-                    }))
-            }]
+            sections: allSections
         };
     };
 
@@ -116,100 +191,138 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6">
-                        Available NTE Courses
-                    </Typography>
-                    <IconButton onClick={onClose} size="small">
-                        <CloseIcon />
-                    </IconButton>
-                </Box>
-            </DialogTitle>
-            
-            <DialogContent>
-                {loading ? (
-                    <Box display="flex" justifyContent="center" p={3}>
-                        <CircularProgress />
+        <StyledDialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+            <DialogContent style={{ padding: 0 }}>
+                <HeaderBox>
+                    <Box display="flex" justifyContent="center" alignItems="center" style={{ paddingTop: '16px' }}>
+                        <Box display="flex" alignItems="center" gap={2}>
+                            <SchoolIcon fontSize="large" />
+                            <Box textAlign="center">
+                                <Typography variant="h5" style={{ fontWeight: 600, marginBottom: '8px' }}>
+                                    Available NTE Courses
+                                </Typography>
+                                <Typography variant="body2" style={{ opacity: 0.9 }}>
+                                    Non-Technical Electives for your schedule
+                                </Typography>
+                            </Box>
+                        </Box>
                     </Box>
-                ) : error ? (
-                    <Alert severity="error">{error}</Alert>
-                ) : (
-                    <>
-                        <Typography variant="body2" color="textSecondary" gutterBottom>
-                            Found {availableNTEs.length} NTE courses that fit your current schedule.
-                        </Typography>
-                        
-                        {availableNTEs.length === 0 ? (
-                            <Alert severity="info">
-                                No NTE courses available for your current schedule. 
-                                Create free time slots in your program or modify existing courses.
-                            </Alert>
-                        ) : (
-                            <List>
-                                {availableNTEs.map((course, index) => (
-                                    <React.Fragment key={`${course.code.numeric}-${index}`}>
-                                        <ListItem>
-                                            <ListItemText
-                                                primary={
-                                                    <Box>
-                                                        <Typography variant="subtitle1" component="div">
-                                                            <strong>{course.code.departmental}</strong> - {course.name.split(' - ')[1] || course.name}
-                                                        </Typography>
-                                                        <Chip 
-                                                            label={`${course.credits} Credits`} 
-                                                            size="small" 
-                                                            color="primary"
-                                                            style={{ marginTop: 4 }}
-                                                        />
+                </HeaderBox>
+
+                <Box p={3}>
+                    {loading ? (
+                        <Box display="flex" justifyContent="center" p={3}>
+                            <CircularProgress size={60} />
+                        </Box>
+                    ) : error ? (
+                        <Alert severity="error">{error}</Alert>
+                    ) : (
+                        <>
+                            <Typography variant="body1" color="textSecondary" gutterBottom style={{ marginBottom: 24 }}>
+                                Found <strong>{availableNTEs.length}</strong> NTE courses that fit your current schedule.
+                            </Typography>
+                            
+                            {availableNTEs.length === 0 ? (
+                                <Alert severity="info" style={{ borderRadius: '12px' }}>
+                                    No NTE courses available for your current schedule. 
+                                    Create free time slots in your program or modify existing courses.
+                                </Alert>
+                            ) : (
+                                <Grid container spacing={2}>
+                                    {availableNTEs.map((course, index) => (
+                                        <Grid item xs={12} key={`${course.code.numeric}-${index}`}>
+                                            <CourseCard>
+                                                <CardContent>
+                                                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                                                        <Box>
+                                                            <Typography variant="h6" style={{ fontWeight: 600, marginBottom: 8 }}>
+                                                                {course.code.departmental}
+                                                            </Typography>
+                                                            <Typography variant="body1" color="textSecondary" style={{ marginBottom: 8 }}>
+                                                                {course.name.split(' - ')[1] || course.name}
+                                                            </Typography>
+                                                            <SectionChip 
+                                                                label={`${course.credits} Credits`} 
+                                                                size="small" 
+                                                                color="primary"
+                                                                variant="outlined"
+                                                            />
+                                                        </Box>
+                                                        <Box display="flex" gap={1}>
+                                                            <ModernButton
+                                                                variant="contained"
+                                                                color="primary"
+                                                                startIcon={<LibraryAddIcon />}
+                                                                onClick={() => handleAddAllSections(course)}
+                                                            >
+                                                                Add All Sections
+                                                            </ModernButton>
+                                                        </Box>
                                                     </Box>
-                                                }
-                                                secondary={
-                                                    <Box mt={1}>
+                                                    
+                                                    <Divider style={{ margin: '16px 0' }} />
+                                                    
+                                                    <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: 12 }}>
+                                                        Available Sections:
+                                                    </Typography>
+                                                    
+                                                    <Grid container spacing={2}>
                                                         {course.sections.map((section, sectionIndex) => (
-                                                                <Box key={sectionIndex} mb={1}>
-                                                                    <Typography variant="body2" color="textSecondary">
-                                                                        <strong>Section {section.section_id}:</strong> {section.instructors.join(', ')}
+                                                            <Grid item xs={12} sm={6} md={4} key={sectionIndex}>
+                                                                <Box 
+                                                                    p={2} 
+                                                                    border="1px solid #e5e7eb" 
+                                                                    borderRadius="8px"
+                                                                    bgcolor="#f9fafb"
+                                                                >
+                                                                    <Typography variant="body2" style={{ fontWeight: 600, marginBottom: 4 }}>
+                                                                        Section {section.section_id}
                                                                     </Typography>
+                                                                    <Typography variant="caption" color="textSecondary" display="block" style={{ marginBottom: 8 }}>
+                                                                        {section.instructors.join(', ') || 'Instructor TBA'}
+                                                                    </Typography>
+                                                                    
                                                                     {section.times.map((time, timeIndex) => (
                                                                         time.day !== "No Timestamp Added Yet" && (
-                                                                            <Typography key={timeIndex} variant="caption" display="block">
-                                                                                {formatDay(time.day)} {formatTime(time)} - {time.room || "Room not specified"}
+                                                                            <Typography key={timeIndex} variant="caption" display="block" style={{ marginBottom: 2 }}>
+                                                                                <strong>{formatDay(time.day)}</strong> {formatTime(time)}
+                                                                                <br />
+                                                                                📍 {time.room || "Room TBA"}
                                                                             </Typography>
                                                                         )
                                                                     ))}
-                                                                    <Button
+                                                                    
+                                                                    <ModernButton
                                                                         size="small"
-                                                                        className="pretty-button small"
+                                                                        variant="outlined"
                                                                         startIcon={<AddIcon />}
                                                                         onClick={() => handleAddNTE(course, section)}
-                                                                        style={{ marginTop: 4 }}
+                                                                        fullWidth
+                                                                        style={{ marginTop: 8 }}
                                                                     >
-                                                                        Add Section {section.section_id}
-                                                                    </Button>
+                                                                        Add Section
+                                                                    </ModernButton>
                                                                 </Box>
-                                                            ))
-                                                        }
-                                                    </Box>
-                                                }
-                                            />
-                                        </ListItem>
-                                        {index < availableNTEs.length - 1 && <Divider />}
-                                    </React.Fragment>
-                                ))}
-                            </List>
-                        )}
-                    </>
-                )}
+                                                            </Grid>
+                                                        ))}
+                                                    </Grid>
+                                                </CardContent>
+                                            </CourseCard>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            )}
+                        </>
+                    )}
+                </Box>
             </DialogContent>
             
-            <DialogActions>
-                <Button onClick={onClose} color="primary" className="pretty-button pretty-primary">
+            <DialogActions style={{ padding: '16px 24px' }}>
+                <ModernButton onClick={onClose} variant="outlined" color="primary">
                     Close
-                </Button>
+                </ModernButton>
             </DialogActions>
-        </Dialog>
+        </StyledDialog>
     );
 };
 

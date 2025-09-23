@@ -17,6 +17,7 @@ export const DontFillBlock = ({ data }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [containerRef, setContainerRef] = useState(null);
   const [isCompact, setIsCompact] = useState(true); // Start with compact as default
+  const [showControls, setShowControls] = useState(false); // Show buttons only when active
   const dispatch = useDispatch();
 
   const colorset = new Colorset();
@@ -25,6 +26,7 @@ export const DontFillBlock = ({ data }) => {
 
   const handleOpenColorPalette = (event) => {
     setAnchorEl(event.currentTarget);
+    setShowControls(true);
   };
 
   const handleColorSelect = (color) => {
@@ -60,6 +62,7 @@ export const DontFillBlock = ({ data }) => {
   const handleStartEditing = () => {
     setLocalTitle(data.title); // Initialize local state with current value
     setEditing(true);
+    setShowControls(true);
   };
 
   const handleStopEditing = () => {
@@ -103,20 +106,40 @@ export const DontFillBlock = ({ data }) => {
     }
   }, [containerRef, editing]); // Add editing to dependencies
 
+  // Hide controls when clicking outside the block (unless palette open or editing)
+  React.useEffect(() => {
+    if (!containerRef) return;
+    const handleDocumentMouseDown = (e) => {
+      if (
+        containerRef &&
+        !containerRef.contains(e.target) &&
+        !open &&
+        !editing
+      ) {
+        setShowControls(false);
+      }
+    };
+    document.addEventListener("mousedown", handleDocumentMouseDown);
+    return () => document.removeEventListener("mousedown", handleDocumentMouseDown);
+  }, [containerRef, open, editing]);
+
   return (
     <div 
       ref={setContainerRef}
       className={`program-text-container-df ${isCompact ? 'compact-layout' : 'expanded-layout'}`}
+      onClick={() => setShowControls(true)}
     >
       {isCompact ? (
         // Compact single-row layout for small cells
         <div className="df-single-row">
-          <IconButton 
-            className="df-control-button df-delete-button compact"
-            onClick={handleDeleteDontFill}
-          >
-            <CloseIcon style={{ color: '#ffffff' }} />
-          </IconButton>
+          {showControls && (
+            <IconButton 
+              className="df-control-button df-delete-button compact"
+              onClick={handleDeleteDontFill}
+            >
+              <CloseIcon style={{ color: '#ffffff' }} />
+            </IconButton>
+          )}
           {editing ? (
             <TextField
               value={localTitle}
@@ -141,29 +164,9 @@ export const DontFillBlock = ({ data }) => {
               {data.title}
             </div>
           )}
-          <IconButton
-            className="df-control-button df-palette-button compact"
-            id="palette-button"
-            aria-controls={open ? "palette-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? "true" : undefined}
-            onClick={handleOpenColorPalette}
-          >
-            <PaletteIcon style={{ color: '#ffffff' }} />
-          </IconButton>
-        </div>
-      ) : (
-        // Expanded two-row layout for larger cells
-        <>
-          <div className="df-controls-row">
-            <IconButton 
-              className="df-control-button df-delete-button"
-              onClick={handleDeleteDontFill}
-            >
-              <CloseIcon style={{ color: '#ffffff' }} />
-            </IconButton>
+          {showControls && (
             <IconButton
-              className="df-control-button df-palette-button"
+              className="df-control-button df-palette-button compact"
               id="palette-button"
               aria-controls={open ? "palette-menu" : undefined}
               aria-haspopup="true"
@@ -172,7 +175,31 @@ export const DontFillBlock = ({ data }) => {
             >
               <PaletteIcon style={{ color: '#ffffff' }} />
             </IconButton>
-          </div>
+          )}
+        </div>
+      ) : (
+        // Expanded two-row layout for larger cells
+        <>
+          {showControls && (
+            <div className="df-controls-row">
+              <IconButton 
+                className="df-control-button df-delete-button"
+                onClick={handleDeleteDontFill}
+              >
+                <CloseIcon style={{ color: '#ffffff' }} />
+              </IconButton>
+              <IconButton
+                className="df-control-button df-palette-button"
+                id="palette-button"
+                aria-controls={open ? "palette-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+                onClick={handleOpenColorPalette}
+              >
+                <PaletteIcon style={{ color: '#ffffff' }} />
+              </IconButton>
+            </div>
+          )}
           <div className="df-title-row">
             {editing ? (
               <TextField
