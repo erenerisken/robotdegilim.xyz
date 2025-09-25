@@ -183,6 +183,7 @@ export const CourseCard = ({
   onSettingsChange,
   onColorChange,
   onDelete,
+  onClassroomUpdate,
   settings,
 }) => {
   const [selectedSections, setSelectedSections] = useState(sections.slice(0));
@@ -198,6 +199,12 @@ export const CourseCard = ({
 
   const handleColorChange = (color) => {
     onColorChange(color);
+  };
+
+  const handleClassroomUpdate = (sectionIndex, lectureTimeIndex, newClassroom) => {
+    if (onClassroomUpdate) {
+      onClassroomUpdate(sectionIndex, lectureTimeIndex, newClassroom);
+    }
   };
 
   const toggleSections = () => {
@@ -340,6 +347,9 @@ export const CourseCard = ({
                       sectionNo={i + 1}
                       sectionDetails={section}
                       color={color}
+                      onClassroomUpdate={(lectureTimeIndex, newClassroom) =>
+                        handleClassroomUpdate(i, lectureTimeIndex, newClassroom)
+                      }
                     />
                   ))}
                 </div>
