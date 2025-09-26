@@ -125,7 +125,24 @@ export const Controls = (props) => {
   };
 
   const loadRestoredData = () => {
-    setSelectedCourses(restoredCourses);
+    // Apply manual classrooms to course data
+    const coursesToRestore = restoredCourses.map(course => {
+      if (course && course.manualClassrooms) {
+        const originalCourse = getCourseByCode(course.code);
+        if (originalCourse) {
+          // Apply manual classroom overrides
+          Object.keys(course.manualClassrooms).forEach(key => {
+            const [sectionIndex, lectureTimeIndex] = key.split('-').map(Number);
+            if (originalCourse.sections[sectionIndex] && originalCourse.sections[sectionIndex].lectureTimes[lectureTimeIndex]) {
+              originalCourse.sections[sectionIndex].lectureTimes[lectureTimeIndex].classroom = course.manualClassrooms[key];
+            }
+          });
+        }
+      }
+      return course;
+    });
+    
+    setSelectedCourses(coursesToRestore);
     setSettings(restoredSettings);
     setSurname(restoredInfo.surname);
     setSemester(restoredInfo.semester);
@@ -234,6 +251,7 @@ export const Controls = (props) => {
             checkCollision: true,
             disableCourse: false,
           },
+          manualClassrooms: {},
         })
       );
       setSelectedCourses(newSelected);
@@ -250,6 +268,32 @@ export const Controls = (props) => {
     const newSelected = [...selectedCourses];
     newSelected[i].color = c;
     setSelectedCourses(newSelected);
+  };
+
+  const handleClassroomUpdate = (courseIndex, sectionIndex, lectureTimeIndex, newClassroom) => {
+    const newSelected = [...selectedCourses];
+    const courseCode = newSelected[courseIndex].code;
+    
+    // Initialize manual classrooms if not exists
+    if (!newSelected[courseIndex].manualClassrooms) {
+      newSelected[courseIndex].manualClassrooms = {};
+    }
+    
+    // Store the manual classroom override
+    const key = `${sectionIndex}-${lectureTimeIndex}`;
+    newSelected[courseIndex].manualClassrooms[key] = newClassroom;
+    
+    setSelectedCourses(newSelected);
+    
+    // Update the actual course data in allCourses
+    setAllCourses(prevCourses => {
+      const updatedCourses = [...prevCourses];
+      const courseToUpdate = updatedCourses.find(c => c.code === courseCode);
+      if (courseToUpdate && courseToUpdate.sections[sectionIndex] && courseToUpdate.sections[sectionIndex].lectureTimes[lectureTimeIndex]) {
+        courseToUpdate.sections[sectionIndex].lectureTimes[lectureTimeIndex].classroom = newClassroom;
+      }
+      return updatedCourses;
+    });
   };
 
   const handleChangeSettings = (s) => {
@@ -483,6 +527,7 @@ export const Controls = (props) => {
         checkCollision: true,
         disableCourse: false,
       },
+      manualClassrooms: {},
     });
     setSelectedCourses(newSelected);
     setNteDialogOpen(false);
@@ -691,6 +736,9 @@ export const Controls = (props) => {
               sections={c.sections}
               onSettingsChange={(s) => handleCourseSettings(i, s)}
               onColorChange={(col) => handleCourseColor(i, col)}
+              onClassroomUpdate={(sectionIndex, lectureTimeIndex, newClassroom) =>
+                handleClassroomUpdate(i, sectionIndex, lectureTimeIndex, newClassroom)
+              }
             />
           ) : null
         )}
