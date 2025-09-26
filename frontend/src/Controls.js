@@ -125,28 +125,32 @@ export const Controls = (props) => {
   };
 
   const loadRestoredData = () => {
-    // Apply manual classrooms to course data
-    const coursesToRestore = restoredCourses.map(course => {
-      if (course && course.manualClassrooms) {
-        const originalCourse = getCourseByCode(course.code);
-        if (originalCourse) {
-          // Apply manual classroom overrides
+    try {
+      // First set the courses without applying manual classrooms
+      setSelectedCourses(restoredCourses);
+      setSettings(restoredSettings);
+      setSurname(restoredInfo.surname);
+      setSemester(restoredInfo.semester);
+      setDepartment(restoredInfo.department);
+      
+      // Then apply manual classrooms safely
+      restoredCourses.forEach((course, courseIndex) => {
+        if (course && course.manualClassrooms) {
           Object.keys(course.manualClassrooms).forEach(key => {
             const [sectionIndex, lectureTimeIndex] = key.split('-').map(Number);
-            if (originalCourse.sections[sectionIndex] && originalCourse.sections[sectionIndex].lectureTimes[lectureTimeIndex]) {
-              originalCourse.sections[sectionIndex].lectureTimes[lectureTimeIndex].classroom = course.manualClassrooms[key];
-            }
+            const newClassroom = course.manualClassrooms[key];
+            
+            // Use setTimeout to avoid immediate state conflicts
+            setTimeout(() => {
+              handleClassroomUpdate(courseIndex, sectionIndex, lectureTimeIndex, newClassroom);
+            }, 100);
           });
         }
-      }
-      return course;
-    });
-    
-    setSelectedCourses(coursesToRestore);
-    setSettings(restoredSettings);
-    setSurname(restoredInfo.surname);
-    setSemester(restoredInfo.semester);
-    setDepartment(restoredInfo.department);
+      });
+    } catch (error) {
+      console.error('Error loading restored data:', error);
+      setAlertMsg('Kaydedilen veriler yüklenirken bir hata oluştu.');
+    }
   };
 
   const getCourseByCode = (code) => {
@@ -271,29 +275,78 @@ export const Controls = (props) => {
   };
 
   const handleClassroomUpdate = (courseIndex, sectionIndex, lectureTimeIndex, newClassroom) => {
-    const newSelected = [...selectedCourses];
-    const courseCode = newSelected[courseIndex].code;
-    
-    // Initialize manual classrooms if not exists
-    if (!newSelected[courseIndex].manualClassrooms) {
-      newSelected[courseIndex].manualClassrooms = {};
-    }
-    
-    // Store the manual classroom override
-    const key = `${sectionIndex}-${lectureTimeIndex}`;
-    newSelected[courseIndex].manualClassrooms[key] = newClassroom;
-    
-    setSelectedCourses(newSelected);
-    
-    // Update the actual course data in allCourses
-    setAllCourses(prevCourses => {
-      const updatedCourses = [...prevCourses];
-      const courseToUpdate = updatedCourses.find(c => c.code === courseCode);
-      if (courseToUpdate && courseToUpdate.sections[sectionIndex] && courseToUpdate.sections[sectionIndex].lectureTimes[lectureTimeIndex]) {
-        courseToUpdate.sections[sectionIndex].lectureTimes[lectureTimeIndex].classroom = newClassroom;
+    try {
+      const newSelected = [...selectedCourses];
+      const courseCode = newSelected[courseIndex].code;
+      
+      // Initialize manual classrooms if not exists
+      if (!newSelected[courseIndex].manualClassrooms) {
+        newSelected[courseIndex].manualClassrooms = {};
       }
-      return updatedCourses;
-    });
+      
+      // Store the manual classroom override
+      const key = `${sectionIndex}-${lectureTimeIndex}`;
+      newSelected[courseIndex].manualClassrooms[key] = newClassroom;
+      
+      setSelectedCourses(newSelected);
+      
+      // Also update the scenario data if schedule is already computed
+      if (scenariosState.result && scenariosState.result.length > 0) {
+        const updatedScenarios = scenariosState.result.map(scenario => {
+          return scenario.map(courseInScenario => {
+            if (courseInScenario.section && 
+                courseInScenario.section.lectureTimes && 
+                courseInScenario.section.lectureTimes[lectureTimeIndex] &&
+                getCourseByCode(courseCode)?.abbreviation === courseInScenario.abbreviation &&
+                courseInScenario.section.sectionNumber === getCourseByCode(courseCode)?.sections[sectionIndex]?.sectionNumber) {
+              const updatedCourse = { ...courseInScenario };
+              updatedCourse.section = { ...updatedCourse.section };
+              updatedCourse.section.lectureTimes = [...updatedCourse.section.lectureTimes];
+              updatedCourse.section.lectureTimes[lectureTimeIndex] = {
+                ...updatedCourse.section.lectureTimes[lectureTimeIndex],
+                classroom: newClassroom
+              };
+              return updatedCourse;
+            }
+            return courseInScenario;
+          });
+        });
+        dispatch(setScenarios(updatedScenarios));
+      }
+      
+      // Update the actual course data in allCourses safely
+      setAllCourses(prevCourses => {
+        try {
+          const updatedCourses = prevCourses.map(course => {
+            if (course.code === courseCode) {
+              const updatedCourse = { ...course };
+              updatedCourse.sections = updatedCourse.sections.map((section, sIdx) => {
+                if (sIdx === sectionIndex) {
+                  const updatedSection = { ...section };
+                  updatedSection.lectureTimes = updatedSection.lectureTimes.map((lectureTime, ltIdx) => {
+                    if (ltIdx === lectureTimeIndex) {
+                      return { ...lectureTime, classroom: newClassroom };
+                    }
+                    return lectureTime;
+                  });
+                  return updatedSection;
+                }
+                return section;
+              });
+              return updatedCourse;
+            }
+            return course;
+          });
+          return updatedCourses;
+        } catch (error) {
+          console.error('Error updating course data:', error);
+          return prevCourses; // Return previous state if error occurs
+        }
+      });
+    } catch (error) {
+      console.error('Error in handleClassroomUpdate:', error);
+      setAlertMsg('Derslik güncellenirken bir hata oluştu.');
+    }
   };
 
   const handleChangeSettings = (s) => {

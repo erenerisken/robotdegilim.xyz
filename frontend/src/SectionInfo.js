@@ -28,11 +28,16 @@ export const SectionInfo = ({ sectionDetails, color, onClassroomUpdate }) => {
   };
 
   const handleSaveClick = (index) => {
-    if (onClassroomUpdate) {
-      onClassroomUpdate(index, tempClassroom);
+    try {
+      if (onClassroomUpdate) {
+        onClassroomUpdate(index, tempClassroom);
+      }
+      setEditingIndex(-1);
+      setTempClassroom("");
+    } catch (error) {
+      console.error('Error saving classroom:', error);
+      // Don't reset editing state if error occurs
     }
-    setEditingIndex(-1);
-    setTempClassroom("");
   };
 
   const handleCancelClick = () => {
