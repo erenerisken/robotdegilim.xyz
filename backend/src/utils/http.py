@@ -2,9 +2,8 @@ from typing import Optional
 
 import requests
 from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 from src.config import app_constants
-from src.errors import RecoverError
+from src.errors import NetworkError
 from src.utils.timing import throttle_before_request, report_success, report_failure
 
 
@@ -12,11 +11,8 @@ _HTTP_SESSION: Optional[requests.Session] = None
 
 
 def get_http_session(
-    total: int = app_constants.global_retries,
-    backoff_factor: float = 0.5,
-    status_forcelist: Optional[tuple[int, ...]] = (429, 500, 502, 503, 504),
-    *,
-    refresh: bool = False,
+        *,
+        refresh: bool = False,
 ) -> requests.Session:
     """Return a cached requests Session with retry/backoff configured.
 
@@ -28,16 +24,7 @@ def get_http_session(
     if _HTTP_SESSION is not None and not refresh:
         return _HTTP_SESSION
     session = requests.Session()
-    retry = Retry(
-        total=total,
-        read=total,
-        connect=total,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist,
-        allowed_methods=("GET", "POST"),
-        raise_on_status=False,
-    )
-    adapter = HTTPAdapter(max_retries=retry)
+    adapter = HTTPAdapter()
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     try:
@@ -63,8 +50,6 @@ def request(
     data: Optional[dict] = None,
     json: Optional[dict] = None,
     ok_status: int = 200,
-    tries: int = app_constants.global_retries,
-    base_delay: float = 1.0,
     name: Optional[str] = None,
     **kwargs,
 ) -> requests.Response:
@@ -73,25 +58,24 @@ def request(
     Raises RecoverError after exhausting retries.
     """
     last_exc: Optional[Exception] = None
+    max_tries = app_constants.global_retries
     session = get_http_session()
-    for attempt in range(tries):
+    for attempt in range(max_tries):
         try:
-            throttle_before_request(base_delay)
-            if "timeout" not in kwargs:
-                kwargs["timeout"] = app_constants.http_timeout
-            resp = session.request(method, url, params=params, data=data, json=json, **kwargs)
+            throttle_before_request()
+            resp = session.request(method, url, params=params, data=data, json=json, timeout=app_constants.http_timeout, **kwargs)
             if resp.status_code == ok_status:
                 report_success()
                 return resp
             # Handle 4xx hard failures (except 429) without retrying
             if 400 <= resp.status_code < 500 and resp.status_code != 429:
                 report_failure()
-                raise RecoverError(
+                raise NetworkError(
                     f"HTTP {resp.status_code} on {name or method}: url: {url}, status: {resp.status_code}, code=FETCH_4XX"
                 )
             # Else retry (5xx or 429)
             report_failure()
-            last_exc = RecoverError(
+            last_exc = NetworkError(
                 f"HTTP {resp.status_code} on {name or method}: url: {url}, status: {resp.status_code}, code=FETCH_RETRY"
             )
         except Exception as e:  # network/timeout or other
@@ -99,9 +83,9 @@ def request(
             last_exc = e
             # continue to retry
     # Exhausted retries
-    if isinstance(last_exc, RecoverError):
+    if isinstance(last_exc, NetworkError):
         raise last_exc
-    raise RecoverError(
+    raise NetworkError(
         f"Request failed for {name or method}: url: {url}, error: {str(last_exc) if last_exc else 'unknown'}, code=FETCH_FAIL"
     )
 
@@ -109,23 +93,24 @@ def request(
 def get(
     url: str,
     *,
-    tries: int = app_constants.global_retries,
-    base_delay: float = 1.0,
     name: Optional[str] = None,
     **kwargs,
 ) -> requests.Response:
-    return request("GET", url, tries=tries, base_delay=base_delay, name=name, **kwargs)
-
+    try:
+        return request("GET", url, name=name, **kwargs)
+    except Exception as e:
+        raise NetworkError(f"GET request failed for {name or url}, error: {str(e)}") from e
 
 def post(
     url: str,
     *,
     data: Optional[dict] = None,
-    tries: int = app_constants.global_retries,
-    base_delay: float = 0.9,
     name: Optional[str] = None,
     **kwargs,
 ) -> requests.Response:
-    return request(
-        "POST", url, data=data, tries=tries, base_delay=base_delay, name=name, **kwargs
-    )
+    try:
+        return request(
+            "POST", url, data=data, name=name, **kwargs
+        )
+    except Exception as e:
+        raise NetworkError(f"POST request failed for {name or url}, error: {str(e)}") from e
