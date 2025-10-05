@@ -26,8 +26,11 @@ class AbortScrapingError(AppError):
     """Marker subclass of AppError to abort scraping."""
     pass
 
-class AbortNteError(AppError):
+class AbortNteAvailableError(AppError):
     """Marker subclass of AppError to abort NTE processing."""
+    pass
+class AbortNteListError(AppError):
+    """Marker subclass of AppError to abort NTE list fetching."""
     pass
 
 class IOError(AppError):

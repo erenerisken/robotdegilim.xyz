@@ -4,9 +4,9 @@ from typing import List, Dict, Any
 
 from src.config import app_constants
 from src.utils.io import load_json_local_then_s3, write_json
-from src.errors import AbortNteError
+from src.errors import AbortNteAvailableError
 
-logger = logging.getLogger(app_constants.log_nte)
+logger = logging.getLogger(app_constants.log_nte_available)
 
 def write_nte_available(nte_data: List[Dict[str, Any]]) -> Path:
     """Write NTE available courses to JSON file and return path."""
@@ -15,7 +15,7 @@ def write_nte_available(nte_data: List[Dict[str, Any]]) -> Path:
         write_json(nte_data, output_path)
         return output_path
     except Exception as e:
-        raise AbortNteError(f"Failed to write NTE available courses, error: {str(e)}") from e
+        raise AbortNteAvailableError(f"Failed to write NTE available courses, error: {str(e)}") from e
 
 def write_nte_list(nte_list: Dict[str, List[Dict[str, Any]]]) -> Path:
     """Write raw NTE list (by department) to JSON and return path."""
@@ -24,7 +24,7 @@ def write_nte_list(nte_list: Dict[str, List[Dict[str, Any]]]) -> Path:
         write_json(nte_list, output_path)
         return output_path
     except Exception as e:
-        raise AbortNteError(f"Failed to write NTE list, error: {str(e)}") from e
+        raise AbortNteAvailableError(f"Failed to write NTE list, error: {str(e)}") from e
 
 def load_data() -> Dict[str, Any]:
     """Load data.json used by nte.
@@ -39,7 +39,7 @@ def load_data() -> Dict[str, Any]:
         logger=logger,
     )
     if not data:
-        raise AbortNteError("Failed to load data.json or it is empty.")
+        raise AbortNteAvailableError("Failed to load data.json or it is empty.")
     return data
 
 def load_departments() -> Dict[str, Any]:
@@ -55,7 +55,7 @@ def load_departments() -> Dict[str, Any]:
         logger=logger,
     )
     if not data:
-        raise AbortNteError("Failed to load departments.json or it is empty.")
+        raise AbortNteAvailableError("Failed to load departments.json or it is empty.")
     return data
 
 def load_nte_list() -> Dict[str, Any]:
@@ -71,5 +71,5 @@ def load_nte_list() -> Dict[str, Any]:
         logger=logger,
     )
     if not data:
-        raise AbortNteError("Failed to load nte_list.json or it is empty.")
+        raise AbortNteAvailableError("Failed to load nte_list.json or it is empty.")
     return data

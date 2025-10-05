@@ -1,20 +1,69 @@
-import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+from urllib.parse import urljoin
 
-from backend.src.errors import AbortNteError
+from bs4 import BeautifulSoup
+
 from src.config import app_constants
-from src.nte.io import load_data, load_departments, load_nte_list, write_nte_available
-from src.utils.s3 import upload_to_s3
-
-logger = logging.getLogger(app_constants.log_nte)
-
-DAY_MAP = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
+from src.errors import AbortNteListError
 
 
-def deptify(prefix: str, full_code: str) -> str:
+def extract_department_links(soup: BeautifulSoup, department_links: list[str]):
+    try:
+        links=soup.find_all('a')
+        if links:
+            for link in links:
+                href = link.get('href', '')
+                # Ör: href="department-architecture"
+                if "department-" in href:
+                    # /en/ ifadesi gerekebilir, urljoin ile birleştiriyoruz:
+                    full_url = urljoin(app_constants.nte_base_url + "/en/", href)
+                    department_links.append(full_url)
+            try:
+                department_links.append("https://muhfd.metu.edu.tr/en/computer-education-and-instructional-technology")
+            except:
+                pass
+
+            try:
+                department_links.append("https://muhfd.metu.edu.tr/en/meslek-yuksek-okulu-myo")
+            except:
+                pass
+    except Exception as e:
+        raise AbortNteListError(f"Failed to extract department links, error: {str(e)}") from e
+    
+def extract_courses(soup: BeautifulSoup, courses:list[dict]) -> str:
+    try:
+        # 1) Departman adını al
+        header_el = soup.find('h1', id='page-title')
+        if header_el:
+            department_name = header_el.get_text(strip=True)
+        else:
+            department_name = "Unknown Department"
+
+        # 2) Tabloyu bul
+        table = soup.find('table')
+
+        if table:
+            rows = table.find_all('tr')
+            # İlk satır tablo başlığı, [1:] ile atlıyoruz
+            for row in rows[1:]:
+                cols = row.find_all('td')
+                if len(cols) >= 3:
+                    code = cols[0].get_text(strip=True)
+                    name = cols[1].get_text(strip=True)
+                    credits = cols[2].get_text(strip=True)
+                    courses.append({
+                        "code": code,
+                        "name": name,
+                        "credits": credits
+                    })
+
+        return department_name
+    except Exception as e:
+        raise AbortNteListError(f"Failed to extract courses, error: {str(e)}") from e
+    
+def _deptify(prefix: str, full_code: str) -> str:
     """Convert numeric course code to prefixed format."""
     return prefix + (full_code[4:] if len(full_code) >= 4 and full_code[3] == "0" else full_code[3:])
-
 
 def get_prefixed_code(numeric_code: str, dept_map: Dict[str, Any]) -> Optional[str]:
     """Get prefixed course code from numeric code using department mapping."""
@@ -25,14 +74,12 @@ def get_prefixed_code(numeric_code: str, dept_map: Dict[str, Any]) -> Optional[s
     if not prefix or prefix == "-no course-":
         return None
     
-    return deptify(prefix, numeric_code)
-
+    return _deptify(prefix, numeric_code)
 
 def is_available_section(section: Dict[str, Any]) -> bool:
     """Check if section is available (no constraints or has 'ALL' constraint)."""
     constraints = section.get("c", [])
     return (not constraints) or any(item.get("d") == "ALL" for item in constraints)
-
 
 def build_available_index(courses: Dict[str, Any], dept_map: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
     """
@@ -61,7 +108,6 @@ def build_available_index(courses: Dict[str, Any], dept_map: Dict[str, Any]) -> 
     
     return index
 
-
 def build_course_output(numeric_id: str, prefixed_code: str, display_name: str, 
                        credits: str, courses: Dict[str, Any]) -> Dict[str, Any]:
     """Build course output with only available sections."""
@@ -82,7 +128,7 @@ def build_course_output(numeric_id: str, prefixed_code: str, display_name: str,
             time_list = []
             for time_slot in times:
                 day_num = time_slot.get("d")
-                day = DAY_MAP.get(day_num, "no day info") if isinstance(day_num, int) else "no day info"
+                day = app_constants.DAY_MAP.get(day_num, "no day info") if isinstance(day_num, int) else "no day info"
                 time_list.append({
                     "day": day,
                     "start": time_slot.get("s", ""),
@@ -116,61 +162,3 @@ def build_course_output(numeric_id: str, prefixed_code: str, display_name: str,
         "credits": credits,
         "sections": output_sections
     }
-
-
-def run_nte():
-    """Main NTE processing function."""
-    try:
-        logger.info("Starting NTE processing.")
-        courses_data = load_data()
-        departments_data = load_departments()
-        nte_data = load_nte_list()
-        
-        # Build available courses index
-        logger.info("Building available courses index.")
-        available_index = build_available_index(courses_data, departments_data)
-        
-        matched = 0
-        missed = 0
-        output = []
-                
-        # Handle both dict and list formats for NTE data
-        if isinstance(nte_data, dict):
-            iterable = (course for course_list in nte_data.values() for course in course_list)
-        else:
-            iterable = iter(nte_data)
-        
-        for course in iterable:
-            raw_code = (course.get("code") or course.get("Code") or "").strip()
-            credits = course.get("credits") or course.get("Credits") or ""
-            
-            # Normalize code (remove spaces)
-            normalized_code = raw_code.replace(" ", "")
-            
-            # Check if course is available
-            course_info = available_index.get(normalized_code)
-            if not course_info:
-                missed += 1
-                continue
-            
-            # Build course output
-            course_output = build_course_output(
-                course_info["numeric"],
-                normalized_code,
-                course_info["name"],
-                credits,
-                courses_data
-            )
-            
-            output.append(course_output)
-            matched += 1
-        
-        output_path = write_nte_available(output)
-        
-        # Upload to S3
-        upload_to_s3(str(output_path), app_constants.nte_available_json)
-        
-        logger.info(f"NTE processing completed successfully. Matched: {matched}, Missed: {missed}")
-        
-    except Exception as e:
-        raise AbortNteError(f"NTE processing failed, error: {str(e)}") from e

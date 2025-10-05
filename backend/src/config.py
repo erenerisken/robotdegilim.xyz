@@ -36,7 +36,8 @@ class app_constants:
     log_app = "robotdegilim.app"
     log_scrape = "robotdegilim.scrape"
     log_musts = "robotdegilim.musts"
-    log_nte = "robotdegilim.nte"
+    log_nte_available = "robotdegilim.nte.available"
+    log_nte_list = "robotdegilim.nte.list"
     log_utils = "robotdegilim.utils"
 
     # Directories
@@ -94,6 +95,8 @@ class app_constants:
         "Saturday": 5,
         "Sunday": 6,
     }
+
+    DAY_MAP = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
 
     # API / Runtime config
     allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*")  # comma-separated or *
