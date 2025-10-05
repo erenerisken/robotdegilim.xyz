@@ -5,15 +5,13 @@ from bs4.element import Tag
 import requests
 
 from src.config import app_constants
-from src.errors import RecoverError
+from src.errors import AbortScrapingError
 from src.scrape.fetch import get_section
 
+logger = logging.getLogger(app_constants.log_scrape)
 
 def _strip_upper(s) -> str:
     return str(s or "").strip().upper()
-
-
-logger = logging.getLogger(app_constants.log_scrape)
 
 
 def extract_departments(
@@ -41,7 +39,7 @@ def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
             value = _strip_upper(current_semester_option.get("value"))
             text = (current_semester_option.get_text() or "").strip()
             return (value, text)
-    raise RecoverError("Could not extract current semester")
+    raise AbortScrapingError("Could not extract current semester")
 
 
 def extract_courses(
@@ -128,7 +126,7 @@ def extract_sections(soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
             sections[section_code] = section_node
 
     except Exception as e:
-        raise RecoverError(f"Failed to extract sections, error: {str(e)}") from e
+        raise AbortScrapingError(f"Failed to extract sections, error: {str(e)}") from e
 
 
 def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) -> None:
@@ -145,7 +143,7 @@ def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) 
                 }
             )
     except Exception as e:
-        logger.error(f"Error extracting constraints, error: {str(e)}")
+        raise AbortScrapingError(f"Error extracting constraints, error: {str(e)}") from e
 
 
 def any_course(soup: BeautifulSoup) -> bool:
@@ -195,6 +193,6 @@ def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List
             cindex += 1
 
     except Exception as e:
-        raise RecoverError(f"Failed to extract tags, error: {str(e)}") from e
+        raise AbortScrapingError(f"Failed to extract tags, error: {str(e)}") from e
 
     return tags

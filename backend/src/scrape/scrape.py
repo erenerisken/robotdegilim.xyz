@@ -21,7 +21,7 @@ from src.scrape.io import load_prefixes_combined
 from src.utils.io import write_json
 from src.utils.publish import publish_files
 from src.config import app_constants
-from src.errors import RecoverError
+from src.errors import AbortScrapingError
 
 logger = logging.getLogger(app_constants.log_scrape)
 
@@ -110,7 +110,7 @@ def run_scrape():
                     logger.info(f"completed {progress:.2f}% ({index}/{dept_len})")
 
             except Exception as e:
-                raise RecoverError(
+                raise AbortScrapingError(
                     f"Failed to process dept, dept_code: {dept_code}, error: {str(e)}"
                 ) from e
 
@@ -170,7 +170,5 @@ def run_scrape():
         )
 
         logger.info("Scraping process completed successfully and files uploaded to S3.")
-    except RecoverError as e:
-        raise RecoverError(f"Scraping process failed, error: {str(e)}") from e
     except Exception as e:
-        raise e
+        raise AbortScrapingError(f"Scraping process failed, error: {str(e)}") from e
