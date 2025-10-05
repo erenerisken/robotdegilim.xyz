@@ -1,12 +1,10 @@
 import logging
-from datetime import datetime
-import json
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 
+from backend.src.errors import AbortNteError
 from src.config import app_constants
 from src.nte.io import load_data, load_departments, load_nte_list, write_nte_available
 from src.utils.s3 import upload_to_s3
-from src.errors import RecoverError
 
 logger = logging.getLogger(app_constants.log_nte)
 
@@ -175,4 +173,4 @@ def run_nte():
         logger.info(f"NTE processing completed successfully. Matched: {matched}, Missed: {missed}")
         
     except Exception as e:
-        raise RecoverError(f"NTE processing failed, error: {str(e)}") from e
+        raise AbortNteError(f"NTE processing failed, error: {str(e)}") from e
