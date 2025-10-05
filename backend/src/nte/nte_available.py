@@ -8,7 +8,7 @@ from src.nte.parse import build_available_index, build_course_output
 
 logger = logging.getLogger(app_constants.log_nte_available)
 
-def run_nte():
+def nte_available():
     """Main NTE processing function."""
     try:
         logger.info("Starting NTE processing.")

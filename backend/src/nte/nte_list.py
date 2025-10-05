@@ -10,7 +10,7 @@ from src.nte.parse import extract_courses, extract_department_links
 
 logger = logging.getLogger(app_constants.log_nte_list)
 
-def main():
+def nte_list():
     try:
         # Departmanları tutacağımız sözlük (dict). 
         # Her key bir departman adı, value ise bu departmandaki dersleri TUTAN BİR SET.

@@ -12,8 +12,8 @@ from src.utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFil
 from src.config import app_constants
 from src.scrape.scrape import run_scrape
 from src.musts.musts import run_musts
-from src.nte.nte import run_nte
-from src.nte.scrape import run_nte_list_scrape
+from backend.src.nte.nte_available import nte_available
+from backend.src.nte.nte_list import nte_list
 from src.utils.emailer import get_email_handler
 from src.services.status_service import get_status, set_status, init_status, set_busy, set_idle
 from src.utils.logging import JsonFormatter
@@ -27,14 +27,16 @@ parent_logger = logging.getLogger(app_constants.log_parent)
 app_logger = logging.getLogger(app_constants.log_app)
 scrape_logger = logging.getLogger(app_constants.log_scrape)
 musts_logger = logging.getLogger(app_constants.log_musts)
-nte_logger = logging.getLogger(app_constants.log_nte)
+nte_available_logger = logging.getLogger(app_constants.log_nte_available)
+nte_list_logger = logging.getLogger(app_constants.log_nte_list)
 
 _lvl = getattr(logging, app_constants.log_level, logging.INFO)
 parent_logger.setLevel(_lvl)
 app_logger.setLevel(_lvl)
 scrape_logger.setLevel(_lvl)
 musts_logger.setLevel(_lvl)
-nte_logger.setLevel(_lvl)
+nte_available_logger.setLevel(_lvl)
+nte_list_logger.setLevel(_lvl)
 
 # app.log (INFO+) - rotate daily at TR midnight, keep 5 days
 _log_days = 5
@@ -60,7 +62,7 @@ if not any(
 
 # jobs.log (INFO+) for scrape, musts and nte - rotate daily at TR midnight, keep 5 days
 jobs_file = str(_log_dir / app_constants.jobs_log_file)
-for job_logger in (scrape_logger, musts_logger, nte_logger):
+for job_logger in (scrape_logger, musts_logger, nte_available_logger, nte_list_logger):
     if not any(
         isinstance(h, TzTimedRotatingFileHandler)
         and os.path.basename(getattr(h, "baseFilename", "")) == app_constants.jobs_log_file
@@ -107,7 +109,7 @@ _logger = app_logger
 # Optional JSON log formatting
 if app_constants.log_json:
     jf = JsonFormatter(converter=fmt.converter)
-    for lg in (app_logger, scrape_logger, musts_logger, nte_logger, parent_logger):
+    for lg in (app_logger, scrape_logger, musts_logger, nte_available_logger, nte_list_logger, parent_logger):
         for h in lg.handlers:
             h.setFormatter(jf)
 
@@ -209,10 +211,9 @@ class RunScrape(Resource):
 
             # Run NTE list scraping and processing after successful scrape
             try:
-                run_nte_list_scrape()
-                run_nte()
+                nte_available()
             except Exception as e:
-                _logger.error(f"NTE scraping/processing failed, error: {str(e)}")
+                _logger.error(f"NTE available process failed, error: {str(e)}")
                 # Do not fail the whole scrape if NTE fails
 
             # If a musts run was queued during busy period, run it now
@@ -267,6 +268,14 @@ class RunMusts(Resource):
             set_busy()
             run_musts()
             set_status(queued_musts=False)
+
+            # Run NTE list scraping and processing after successful scrape
+            try:
+                nte_list()
+            except Exception as e:
+                _logger.error(f"NTE list process failed, error: {str(e)}")
+                # Do not fail the whole scrape if NTE fails
+
             return {"status": "Get musts completed successfully", "code": "OK"}, 200
         except Exception as e:
             _logger.error(str(e))
