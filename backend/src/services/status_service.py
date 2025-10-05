@@ -1,9 +1,8 @@
 import json
 from typing import Dict, Any, cast
-import boto3
 
 from src.config import app_constants
-from src.errors import RecoverError
+from src.errors import StatusError
 from src.utils.s3 import get_s3_client, upload_to_s3
 
 
@@ -17,25 +16,30 @@ def write_status(status: Dict[str, str]) -> str:
             json.dump(status, data_file, ensure_ascii=False, indent=4)
             return str(data_path)
     except Exception as e:
-        raise RecoverError(f"Failed to export status, error: {str(e)}") from e
+        raise StatusError(f"Failed to export status, error: {str(e)}") from e
 
 
 def set_busy() -> str:
     # Preserve existing flags if possible
-    current = get_status()
-    current["status"] = "busy"
-    path = write_status(current)
-    upload_to_s3(path, app_constants.status_json)
-    return path
+    try:
 
+        current = get_status()
+        current["status"] = "busy"
+        path = write_status(current)
+        upload_to_s3(path, app_constants.status_json)
+        return path
+    except Exception as e:
+        raise StatusError(f"Failed to set busy status, error: {str(e)}") from e
 
 def set_idle() -> str:
-    current = get_status()
-    current["status"] = "idle"
-    path = write_status(current)
-    upload_to_s3(path, app_constants.status_json)
-    return path
-
+    try:    
+        current = get_status()
+        current["status"] = "idle"
+        path = write_status(current)
+        upload_to_s3(path, app_constants.status_json)
+        return path
+    except Exception as e:
+        raise StatusError(f"Failed to set idle status, error: {str(e)}") from e
 
 def get_status() -> Dict[str, Any]:
     try:
@@ -55,11 +59,14 @@ def get_status() -> Dict[str, Any]:
 
 
 def set_status(**kwargs) -> Dict[str, Any]:
-    current = get_status()
-    current.update(kwargs)
-    path = write_status(current)
-    upload_to_s3(path, app_constants.status_json)
-    return current
+    try:        
+        current = get_status()
+        current.update(kwargs)
+        path = write_status(current)
+        upload_to_s3(path, app_constants.status_json)
+        return current
+    except Exception as e:
+        raise StatusError(f"Failed to set status, error: {str(e)}") from e
 
 
 def detect_depts_ready() -> bool:
@@ -100,8 +107,11 @@ def init_status() -> dict:
     - queued_musts: False
     - depts_ready: detected from presence of departments file
     """
-    return set_status(
-        status="idle",
-        queued_musts=False,
-        depts_ready=detect_depts_ready(),
-    )
+    try:
+        return set_status(
+            status="idle",
+            queued_musts=False,
+            depts_ready=detect_depts_ready(),
+        )
+    except Exception as e:
+        raise StatusError(f"Failed to initialize status, error: {str(e)}") from e
