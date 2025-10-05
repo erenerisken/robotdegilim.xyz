@@ -2,7 +2,7 @@ from urllib.parse import urlparse, parse_qs
 
 from bs4 import BeautifulSoup
 
-from src.errors import RecoverError
+from src.errors import AbortMustsError
 
 
 def extract_course_code(course_link: str):
@@ -12,7 +12,7 @@ def extract_course_code(course_link: str):
         course_code = query_params.get("course_code", [None])[0]
         return course_code
     except Exception as e:
-        raise RecoverError(
+        raise AbortMustsError(
             f"Failed to extract course code, course_link: {course_link}, error: {str(e)}"
         ) from e
 
@@ -47,5 +47,5 @@ def extract_dept_node(dept_soup: BeautifulSoup):
             if courses:
                 dept_node[sem_no] = courses
     except Exception as e:
-        raise RecoverError(f"Failed to extract the node, error: {str(e)}") from e
+        raise AbortMustsError(f"Failed to extract the node, error: {str(e)}") from e
     return dept_node
