@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 import logging
-import boto3
 
+from backend.src.errors import StatusError
 from src.services.status_service import set_busy, set_idle
 from src.config import app_constants
 
@@ -22,4 +22,4 @@ def busy_idle():
         try:
             set_idle()
         except Exception as e:
-            logger.error(f"failed to set idle, error: {str(e)}")
+            raise StatusError(f"failed to set idle, error: {str(e)}")

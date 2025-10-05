@@ -1,7 +1,7 @@
 import logging
 from typing import Iterable, Tuple
-import boto3
 
+from backend.src.errors import S3Error
 from src.utils.s3 import upload_to_s3
 
 
@@ -16,11 +16,14 @@ def publish_files(
     files: iterable of (local_path, s3_key) tuples
     last_updated: (local_path, s3_key) for the lastUpdated file
     """
-    # Upload all files except lastUpdated
-    for path, key in files:
-        upload_to_s3(path, key)
-        logger.info(f"uploaded {key}")
-    # Upload the publish signal last
-    lu_path, lu_key = last_updated
-    upload_to_s3(lu_path, lu_key)
-    logger.info(f"uploaded {lu_key} (publish signal)")
+    try:    
+        # Upload all files except lastUpdated
+        for path, key in files:
+            upload_to_s3(path, key)
+            logger.info(f"uploaded {key}")
+        # Upload the publish signal last
+        lu_path, lu_key = last_updated
+        upload_to_s3(lu_path, lu_key)
+        logger.info(f"uploaded {lu_key} (publish signal)")
+    except Exception as e:
+        raise S3Error(f"Failed to publish files, error: {str(e)}") from e

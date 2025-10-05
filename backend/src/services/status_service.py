@@ -2,7 +2,7 @@ import json
 from typing import Dict, Any, cast
 
 from src.config import app_constants
-from src.errors import StatusError
+from src.errors import StatusError, IOError
 from src.utils.s3 import get_s3_client, upload_to_s3
 
 
@@ -16,7 +16,7 @@ def write_status(status: Dict[str, str]) -> str:
             json.dump(status, data_file, ensure_ascii=False, indent=4)
             return str(data_path)
     except Exception as e:
-        raise StatusError(f"Failed to export status, error: {str(e)}") from e
+        raise IOError(f"Failed to export status, error: {str(e)}") from e
 
 
 def set_busy() -> str:

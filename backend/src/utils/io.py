@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import Any, Dict, Union
 
 from src.config import app_constants
-from src.errors import RecoverError
 from src.utils.s3 import get_s3_client
+from src.errors import IOError
 
 
 logger = logging.getLogger(app_constants.log_utils)
@@ -33,7 +33,7 @@ def write_json(data: dict, file_path: PathLike) -> None:
         with open(path_str, "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
     except Exception as e:
-        raise RecoverError(f"Failed to write json, file_path: {path_str}, error: {str(e)}") from e
+        raise IOError(f"Failed to write json, file_path: {path_str}, error: {str(e)}") from e
 
 
 def load_json_safe(file_path: PathLike) -> Dict[str, Any]:

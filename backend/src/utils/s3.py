@@ -1,12 +1,11 @@
 import json
 import logging
-import os
 from typing import Dict, Optional
 
 import boto3
 
+from backend.src.errors import S3Error
 from src.config import app_constants
-from src.errors import RecoverError
 import time
 import random
 
@@ -42,8 +41,7 @@ def get_s3_client(*, refresh: bool = False) -> boto3.client:
         _S3_CLIENT = boto3.client("s3", **kwargs)
         return _S3_CLIENT
     except Exception as e:
-        logger.error(f"failed to create s3 client, error: {str(e)}")
-        raise e
+        raise S3Error(f"failed to create s3 client, error: {str(e)}") from e
 
 
 def reset_s3_client():
@@ -52,11 +50,12 @@ def reset_s3_client():
     _S3_CLIENT = None
 
 
-def upload_to_s3(file_path: str, s3_key: str, retries: int = 5):
+def upload_to_s3(file_path: str, s3_key: str):
     """Uploads a file to the S3 bucket and makes it public, with retries."""
     attempt = 0
     last_error = None
     s3_client = get_s3_client()
+    retries = 5
     while attempt <= retries:
         try:
             s3_client.upload_file(
@@ -73,7 +72,7 @@ def upload_to_s3(file_path: str, s3_key: str, retries: int = 5):
             delay = min(10, (2**attempt) + random.uniform(0, 0.5))
             time.sleep(delay)
             attempt += 1
-    raise RecoverError(
+    raise S3Error(
         f"Failed to upload to S3: path: {file_path}, error: {str(last_error)}"
     )
 
