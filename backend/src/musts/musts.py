@@ -6,7 +6,7 @@ from src.musts.io import load_departments, write_musts
 from src.musts.fetch import get_department_page
 from src.musts.parse import extract_dept_node
 from src.utils.s3 import upload_to_s3
-from src.errors import RecoverError
+from src.errors import AbortMustsError
 
 logger = logging.getLogger(app_constants.log_musts)
 
@@ -18,14 +18,9 @@ def run_musts():
     the caller has already marked the system busy.
     """
     try:
-        data_dir = app_constants.data_dir
-        data_dir.mkdir(parents=True, exist_ok=True)
-
         logger.info("Starting the process to fetch must courses.")
 
         departments = load_departments()
-        if not departments:
-            raise RecoverError(app_constants.noDeptsErrMsg)
 
         data = {}
         dept_len = len(departments.keys())
@@ -47,7 +42,5 @@ def run_musts():
             upload_to_s3(data_path, app_constants.musts_json)
 
         logger.info("Process to fetch must courses has ended.")
-    except RecoverError as e:
-        raise RecoverError(f"Musts process failed, error: {str(e)}") from e
     except Exception as e:
-        raise e
+        raise AbortMustsError(f"Musts process failed, error: {str(e)}") from e
