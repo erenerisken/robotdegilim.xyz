@@ -176,7 +176,7 @@ Use the helper script to assemble a clean deployable directory (Dockerfile, fly.
 Defaults:
 - Output: `fly-io/robotdegilim`
 - App name: `robotdegilim-xyz` (override with `--app-name <name>`)
-- Region: `otp` (override with `--region <code>`)
+- Region: `fra` (override with `--region <code>`)
 - Python: `3.12` (override with `--python-version <x.y.z>`)
 
 Then deploy from the generated folder:

@@ -389,8 +389,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--region",
-        default=os.environ.get("FLY_REGION", "otp"),
-        help="Primary region code (e.g., otp)",
+        default=os.environ.get("FLY_REGION", "fra"),
+        help="Primary region code (e.g., fra)",
     )
     parser.add_argument(
         "--python-version",
