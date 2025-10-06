@@ -199,7 +199,7 @@ NTE artifacts:
 - Output produced after successful scrape: `nteAvailable.json` (uploaded to S3 and written under `storage/data/`).
 
 Data files included:
-- Only `storage/data/manualPrefixes.json` is copied into the deploy folder (if present). Other generated data/log files are excluded by the `.dockerignore`.
+- Deploy bundles only the application code and requirements. Generated JSON artifacts stay out of the image; they are produced locally at runtime and uploaded to S3.
 
 Notes:
 - A `pyproject.toml` is not required for deployment since we install with `requirements.txt`. Keep `pyproject.toml` only if you move to PDM/Poetry or need build-system metadata.

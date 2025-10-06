@@ -9,8 +9,9 @@ Scrape → Normalize → Publish → Visualize. A Python (Flask) backend turns M
 ## Monorepo Layout
 | Path | Description |
 |------|-------------|
-| `backend/` | Flask scraping + publish service (see its README for deep details) |
-| `frontend/` | React UI (Create React App) consuming public JSON + control endpoints |
+| `backend/` | Flask scraping + publish service (detailed docs in `backend/README.md` and `docs/backend-guide.md`) |
+| `frontend/` | React UI consuming public JSON + control endpoints (see `docs/frontend-guide.md`) |
+| `docs/` | Project-wide documentation (architecture, data contracts, deployment) |
 
 ## High-Level Flow
 1. Backend scrapes source HTML with adaptive throttling.
@@ -46,9 +47,15 @@ Primary variables live in `backend/.env.example`. Key ones: `ACCESS_KEY`, `SECRE
 
 ## Deployment Overview
 - Backend runs on Fly.io with Python 3.12 via Gunicorn (default: workers=2, timeout=0) and `/status` health checks, with env defaults including `ALLOWED_ORIGINS=*`.
-- Only `backend/storage/data/manualPrefixes.json` is bundled into the deploy image when present.
-- Outputs JSON to S3 (bucket name defined in backend config).
-- Frontend can be a static site (Netlify, S3+CloudFront, etc.) consuming the published JSON.
+- Deploy image includes only code + dependencies; runtime JSON is generated on demand and uploaded to S3.
+- Frontend can be shipped as a static site (Netlify, S3+CloudFront, etc.) consuming the published JSON.
+
+## Documentation Index
+- `docs/architecture.md` – end-to-end data flow, key components, and resilience design.
+- `docs/backend-guide.md` – API endpoints, job lifecycles, storage contracts, and operations.
+- `docs/frontend-guide.md` – React app structure, state flow, and integration with backend artifacts.
+- `backend/README.md` – in-depth backend developer guide.
+- `frontend/README.md` – frontend workflow, scripts, and customizations.
 
 ## Contributing
 1. Create a feature branch.
