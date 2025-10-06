@@ -1,8 +1,25 @@
-"""Application-specific error types."""
+"""Application-specific error types with structured payloads."""
+
+from __future__ import annotations
+
+from typing import Any, Optional
+
+
 class AppError(Exception):
-    """Minimal application error used only for typing/catching."""
-    
-    pass
+    """Base error that captures a message, code, and optional details."""
+
+    message: str
+    code: Optional[str]
+    details: Any
+
+    def __init__(self, message: str = "", *, code: str | None = None, details: Any | None = None):
+        super().__init__(message)
+        self.message = message
+        self.code = code
+        self.details = details
+
+    def __str__(self) -> str:  # pragma: no cover - trivial override
+        return self.message or super().__str__()
 
 
 class StatusError(AppError):

@@ -81,8 +81,11 @@ def nte_available() -> Tuple[str, Dict[str, int]]:
         # Sort deterministically by departmental code for stable outputs
         output.sort(key=lambda item: item.get("code", {}).get("departmental", ""))
 
+        if not output:
+            raise AbortNteAvailableError("No matching NTE courses could be produced from the input data.")
+
         output_path = write_nte_available(output)
-        upload_to_s3(str(output_path), app_constants.nte_available_json)
+        upload_to_s3(output_path, app_constants.nte_available_json)
 
         logger.info(
             "nte_available: published %s (matched=%s missed=%s)",
