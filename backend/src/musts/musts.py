@@ -23,8 +23,9 @@ def run_musts():
         departments = load_departments()
 
         data = {}
-        dept_len = len(departments.keys())
-        for index, dept_code in enumerate(departments.keys(), start=1):
+        dept_codes = list(departments.keys())
+        dept_len = len(dept_codes)
+        for index, dept_code in enumerate(dept_codes, start=1):
             if (
                 not departments[dept_code].get("p")
                 or departments[dept_code]["p"] in app_constants.no_prefix_variants
@@ -38,8 +39,11 @@ def run_musts():
                 progress = (index / dept_len) * 100
                 logger.info(f"completed {progress:.2f}% ({index}/{dept_len})")
 
-            data_path = write_musts(data)
-            upload_to_s3(data_path, app_constants.musts_json)
+        if not data:
+            raise AbortMustsError("Musts process produced no course data.")
+
+        data_path = write_musts(data)
+        upload_to_s3(data_path, app_constants.musts_json)
 
         logger.info("Process to fetch must courses has ended.")
     except Exception as e:

@@ -1,7 +1,7 @@
 import logging
 from typing import Iterable, Tuple
 
-from backend.src.errors import S3Error
+from src.errors import S3Error
 from src.utils.s3 import upload_to_s3
 
 

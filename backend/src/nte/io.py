@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 
 from src.config import app_constants
 from src.utils.io import load_json_local_then_s3, write_json
-from src.errors import AbortNteAvailableError
+from src.errors import AbortNteAvailableError, AbortNteListError
 
 logger = logging.getLogger(app_constants.log_nte_available)
 
@@ -24,7 +24,7 @@ def write_nte_list(nte_list: Dict[str, List[Dict[str, Any]]]) -> Path:
         write_json(nte_list, output_path)
         return output_path
     except Exception as e:
-        raise AbortNteAvailableError(f"Failed to write NTE list, error: {str(e)}") from e
+        raise AbortNteListError(f"Failed to write NTE list, error: {str(e)}") from e
 
 def load_data() -> Dict[str, Any]:
     """Load data.json used by nte.

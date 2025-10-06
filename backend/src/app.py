@@ -12,8 +12,8 @@ from src.utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFil
 from src.config import app_constants
 from src.scrape.scrape import run_scrape
 from src.musts.musts import run_musts
-from backend.src.nte.nte_available import nte_available
-from backend.src.nte.nte_list import nte_list
+from src.nte.nte_available import nte_available
+from src.nte.nte_list import nte_list
 from src.utils.emailer import get_email_handler
 from src.services.status_service import get_status, set_status, init_status, set_busy, set_idle
 from src.utils.logging import JsonFormatter

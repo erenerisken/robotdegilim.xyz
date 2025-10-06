@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 import logging
 
-from backend.src.errors import StatusError
+from src.errors import StatusError
 from src.services.status_service import set_busy, set_idle
 from src.config import app_constants
 

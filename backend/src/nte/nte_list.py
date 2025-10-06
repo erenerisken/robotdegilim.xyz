@@ -1,60 +1,80 @@
 import logging
+from typing import Dict, Iterable, List, Set, Tuple
+
 from bs4 import BeautifulSoup
 
-
-from backend.src.errors import AbortNteListError
+from src.errors import AbortNteListError
 from src.config import app_constants
-from src.utils.io import write_json
 from src.nte.fetch import get_nte_courses, get_department_data
+from src.nte.io import write_nte_list
 from src.nte.parse import extract_courses, extract_department_links
+from src.utils.s3 import upload_to_s3
+
 
 logger = logging.getLogger(app_constants.log_nte_list)
 
-def nte_list():
+
+def _dedupe_links(links: Iterable[str]) -> List[str]:
+    seen: Set[str] = set()
+    ordered: List[str] = []
+    for link in links:
+        if link and link not in seen:
+            seen.add(link)
+            ordered.append(link)
+    return ordered
+
+
+def nte_list() -> str:
+    """Scrape NTE course listings and persist them locally and on S3."""
+
     try:
-        # Departmanları tutacağımız sözlük (dict). 
-        # Her key bir departman adı, value ise bu departmandaki dersleri TUTAN BİR SET.
-        # (set -> {(code, name, credits), ...})
-        departments_dict = {}
+        departments: Dict[str, Set[Tuple[str, str, str]]] = {}
 
-        # 1) Tüm departman linklerini al
-        resp = get_nte_courses()
-        soup = BeautifulSoup(resp.text, 'html.parser')
-        dept_links = []
-        extract_department_links(soup, dept_links)
-        logging.info("Bulunan departman link sayısı:", len(dept_links))
+        response = get_nte_courses()
+        soup = BeautifulSoup(response.text, "html.parser")
+        raw_links: List[str] = []
+        extract_department_links(soup, raw_links)
+        dept_links = _dedupe_links(raw_links)
+        if not dept_links:
+            raise AbortNteListError("No department links were discovered on the NTE courses page.")
+        logger.info("nte_list: discovered %s department links", len(dept_links))
 
-        # 2) Her departmandan verileri topla
         for link in dept_links:
             resp = get_department_data(link)
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            courses = []
+            soup = BeautifulSoup(resp.text, "html.parser")
+            courses: List[Dict[str, str]] = []
             dept_name = extract_courses(soup, courses)
-            
-            # Eğer bu departman yoksa, set olarak başlat
-            if dept_name not in departments_dict:
-                departments_dict[dept_name] = set()
-            
-            # Şimdi bu departmandaki "courses" listesini set'e ekle
-            for c in courses:
-                # (code, name, credits) -> tuple halinde ekliyoruz ki set içinde tutulabilsin
-                departments_dict[dept_name].add((c["code"], c["name"], c["credits"]))
+            if not dept_name:
+                logger.warning("nte_list: skipping unnamed department page %s", link)
+                continue
 
-        # 3) JSON’a yazmadan önce set'i liste-dict formatına dönüştür
-        final_output = {}
-        for dept_name, course_set in departments_dict.items():
-            # Bu departmandaki course_set -> {(code, name, credits), ...}
-            course_list = []
-            for (code, name, credits) in course_set:
-                course_list.append({
-                    "code": code,
-                    "name": name,
-                    "credits": credits
-                })
-            final_output[dept_name] = course_list
+            bucket = departments.setdefault(dept_name, set())
+            for course in courses:
+                code = course.get("code") or ""
+                name = course.get("name") or ""
+                credits = course.get("credits") or ""
+                if not code:
+                    continue
+                bucket.add((code.strip(), name.strip(), credits.strip()))
 
-        # 4) JSON dosyasına kaydet
-        write_json(final_output, app_constants.nte_list_json)
-        logging.info("Toplam departman sayısı:", len(final_output))
+        final_output: Dict[str, List[Dict[str, str]]] = {}
+        for dept_name, course_set in departments.items():
+            final_output[dept_name] = [
+                {"code": code, "name": name, "credits": credits}
+                for code, name, credits in sorted(course_set)
+            ]
+
+        output_path = write_nte_list(final_output)
+        upload_to_s3(str(output_path), app_constants.nte_list_json)
+        logger.info(
+            "nte_list: exported %s departments to %s",
+            len(final_output),
+            output_path,
+        )
+
+        return str(output_path)
+
+    except AbortNteListError:
+        raise
     except Exception as e:
         raise AbortNteListError(f"Failed to process NTE list, error: {str(e)}") from e

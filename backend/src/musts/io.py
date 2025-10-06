@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any
 
-from backend.src.errors import AbortMustsError
+from src.errors import AbortMustsError
 from src.config import app_constants
 from src.utils.io import write_json, load_json_local_then_s3
 

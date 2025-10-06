@@ -1,18 +1,16 @@
 import json
 import logging
+import os
+import random
+import time
 from typing import Dict, Optional
 
 import boto3
 
-from backend.src.errors import S3Error
+from src.errors import S3Error
 from src.config import app_constants
-import time
-import random
 
-# Internal module-level cache for the S3 client. We avoid @lru_cache so we can
-# expose an explicit reset hook (useful for tests / credential rotation).
 _S3_CLIENT: Optional[boto3.client] = None
-
 
 logger = logging.getLogger(app_constants.log_utils)
 
@@ -50,16 +48,17 @@ def reset_s3_client():
     _S3_CLIENT = None
 
 
-def upload_to_s3(file_path: str, s3_key: str):
+def upload_to_s3(file_path: str | os.PathLike[str], s3_key: str):
     """Uploads a file to the S3 bucket and makes it public, with retries."""
     attempt = 0
     last_error = None
     s3_client = get_s3_client()
     retries = 5
+    path = os.fspath(file_path)
     while attempt <= retries:
         try:
             s3_client.upload_file(
-                file_path,
+                path,
                 app_constants.s3_bucket_name,
                 s3_key,
                 ExtraArgs={"ACL": "public-read"},
@@ -73,7 +72,7 @@ def upload_to_s3(file_path: str, s3_key: str):
             time.sleep(delay)
             attempt += 1
     raise S3Error(
-        f"Failed to upload to S3: path: {file_path}, error: {str(last_error)}"
+        f"Failed to upload to S3: path: {path}, error: {str(last_error)}"
     )
 
 

@@ -2,7 +2,7 @@ import logging
 from bs4 import BeautifulSoup
 from requests import Response
 
-from backend.src.errors import AbortScrapingError
+from src.errors import AbortScrapingError
 from src.config import app_constants
 from src.utils.http import get as http_get, post as http_post
 

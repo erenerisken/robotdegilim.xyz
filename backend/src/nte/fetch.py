@@ -1,7 +1,7 @@
 import logging
 from requests import Response
 
-from backend.src.errors import AbortNteListError
+from src.errors import AbortNteListError
 from src.config import app_constants
 from src.utils.http import get as http_get
 
