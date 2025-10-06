@@ -105,15 +105,15 @@ class app_constants:
     log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
 
     # HTTP default timeout (seconds)
-    http_timeout = float(os.environ.get("HTTP_TIMEOUT", "15.0"))
+    http_timeout = float(os.environ.get("HTTP_TIMEOUT", "10.0"))
 
     # Global retry count to unify all HTTP retries
     global_retries = int(os.environ.get("GLOBAL_RETRIES", "10"))
 
     # Adaptive backoff factors (faster on good network, harsher on failures)
-    adaptive_fast_base_delay = float(os.environ.get("ADAPTIVE_FAST_BASE_DELAY", "0.5"))
-    adaptive_base_delay = float(os.environ.get("ADAPTIVE_BASE_DELAY", "1.0"))  # Base delay in seconds
-    adaptive_slow_base_delay = float(os.environ.get("ADAPTIVE_SLOW_BASE_DELAY", "2.0"))
+    adaptive_fast_base_delay = float(os.environ.get("ADAPTIVE_FAST_BASE_DELAY", "1.25"))
+    adaptive_base_delay = float(os.environ.get("ADAPTIVE_BASE_DELAY", "1.5"))  # Base delay in seconds
+    adaptive_slow_base_delay = float(os.environ.get("ADAPTIVE_SLOW_BASE_DELAY", "1.75"))
     adaptive_jitter = float(os.environ.get("ADAPTIVE_JITTER", "0.25"))
     adaptive_min_factor = float(os.environ.get("ADAPTIVE_MIN_FACTOR", "1.0"))
     adaptive_max_factor = float(os.environ.get("ADAPTIVE_MAX_FACTOR", "8.0"))
