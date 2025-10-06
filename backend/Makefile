@@ -2,7 +2,7 @@ PY := python
 PIP := $(PY) -m pip
 PORT ?= 3000
 
-.PHONY: help install dev-install fmt lint lint-fix type run run-gunicorn clean
+.PHONY: help install dev-install fmt lint lint-fix type test run run-gunicorn clean
 
 help:
 	@echo "Targets:"
@@ -12,6 +12,7 @@ help:
 	@echo "  lint          - run ruff linter"
 	@echo "  lint-fix      - run ruff with --fix"
 	@echo "  type          - run mypy type checker"
+	@echo "  test          - run pytest suite"
 	@echo "  run           - start Flask dev server on port $(PORT)"
 	@echo "  run-gunicorn  - start with gunicorn on port $(PORT)"
 	@echo "  speed         - GET current /speed state"
@@ -36,6 +37,9 @@ lint-fix:
 
 type:
 	mypy ./src
+
+test:
+	$(PY) -m pytest ./tests
 
 run:
 	$(PY) -m flask --app ./src/app run -p $(PORT)

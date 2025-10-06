@@ -210,8 +210,14 @@ class RunScrape(Resource):
             st = set_status(depts_ready=True)
 
             # Run NTE list scraping and processing after successful scrape
+            nte_metrics = None
             try:
-                nte_available()
+                _, nte_metrics = nte_available()
+                if nte_metrics:
+                    _logger.info(
+                        "nte_available completed",
+                        extra={"nte_matched": nte_metrics.get("matched"), "nte_missed": nte_metrics.get("missed")},
+                    )
             except Exception as e:
                 _logger.error(f"NTE available process failed, error: {str(e)}")
                 # Do not fail the whole scrape if NTE fails
@@ -271,7 +277,8 @@ class RunMusts(Resource):
 
             # Run NTE list scraping and processing after successful scrape
             try:
-                nte_list()
+                nte_path = nte_list()
+                _logger.info("nte_list completed", extra={"nte_list_path": nte_path})
             except Exception as e:
                 _logger.error(f"NTE list process failed, error: {str(e)}")
                 # Do not fail the whole scrape if NTE fails
