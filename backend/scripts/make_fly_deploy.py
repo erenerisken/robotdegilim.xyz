@@ -21,10 +21,12 @@ Notes:
 from __future__ import annotations
 
 import argparse
+import json
 import os
-from pathlib import Path
+import re
 import shutil
 import sys
+from pathlib import Path
 
 
 RECOMMENDED_PY_VERSION = "3.12"
@@ -53,9 +55,6 @@ COPY src ./src
 
 # Pre-create runtime folders (logs/data are created at runtime too, but ensures path exists)
 RUN mkdir -p storage/logs storage/data
-
-# Include manual department prefix overrides in the image
-COPY storage/data/manualPrefixes.json storage/data/manualPrefixes.json
 
 EXPOSE 8080
 
@@ -116,11 +115,8 @@ venv/
 .gitignore
 *.log
 storage/logs/
-# Ignore storage/data by default, except manualPrefixes.json
-storage/data/**
-!storage/data/
-!storage/data/manualPrefixes.json
-storage/data/*.tmp
+# Ignore generated data completely; built artifacts are fetched at runtime
+storage/data/
 tests/
 """
 
@@ -206,45 +202,55 @@ def patch_dockerfile(content: str, python_version: str, *, workers: int, timeout
     if "EXPOSE 8080" not in content:
         content += "\n\nEXPOSE 8080\n"
     
-    # Ensure the manualPrefixes.json is copied if present in build context
-    if "storage/data/manualPrefixes.json" not in content:
-        # Insert after mkdir -p storage lines if present; else append before EXPOSE
-        anchor = "RUN mkdir -p storage/logs storage/data"
-        if anchor in content:
-            content = content.replace(
-                anchor,
-                anchor + "\n\n# Include manual department prefix overrides in the image\nCOPY storage/data/manualPrefixes.json storage/data/manualPrefixes.json",
-            )
-        else:
-            content = content.replace(
-                "EXPOSE 8080",
-                "# Include manual department prefix overrides in the image\nCOPY storage/data/manualPrefixes.json storage/data/manualPrefixes.json\n\nEXPOSE 8080",
-            )
+    # Strip any manual JSON copy directives; runtime reads data from local storage/S3.
+    content = re.sub(
+        r"\n?# Include manual department prefix overrides in the image\nCOPY storage/data/manualPrefixes.json storage/data/manualPrefixes.json",
+        "",
+        content,
+    )
+    content = content.replace(
+        "COPY storage/data/manualPrefixes.json storage/data/manualPrefixes.json\n",
+        "",
+    )
     return content
 
 
 def _replace_arg_in_json_cmd(line: str, flag: str, value: str) -> str:
     """Best-effort replace of a gunicorn CLI arg in a JSON-array CMD line.
-    If flag exists, replace its following token; if absent, append before the app module.
+
+    If flag exists, replace the token after it. If absent, append the pair before the
+    final entry (typically the application module path).
     """
-    if "CMD [" not in line:
+    match = re.search(r"CMD\s*(\[[^\]]*\])", line)
+    if not match:
         return line
+
+    cmd_text = match.group(1)
     try:
-        # crude parse: split by comma, strip quotes/spaces
-        parts = [p.strip() for p in line.split(",")]
-        # find flag index
-        idx = next((i for i, p in enumerate(parts) if p.strip().strip('"') == flag), None)
-        if idx is not None and idx + 1 < len(parts):
-            # replace value element
-            parts[idx + 1] = f' "{value}"'
-        else:
-            # insert before last element (app module path)
-            if len(parts) >= 2:
-                parts.insert(-1, f' "{flag}"')
-                parts.insert(-1, f' "{value}"')
-        return ",".join(parts)
-    except Exception:
+        cmd = json.loads(cmd_text)
+    except json.JSONDecodeError:
         return line
+
+    if not isinstance(cmd, list):
+        return line
+
+    flag = str(flag)
+    value = str(value)
+
+    try:
+        idx = cmd.index(flag)
+    except ValueError:
+        insertion_index = max(len(cmd) - 1, 0)
+        cmd.insert(insertion_index, flag)
+        cmd.insert(insertion_index + 1, value)
+    else:
+        if idx + 1 < len(cmd):
+            cmd[idx + 1] = value
+        else:
+            cmd.append(value)
+
+    new_cmd_text = json.dumps(cmd)
+    return f"{line[:match.start(1)]}{new_cmd_text}{line[match.end(1):]}"
 
 
 def patch_fly_toml(content: str, app_name: str, region: str) -> str:
@@ -413,13 +419,6 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=int(os.environ.get("GUNICORN_TIMEOUT", "0")),
         help="Gunicorn timeout seconds (0 means no timeout; default 0)",
     )
-    parser.add_argument(
-        "--require-manual-prefixes",
-        action="store_true",
-        help=(
-            "If set, exit with non-zero status when backend/storage/data/manualPrefixes.json is missing."
-        ),
-    )
     return parser.parse_args(argv)
 
 
@@ -446,29 +445,6 @@ def main(argv: list[str]) -> int:
         workers=args.gunicorn_workers,
         timeout=args.gunicorn_timeout,
     )
-
-    # Copy only storage/data/manualPrefixes.json if it exists
-    src_manual = repo_root / "backend" / "storage" / "data" / "manualPrefixes.json"
-    dst_manual = built / "storage" / "data" / "manualPrefixes.json"
-    if src_manual.exists():
-        dst_manual.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src_manual, dst_manual)
-        # Ensure .dockerignore allows it (already configured by template above)
-    else:
-        msg = (
-            "WARNING: backend/storage/data/manualPrefixes.json not found. "
-            "The image will not contain manual prefix overrides unless you add it before building/deploying."
-        )
-        print(msg)
-        if args.require_manual_prefixes:
-            print("ERROR: --require-manual-prefixes was set; aborting.")
-            return 2
-
-    # Secondary check: if the file wasn't copied for any reason, warn
-    if not dst_manual.exists():
-        print(
-            "WARNING: Deploy folder missing storage/data/manualPrefixes.json. Ensure your .dockerignore allows it and run deploy from this folder."
-        )
 
     rel = os.path.relpath(built, repo_root)
     print(f"Fly deploy folder created: {built} (repo-relative: {rel})")
