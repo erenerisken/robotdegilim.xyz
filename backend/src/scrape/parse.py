@@ -2,7 +2,6 @@ import logging
 from typing import List, Dict, Tuple, cast
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-import requests
 
 from src.config import app_constants
 from src.errors import AbortScrapingError
