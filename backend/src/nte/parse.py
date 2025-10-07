@@ -77,9 +77,21 @@ def get_prefixed_code(numeric_code: str, dept_map: Dict[str, Any]) -> Optional[s
     return _deptify(prefix, numeric_code)
 
 def is_available_section(section: Dict[str, Any]) -> bool:
-    """Check if section is available (no constraints or has 'ALL' constraint)."""
-    constraints = section.get("c", [])
-    return (not constraints) or any(item.get("d") == "ALL" for item in constraints)
+    """A section is available if it has no constraints or explicitly allows all departments.
+
+    We normalize the department text to be robust against whitespace/casing and accept
+    common variants that indicate no restriction (e.g., "ALL", "ALL PROGRAMS").
+    """
+    constraints = section.get("c") or []
+    if not constraints:
+        return True
+    for item in constraints:
+        dept_text = str(item.get("d", "")).strip().upper()
+        if not dept_text:
+            continue
+        if dept_text == "ALL" or "ALL" in dept_text or "TUM" in dept_text or "TÜM" in dept_text:
+            return True
+    return False
 
 def build_available_index(courses: Dict[str, Any], dept_map: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
     """
