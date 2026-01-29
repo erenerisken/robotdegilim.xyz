@@ -42,6 +42,7 @@ dist/
 # Runtime data
 storage/
 data/
+s3-mock/
 
 # Node (if frontend assets are built here)
 node_modules/
