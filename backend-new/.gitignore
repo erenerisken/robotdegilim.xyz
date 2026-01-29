@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+*.pdb
+*.egg-info/
+*.egg
+*.whl
+
+# Virtualenv
+.venv/
+venv/
+ENV/
+
+# Env files
+.env
+
+# Editors/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test/coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Build artifacts
+build/
+dist/
+
+# Runtime data
+storage/
+data/
+
+# Node (if frontend assets are built here)
+node_modules/
