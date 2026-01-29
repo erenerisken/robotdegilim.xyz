@@ -40,7 +40,6 @@ build/
 dist/
 
 # Runtime data
-storage/
 data/
 s3-mock/
 
