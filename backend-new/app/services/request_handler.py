@@ -10,19 +10,16 @@ def handle_request(request_type: RequestType):
 
     if not acquire_lock():
         return ErrorResponse(message="Request handling failed, system is busy"), 503
-    
-    model, status = None, None
-    if req_type == RequestType.ROOT:
-        model, status = RootResponse(), 200
 
-    if req_type == RequestType.SCRAPE:
-        model, status = ScrapeResponse(status="Scraping started", data={"sample_key": "sample_value"}), 200
+    try:
+        if req_type == RequestType.ROOT:
+            return RootResponse(), 200
 
-    if not release_lock():
-        # log it
-        pass
-        
-    if model is not None and status is not None:
-        return model, status
+        if req_type == RequestType.SCRAPE:
+            return ScrapeResponse(status="Scraping started", data={"sample_key": "sample_value"}), 200
 
-    return ErrorResponse(message="Unknown request type"), 400
+        return ErrorResponse(message="Unknown request type"), 400
+    finally:
+        if not release_lock():
+            # log it
+            pass
