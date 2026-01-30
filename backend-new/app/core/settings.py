@@ -9,6 +9,21 @@ class Settings(BaseSettings):
 
     S3_LOCK_TIMEOUT_SECONDS: int = 300  # 5 minutes
 
+    HTTP_TIMEOUT: int = 15
+    GLOBAL_RETRIES: int = 5
+    RETRY_BASE_DELAY: float = 1.0
+    RETRY_JITTER: float = 0.25
+    DEFAULT_HEADERS: dict = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/145.0.7632.27 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9,tr-TR,tr;q=0.8",
+    }
+    THROTTLE_ENABLED: bool = False
+
     LOG_LEVEL: str = "INFO"
     LOG_JSON: bool = False
     LOG_CONSOLE: bool = True
