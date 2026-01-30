@@ -1,5 +1,16 @@
 from functools import lru_cache
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Field
+
+def _default_headers_factory():
+    return {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/145.0.7632.27 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9,tr-TR,tr;q=0.8",
+    }
 
 class Settings(BaseSettings):
     APP_NAME: str = "https://robotdegilim.xyz backend"
@@ -13,15 +24,7 @@ class Settings(BaseSettings):
     GLOBAL_RETRIES: int = 5
     RETRY_BASE_DELAY: float = 1.0
     RETRY_JITTER: float = 0.25
-    DEFAULT_HEADERS: dict = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/145.0.7632.27 Safari/537.36"
-        ),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9,tr-TR,tr;q=0.8",
-    }
+    DEFAULT_HEADERS: dict = Field(default_factory=_default_headers_factory)
     THROTTLE_ENABLED: bool = False
 
     LOG_LEVEL: str = "INFO"

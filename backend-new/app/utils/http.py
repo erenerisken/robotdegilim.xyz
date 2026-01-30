@@ -134,8 +134,8 @@ def _maybe_throttle():
     try:
         throttle=get_setting("THROTTLE_ENABLED", False)
         if throttle:
-            # placeholder throttle delay (replace with actual logic as needed)
-            time.sleep(1.0)
+            # throttle will be implemented later
+            pass
     except Exception:
         pass
 
