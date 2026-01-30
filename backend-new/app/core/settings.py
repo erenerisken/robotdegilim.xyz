@@ -2,10 +2,12 @@ from functools import lru_cache
 from pydantic import BaseSettings
 
 class Settings(BaseSettings):
-    app_name: str = "https://robotdegilim.xyz backend"
-    admin_email: str = "info.robotdegilim@gmail.com"
+    APP_NAME: str = "https://robotdegilim.xyz backend"
+    APP_DESCRIPTION: str = "Backend API for https://robotdegilim.xyz"
+    ADMIN_EMAIL: str = "info.robotdegilim@gmail.com"
+    APP_VERSION: str = "1.0.0"
 
-    s3_lock_timeout_seconds: int = 300  # 5 minutes
+    S3_LOCK_TIMEOUT_SECONDS: int = 300  # 5 minutes
 
 @lru_cache()
 def get_settings():

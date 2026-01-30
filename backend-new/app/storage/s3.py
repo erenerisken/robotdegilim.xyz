@@ -16,7 +16,7 @@ def acquire_lock():
     """Placeholder for actual s3-based locking mechanism."""
     lock_file_path = _lock_path()
     current_time = time.time()
-    timeout = float(get_setting("s3_lock_timeout_seconds", 60))
+    timeout = float(get_setting("S3_LOCK_TIMEOUT_SECONDS", 60))
 
     if not lock_file_path.exists():
         lock = {"owner": "dev1", "acquired_at": current_time, "expires_at": current_time + timeout}
