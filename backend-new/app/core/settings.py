@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     MAIL_RECIPIENT: str = ""
     MAIL_SUBJECT_PREFIX: str = "[robotdegilim]"
 
+    DATA_DIR: str = "data"
+
 @lru_cache()
 def get_settings():
     settings = Settings()
