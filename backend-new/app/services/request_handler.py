@@ -1,6 +1,7 @@
 from app.core.constants import RequestType
 from app.api.schemas import ErrorResponse, RootResponse, ScrapeResponse
 from app.storage.s3 import acquire_lock, release_lock
+from app.pipelines.scrape import run_scrape
 
 def handle_request(request_type: RequestType):
     try:
@@ -16,7 +17,8 @@ def handle_request(request_type: RequestType):
     
     try:
         if req_type == RequestType.SCRAPE:
-            return ScrapeResponse(status="Scraping started", data={"sample_key": "sample_value"}), 200
+            model, status_code = run_scrape()
+            return model, status_code
     finally:
         if not release_lock():
             # log it
