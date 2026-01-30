@@ -1,12 +1,9 @@
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 from app.core.settings import get_setting
 
 class ErrorResponse(BaseModel):
     message: str
-    info: Optional[dict] = None
 
 
 def _build_root_payload() -> dict:
