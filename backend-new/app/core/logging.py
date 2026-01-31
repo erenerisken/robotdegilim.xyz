@@ -3,7 +3,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 from pathlib import Path
 
-from app.core.settings import get_settings
+from app.core.settings import get_settings, get_path
 
 
 def _build_formatter():
@@ -17,7 +17,7 @@ def _build_formatter():
 def setup_logging():
     settings = get_settings()
 
-    log_dir = Path(settings.LOG_DIR)
+    log_dir = get_path("LOG_DIR")
     log_dir.mkdir(parents=True, exist_ok=True)
 
     level = getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO)

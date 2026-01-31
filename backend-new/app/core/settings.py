@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from pydantic import BaseSettings, Field
 
 def _default_headers_factory():
@@ -60,3 +61,8 @@ def get_settings():
 def get_setting(name: str, default=None):
     settings = get_settings()
     return getattr(settings, name, default)
+
+
+def get_path(name: str, default=None):
+    value = get_setting(name, default)
+    return Path(value) if value is not None else None

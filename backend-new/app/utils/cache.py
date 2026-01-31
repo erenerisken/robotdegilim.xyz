@@ -2,7 +2,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from app.core.settings import get_setting
+from app.core.settings import get_path
 
 
 def make_key(method, url, params=None, data=None, json_body=None):
@@ -60,7 +60,7 @@ class CacheStore:
 
 
 def _cache_dir():
-    base = Path(get_setting("DATA_DIR", "data"))
+    base = get_path("DATA_DIR")
     path = base / "cache"
     path.mkdir(parents=True, exist_ok=True)
     return path
