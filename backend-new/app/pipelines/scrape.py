@@ -11,7 +11,8 @@ from app.utils.cache import CacheStore
 from app.core.constants import NO_PREFIX_VARIANTS
 from app.storage.local import write_json
 from app.storage.s3 import upload_file
-from app.api.schemas import ScrapeResponse
+from app.api.schemas import ErrorResponse, ScrapeResponse
+from app.core.errors import AppError, ScrapeError
 
 
 def run_scrape():
@@ -172,4 +173,10 @@ def run_scrape():
         logger.info("Scraping process completed successfully and files uploaded to S3.")
         return ScrapeResponse(), 200
     except Exception as e:
-        return None, None
+        error_logger = get_logger("error")
+        if isinstance(e, AppError):
+            error_logger.error(e.to_log())
+        else:
+            err = ScrapeError(message="Scrape failed", code="SCRAPE_FAILED", cause=e)
+            error_logger.error(err.to_log())
+        return ErrorResponse(message="Scrape process failed, see the error logs for details."), 500
