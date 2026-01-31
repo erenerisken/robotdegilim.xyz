@@ -5,6 +5,7 @@ from bs4.element import Tag
 from app.core.errors import ScrapeError
 from app.core.constants import DAYS_MAP
 from app.scrape.fetch import get_section_page
+from app.core.logging import get_logger
 
 def _strip_upper(s) -> str:
     return str(s or "").strip().upper()
@@ -207,9 +208,19 @@ def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List
     return tags
 
 def extract_dept_prefix(catalog_soup):
-    h2 = catalog_soup.find("h2")
-    course_code_with_prefix = h2.get_text().split(" ")[0]
-    dept_prefix = "".join([char for char in course_code_with_prefix if char.isalpha()])
-    if dept_prefix:
-        return dept_prefix
-    return None
+    try:
+        h2 = catalog_soup.find("h2")
+        course_code_with_prefix = h2.get_text().split(" ")[0]
+        dept_prefix = "".join([char for char in course_code_with_prefix if char.isalpha()])
+        if dept_prefix:
+            return dept_prefix
+        return None
+    except Exception as e:
+        err = ScrapeError(
+            message="Failed to extract department prefix",
+            code="SCRAPE_EXTRACT_DEPT_PREFIX_FAILED",
+            cause=e,
+        )
+        logger = get_logger("scrape")
+        logger.warning(err.to_log())
+        return None

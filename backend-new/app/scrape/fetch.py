@@ -94,4 +94,4 @@ def get_course_catalog_page(dept_code: str, course_code: str):
         )
         logger = get_logger("scrape")
         logger.warning(err.to_log())
-        return None
+        return None, None, None
