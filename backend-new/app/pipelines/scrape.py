@@ -1,5 +1,6 @@
-import datetime
+from datetime import datetime
 from bs4 import BeautifulSoup
+import pytz
 
 from app.core.logging import get_logger
 from app.core.settings import get_path, get_setting
@@ -146,7 +147,7 @@ def run_scrape():
         data_path = data_dir / "staged" / "data.json"
         last_updated_path = data_dir / "staged" / "lastUpdated.json"
 
-        current_time = datetime.now(get_setting("TIMEZONE"))
+        current_time = datetime.now(pytz.timezone(get_setting("TIMEZONE")))
         formatted_time = current_time.strftime("%d.%m.%Y, %H.%M")
         last_updated_info = {
             "t": current_semester[0] + ":" + current_semester[1],
