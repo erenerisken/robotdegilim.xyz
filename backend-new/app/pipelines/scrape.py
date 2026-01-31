@@ -9,7 +9,7 @@ from app.scrape.io import load_local_dept_prefixes
 from app.scrape.parse import any_course, deptify, extract_courses, extract_current_semester, extract_departments, extract_dept_prefix, extract_sections
 from app.utils.cache import CacheStore
 from app.core.constants import NO_PREFIX_VARIANTS
-from app.utils.io import write_json
+from app.storage.local import write_json
 
 
 def run_scrape():

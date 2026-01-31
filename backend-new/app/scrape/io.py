@@ -1,5 +1,5 @@
 from app.core.settings import get_path
-from app.utils.io import read_json
+from app.storage.local import read_json
 from app.core.logging import get_logger
 from app.core.errors import ScrapeError
 
