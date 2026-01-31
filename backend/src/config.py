@@ -13,28 +13,12 @@ class app_constants:
     # No department data error message
     noDeptsErrMsg = "No departments data available."
 
-    # No prefix variants
-    no_prefix_variants = ["-no course-", "-", ""]
 
-
-    course_catalog_url = (
-        "https://catalog.metu.edu.tr/course.php?prog={dept_code}&course_code={course_code}"
-    )
     department_catalog_url = "http://catalog.metu.edu.tr/program.php?fac_prog={dept_code}"
 
     # NTE scraping
     nte_base_url = "https://muhfd.metu.edu.tr"
     nte_courses_url = "https://muhfd.metu.edu.tr/en/nte-courses"
-
-    days_dict = {
-        "Monday": 0,
-        "Tuesday": 1,
-        "Wednesday": 2,
-        "Thursday": 3,
-        "Friday": 4,
-        "Saturday": 5,
-        "Sunday": 6,
-    }
 
     DAY_MAP = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
 

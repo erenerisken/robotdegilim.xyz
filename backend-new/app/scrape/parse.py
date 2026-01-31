@@ -1,15 +1,13 @@
-import logging
 from typing import List, Dict, Tuple, cast
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from app.core.errors import ScrapeError
-
-logger = logging.getLogger(app_constants.log_scrape)
+from app.core.constants import DAYS_MAP
+from app.scrape.fetch import get_section_page
 
 def _strip_upper(s) -> str:
     return str(s or "").strip().upper()
-
 
 def extract_departments(
     soup: BeautifulSoup, dept_codes: List[str], dept_names: Dict[str, str]
@@ -27,7 +25,6 @@ def extract_departments(
                     dept_codes.append(value)
                     dept_names[value] = text
 
-
 def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
     semester_select = soup.find("select", {"name": "select_semester"})
     if semester_select:
@@ -37,7 +34,6 @@ def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
             text = (current_semester_option.get_text() or "").strip()
             return (value, text)
     raise ScrapeError("Extracting current semester failed", "SCRAPE_EXTRACT_CURRENT_SEMESTER_FAILED")
-
 
 def extract_courses(
     soup: BeautifulSoup, course_codes: List[str], course_names: Dict[str, str]
@@ -63,8 +59,7 @@ def extract_courses(
                         course_codes.append(course_code)
                         course_names[course_code] = course_name
 
-
-def extract_sections(soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
+def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
     try:
         form = soup.find("form")
         if not form:
@@ -95,7 +90,7 @@ def extract_sections(soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
                 time_cells = time_row.find_all("td")
                 if (
                     not time_cells[0].get_text()
-                    or time_cells[0].get_text() not in app_constants.days_dict
+                    or time_cells[0].get_text() not in DAYS_MAP
                 ):
                     continue
                 section_times.append(
@@ -103,19 +98,28 @@ def extract_sections(soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
                         "p": time_cells[3].find("font").get_text(),
                         "s": time_cells[1].find("font").get_text(),
                         "e": time_cells[2].find("font").get_text(),
-                        "d": app_constants.days_dict[time_cells[0].get_text()],
+                        "d": DAYS_MAP[time_cells[0].get_text()],
                     }
                 )
 
             section_code = info_cells[0].find("input").get("value")
             section_instructors = [info_cells[1].get_text(), info_cells[2].get_text()]
-            response = get_section(section_code)
+            cache_key, html_hash, response = get_section_page(section_code)
+            parsed = cache.get(cache_key, html_hash)
 
-            section_soup = BeautifulSoup(response.text, "html.parser")
-            section_constraints: List[Dict[str, str]] = []
-            form_msg = section_soup.find("div", id="formmessage").find("b").get_text()
-            if not form_msg:
-                extract_constraints(section_soup, section_constraints)
+            section_constraints = []
+            if parsed:
+                section_constraints = parsed["section_constraints"]
+            else:
+                section_soup = BeautifulSoup(response.text, "html.parser")
+                form_msg = section_soup.find("div", id="formmessage").find("b").get_text()
+                if not form_msg:
+                    extract_constraints(section_soup, section_constraints)
+                cache.set(
+                    cache_key,
+                    html_hash,
+                    {"section_constraints": section_constraints},
+                )
 
             section_node["i"] = section_instructors
             section_node["c"] = section_constraints
@@ -123,8 +127,11 @@ def extract_sections(soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
             sections[section_code] = section_node
 
     except Exception as e:
-        raise AbortScrapingError(f"Failed to extract sections, error: {str(e)}") from e
-
+        raise ScrapeError(
+            message="Failed to extract sections",
+            code="SCRAPE_EXTRACT_SECTIONS_FAILED",
+            cause=e,
+            )
 
 def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) -> None:
     try:
@@ -140,15 +147,17 @@ def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) 
                 }
             )
     except Exception as e:
-        raise AbortScrapingError(f"Error extracting constraints, error: {str(e)}") from e
-
+        raise ScrapeError(
+            message="Failed to extract constraints",
+            code="SCRAPE_EXTRACT_CONSTRAINTS_FAILED",
+            cause=e,
+        )
 
 def any_course(soup: BeautifulSoup) -> bool:
     form_msg = soup.find("div", id="formmessage").find("b").get_text()
     if form_msg:
         return False
     return True
-
 
 def deptify(prefix: str, course_code: str) -> str:
     result = "" + prefix
@@ -157,7 +166,6 @@ def deptify(prefix: str, course_code: str) -> str:
     else:
         result += course_code[3:]
     return result
-
 
 def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List[str]:
     stack: List[str] = []
@@ -190,6 +198,18 @@ def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List
             cindex += 1
 
     except Exception as e:
-        raise AbortScrapingError(f"Failed to extract tags, error: {str(e)}") from e
+        raise ScrapeError(
+            message="Failed to extract tags as string",
+            code="SCRAPE_EXTRACT_TAGS_AS_STRING_FAILED",
+            cause=e,
+        )
 
     return tags
+
+def extract_dept_prefix(catalog_soup):
+    h2 = catalog_soup.find("h2")
+    course_code_with_prefix = h2.get_text().split(" ")[0]
+    dept_prefix = "".join([char for char in course_code_with_prefix if char.isalpha()])
+    if dept_prefix:
+        return dept_prefix
+    return None

@@ -17,4 +17,4 @@ def load_local_dept_prefixes():
         err=ScrapeError(
             message="Failed to load local department prefixes", cause=e
         )
-        logger.warning(err)
+        logger.warning(err.to_log())
