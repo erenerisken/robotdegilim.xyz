@@ -45,6 +45,7 @@ class Settings(BaseSettings):
 
     DATA_DIR: str = "data"
 
+    SCRAPE_PARSER_VERSION: str = "1.0.0"
     OIBS64_URL: str = "https://oibs2.metu.edu.tr/View_Program_Course_Details_64/main.php"
 
 @lru_cache()
