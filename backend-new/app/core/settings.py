@@ -45,6 +45,8 @@ class Settings(BaseSettings):
 
     DATA_DIR: str = "data"
 
+    OIBS64_URL: str = "https://oibs2.metu.edu.tr/View_Program_Course_Details_64/main.php"
+
 @lru_cache()
 def get_settings():
     settings = Settings()

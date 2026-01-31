@@ -33,22 +33,6 @@ def run_scrape():
     This function assumes the caller has already marked the system busy.
     """
     try:
-        logger.info("Starting the scraping process.")
-
-        data_dir = app_constants.data_dir
-        data_dir.mkdir(parents=True, exist_ok=True)
-
-        response = get_main_page()
-        main_soup = BeautifulSoup(response.text, "html.parser")
-
-        dept_codes = []
-        dept_names = {}
-        dept_prefixes = load_prefixes_combined()
-
-        extract_departments(main_soup, dept_codes, dept_names)
-        current_semester = extract_current_semester(main_soup)
-
-        data = {}
         dept_len = len(dept_codes)
         for index, dept_code in enumerate(dept_codes, start=1):
             try:

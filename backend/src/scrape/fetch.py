@@ -10,15 +10,6 @@ from src.utils.http import get as http_get, post as http_post
 logger = logging.getLogger(app_constants.log_scrape)
 
 
-def get_main_page() -> Response:
-    try:
-        response = http_get(app_constants.oibs64_url, name="main_page")
-        response.encoding = "utf-8"
-        return response
-    except Exception as e:
-        raise AbortScrapingError(f"Failed to get main page, error: {str(e)}") from e
-
-
 def get_dept(
     dept_code: str,
     semester_code: str,
