@@ -86,12 +86,9 @@ def get_course_catalog_page(dept_code: str, course_code: str):
         html_hash= hash_content(response.text)
         return cache_key, html_hash, response
     except Exception as e:
-        err= ScrapeError(
+        raise ScrapeError(
             message=f"Failed to get course catalog page",
             code="SCRAPE_COURSE_CATALOG_PAGE_FAILED",
             context={"dept_code": dept_code, "course_code": course_code},
             cause=e,
         )
-        logger = get_logger("scrape")
-        logger.warning(err.to_log())
-        return None, None, None
