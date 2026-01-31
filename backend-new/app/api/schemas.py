@@ -29,5 +29,4 @@ class RootResponse(BaseModel):
     root: dict = Field(default_factory=_build_root_payload)
 
 class ScrapeResponse(BaseModel):
-    status: str
-    data: dict
+    message: str = "Scrape process completed successfully."

@@ -10,6 +10,8 @@ from app.scrape.parse import any_course, deptify, extract_courses, extract_curre
 from app.utils.cache import CacheStore
 from app.core.constants import NO_PREFIX_VARIANTS
 from app.storage.local import write_json
+from app.storage.s3 import upload_file
+from app.api.schemas import ScrapeResponse
 
 
 def run_scrape():
@@ -159,9 +161,15 @@ def run_scrape():
         write_json(data_path, data)
         write_json(last_updated_path, last_updated_info)
 
-        # upload files to s3 possible departmentsOverrides.json
+        upload_file(departments_path, "departments.json")
+        upload_file(departments_noprefix_path, "departmentsNoPrefix.json")
+        upload_file(data_path, "data.json")
+        upload_file(last_updated_path, "lastUpdated.json")
+        departmentsOverrides_path = data_dir / "raw" / "departmentsOverrides.json"
+        if departmentsOverrides_path.exists():
+            upload_file(departmentsOverrides_path, "departmentsOverrides.json")
 
         logger.info("Scraping process completed successfully and files uploaded to S3.")
-        return None, None
-    except Exception:
+        return ScrapeResponse(), 200
+    except Exception as e:
         return None, None
