@@ -2,6 +2,8 @@ from app.core.constants import RequestType
 from app.api.schemas import ErrorResponse, RootResponse, ScrapeResponse
 from app.storage.s3 import acquire_lock, release_lock
 from app.pipelines.scrape import run_scrape
+from app.core.errors import AppError
+from app.core.logging import get_logger
 
 def handle_request(request_type: RequestType):
     try:
@@ -21,7 +23,11 @@ def handle_request(request_type: RequestType):
             return model, status_code
     finally:
         if not release_lock():
-            # log it
-            pass
+            logger = get_logger("app")
+            err= AppError(
+                message="Failed to release lock after request handling",
+                code="LOCK_RELEASE_FAILED",
+            )
+            logger.warning(err.to_log())
 
     return ErrorResponse(message="Unknown request type"), 400
