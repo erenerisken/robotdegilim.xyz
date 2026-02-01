@@ -66,6 +66,8 @@ def run_scrape():
             else:
                 dept_soup = BeautifulSoup(response.text, "html.parser")
                 if not any_course(dept_soup):
+                    if dept_code not in department_prefixes:
+                        department_prefixes[dept_code] = "<no-course>"
                     cache.set(
                         cache_key,
                         html_hash,
