@@ -1,14 +1,15 @@
 from pydantic import BaseModel, Field
 
-from app.core.settings import get_setting
+from app.core.settings import get_settings
 from app.core.constants import RequestType
 
 def _build_root_payload() -> dict:
+    settings=get_settings()
     return {
-        "app_name": get_setting("APP_NAME", "https://robotdegilim.xyz backend"),
-        "admin_email": get_setting("ADMIN_EMAIL", "info.robotdegilim@gmail.com"),
-        "description": get_setting("APP_DESCRIPTION", "Backend API for https://robotdegilim.xyz"),
-        "version": get_setting("APP_VERSION", "1.0.0"),
+        "app_name": settings.APP_NAME,
+        "admin_email": settings.ADMIN_EMAIL,
+        "description": settings.APP_DESCRIPTION,
+        "version": settings.APP_VERSION,
         "endpoints": {
             "root": {
                 "path": "/",
