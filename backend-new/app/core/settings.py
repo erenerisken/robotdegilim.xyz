@@ -16,28 +16,29 @@ def _default_headers_factory():
     }
 
 class Settings(BaseSettings):
+    # Application settings
     APP_NAME: str = "https://robotdegilim.xyz backend"
     APP_DESCRIPTION: str = "Backend API for https://robotdegilim.xyz"
     ADMIN_EMAIL: str = "info.robotdegilim@gmail.com"
     APP_VERSION: str = "1.0.0"
+    # S3 Settings
     S3_LOCK_OWNER_ID: str = Field(default_factory=lambda: str(uuid.uuid4()))
-
     S3_LOCK_TIMEOUT_SECONDS: int = 3 * 60 * 60  # 3 hours
-
+    # HTTP settings
     HTTP_TIMEOUT: int = 15
     GLOBAL_RETRIES: int = 5
     RETRY_BASE_DELAY: float = 1.0
     RETRY_JITTER: float = 0.25
     DEFAULT_HEADERS: dict = Field(default_factory=_default_headers_factory)
     THROTTLE_ENABLED: bool = False
-
+    # Logging settings
     LOG_LEVEL: str = "INFO"
     LOG_JSON: bool = False
     LOG_CONSOLE: bool = True
     LOG_DIR: str = "data/logs"
     LOG_RETENTION_DAYS: int = 7
     TIMEZONE: str = "Europe/Istanbul"
-
+    # Mail logging settings
     MAIL_ENABLED: bool = False
     MAIL_SERVER: str = "smtp.gmail.com"
     MAIL_PORT: int = 587
@@ -46,9 +47,9 @@ class Settings(BaseSettings):
     MAIL_SENDER: str = ""
     MAIL_RECIPIENT: str = ""
     MAIL_SUBJECT_PREFIX: str = "[robotdegilim]"
-
+    # Paths
     DATA_DIR: str = "data"
-
+    # Scrape process settings
     SCRAPE_PARSER_VERSION: str = "1.0.0"
 
 @lru_cache()
