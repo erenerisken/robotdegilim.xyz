@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = "info.robotdegilim@gmail.com"
     APP_VERSION: str = "1.0.0"
 
-    S3_LOCK_TIMEOUT_SECONDS: int = 300  # 5 minutes
+    S3_LOCK_TIMEOUT_SECONDS: int = 3 * 60 * 60  # 3 hours
 
     HTTP_TIMEOUT: int = 15
     GLOBAL_RETRIES: int = 5
