@@ -6,10 +6,6 @@ class RequestType(str, Enum):
     SCRAPE = "scrape"
     ROOT = "root"
 
-
-class AppContext(BaseModel):
-    hello: str = "world"
-
 # Scrape proccess constants
 OIBS64_URL: str = "https://oibs2.metu.edu.tr/View_Program_Course_Details_64/main.php"
 COURSE_CATALOG_URL = ("https://catalog.metu.edu.tr/course.php?prog={dept_code}&course_code={course_code}")
