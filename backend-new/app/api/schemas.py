@@ -27,5 +27,5 @@ class RootResponse(BaseModel):
 class ResponseModel(BaseModel):
     request_type: RequestType
     status: str
-    messsage: str
+    message: str
     extra:dict | None = None
