@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+import uuid
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -19,6 +20,7 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = "Backend API for https://robotdegilim.xyz"
     ADMIN_EMAIL: str = "info.robotdegilim@gmail.com"
     APP_VERSION: str = "1.0.0"
+    S3_LOCK_OWNER_ID: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
     S3_LOCK_TIMEOUT_SECONDS: int = 3 * 60 * 60  # 3 hours
 
