@@ -1,6 +1,4 @@
 from enum import Enum
-from pydantic import BaseModel
-
 
 class RequestType(str, Enum):
     SCRAPE = "scrape"
