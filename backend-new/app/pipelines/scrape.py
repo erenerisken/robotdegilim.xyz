@@ -9,7 +9,7 @@ from app.scrape.io import load_local_dept_prefixes
 from app.scrape.parse import any_course, deptify, extract_courses, extract_current_semester, extract_departments, extract_dept_prefix, extract_sections
 from app.utils.cache import CacheStore
 from app.core.constants import NO_PREFIX_VARIANTS
-from app.storage.local import write_json
+from app.storage.local import move_file, write_json
 from app.storage.s3 import upload_file
 from app.api.schemas import ErrorResponse, ScrapeResponse
 from app.core.errors import AppError, ScrapeError
@@ -161,9 +161,13 @@ def run_scrape():
         
         data_dir = get_path("DATA_DIR")
         departments_path = data_dir / "staged" / "departments.json"
+        departments_published_path = data_dir / "published" / "departments.json"
         departments_noprefix_path = data_dir / "staged" / "departmentsNoPrefix.json"
+        departments_noprefix_published_path = data_dir / "published" / "departmentsNoPrefix.json"
         data_path = data_dir / "staged" / "data.json"
+        data_published_path = data_dir / "published" / "data.json"
         last_updated_path = data_dir / "staged" / "lastUpdated.json"
+        last_updated_published_path = data_dir / "published" / "lastUpdated.json"
 
         current_time = datetime.now(pytz.timezone(get_setting("TIMEZONE")))
         formatted_time = current_time.strftime("%d.%m.%Y, %H.%M")
@@ -184,6 +188,11 @@ def run_scrape():
         departmentsOverrides_path = data_dir / "raw" / "departmentsOverrides.json"
         if departmentsOverrides_path.exists():
             upload_file(departmentsOverrides_path, "departmentsOverrides.json")
+
+        move_file(departments_path, departments_published_path)
+        move_file(departments_noprefix_path, departments_noprefix_published_path)
+        move_file(data_path, data_published_path)
+        move_file(last_updated_path, last_updated_published_path)
 
         logger.info("Scraping process completed successfully and files uploaded to S3.")
         return ScrapeResponse(), 200
