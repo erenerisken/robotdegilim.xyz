@@ -37,3 +37,13 @@ def move_file(src_path, dst_path):
         return str(dst)
     except Exception as e:
         raise StorageError(message="Failed to move file", context={"src": str(src_path), "dst": str(dst_path)}, cause=e)
+
+def delete_file(path):
+    try:
+        p = Path(path)
+        if p.exists():
+            p.unlink()
+            return True
+        return False
+    except Exception as e:
+        raise StorageError(message="Failed to delete file", context={"path": str(path)}, cause=e)
