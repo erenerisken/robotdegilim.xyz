@@ -5,6 +5,7 @@ from pathlib import Path
 
 from app.core.settings import get_settings, get_path
 
+_logger_names = ["app", "scrape", "error"]
 
 def _build_formatter():
     settings = get_settings()
@@ -13,6 +14,12 @@ def _build_formatter():
     fmt = "%(asctime)s %(levelname)s %(name)s: %(message)s"
     return logging.Formatter(fmt)
 
+
+def log_item(logger_name: str, level: int, message: str):
+    if logger_name not in _logger_names:
+        logger_name = "app"
+    logger = logging.getLogger(logger_name)
+    logger.log(level, message)
 
 def setup_logging():
     settings = get_settings()
@@ -48,11 +55,6 @@ def setup_logging():
         error_logger.addHandler(console)
 
     _add_email_handler(error_logger)
-
-
-def get_logger(name: str) -> logging.Logger:
-    return logging.getLogger(name)
-
 
 def _add_handler(logger: logging.Logger, path: Path, formatter: logging.Formatter, level: int):
     handler = TimedRotatingFileHandler(
