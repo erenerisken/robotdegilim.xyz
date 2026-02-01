@@ -1,10 +1,7 @@
 from pydantic import BaseModel, Field
 
 from app.core.settings import get_setting
-
-class ErrorResponse(BaseModel):
-    message: str
-
+from app.core.constants import RequestType
 
 def _build_root_payload() -> dict:
     return {
@@ -24,9 +21,11 @@ def _build_root_payload() -> dict:
         },
     }
 
-
 class RootResponse(BaseModel):
     root: dict = Field(default_factory=_build_root_payload)
 
-class ScrapeResponse(BaseModel):
-    message: str = "Scrape process completed successfully."
+class ResponseModel(BaseModel):
+    request_type: RequestType
+    status: str
+    messsage: str
+    extra:dict | None = None
