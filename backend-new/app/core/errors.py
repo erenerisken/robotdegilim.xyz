@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import inspect
 from typing import Any, Optional
 
 
@@ -10,6 +11,15 @@ class AppError(Exception):
     code: Optional[str] = None
     context: dict = field(default_factory=dict)
     cause: Optional[Exception] = None
+
+    def __post_init__(self) -> None:
+        # Capture the caller function where the error was created.
+        if "caller" not in self.context:
+            try:
+                frame = inspect.stack()[2]
+                self.context["caller"] = frame.function
+            except Exception:
+                self.context["caller"] = "unknown"
 
     def __str__(self) -> str:
         return self.message

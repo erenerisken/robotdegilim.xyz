@@ -103,10 +103,10 @@ def run_scrape():
                         )
                     department_prefixes[dept_code] = dept_prefix
                 except Exception as e:
-                    if e is isinstance(AppError):
+                    if isinstance(e, AppError):
                         logger.warning(e.to_log())
                     else:
-                        err= ScrapeError(
+                        err = ScrapeError(
                             message="dept_prefix determination failed",
                             code="SCRAPE_DEPT_PREFIX_FAILED",
                             context={"dept_code": dept_code},
@@ -188,8 +188,8 @@ def run_scrape():
     except Exception as e:
         error_logger = get_logger("error")
         if isinstance(e, AppError):
-            error_logger.error(e.to_log())
+            error_logger.exception(e.to_log())
         else:
             err = ScrapeError(message="Scrape failed", code="SCRAPE_FAILED", cause=e)
-            error_logger.error(err.to_log())
+            error_logger.exception(err.to_log())
         return ErrorResponse(message="Scrape process failed, see the error logs for details."), 500
