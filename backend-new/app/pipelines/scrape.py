@@ -84,23 +84,36 @@ def run_scrape():
                 continue
             
             if(dept_code not in department_prefixes or department_prefixes[dept_code] in NO_PREFIX_VARIANTS):
-                cache_key, html_hash, response = get_course_catalog_page(dept_code, course_codes[0])
-                parsed = cache.get(cache_key, html_hash)
+                try:
+                    cache_key, html_hash, response = get_course_catalog_page(dept_code, course_codes[0])
+                    parsed = cache.get(cache_key, html_hash)
 
-                dept_prefix = None
-                if parsed:
-                    dept_prefix = parsed["dept_prefix"]
-                else:
-                    catalog_soup = BeautifulSoup(response.text, "html.parser")
-                    dept_prefix = extract_dept_prefix(catalog_soup)
-                    if not dept_prefix:
-                        dept_prefix = "<prefix-not-found>"
-                    cache.set(
-                        cache_key,
-                        html_hash,
-                        {"dept_prefix": dept_prefix},
-                    )
-                department_prefixes[dept_code] = dept_prefix
+                    dept_prefix = None
+                    if parsed:
+                        dept_prefix = parsed["dept_prefix"]
+                    else:
+                        catalog_soup = BeautifulSoup(response.text, "html.parser")
+                        dept_prefix = extract_dept_prefix(catalog_soup)
+                        if not dept_prefix:
+                            dept_prefix = "<prefix-not-found>"
+                        cache.set(
+                            cache_key,
+                            html_hash,
+                            {"dept_prefix": dept_prefix},
+                        )
+                    department_prefixes[dept_code] = dept_prefix
+                except Exception as e:
+                    if e is isinstance(AppError):
+                        logger.warning(e.to_log())
+                    else:
+                        err= ScrapeError(
+                            message="dept_prefix determination failed",
+                            code="SCRAPE_DEPT_PREFIX_FAILED",
+                            context={"dept_code": dept_code},
+                            cause=e,
+                        )
+                        logger.warning(err.to_log())
+                    department_prefixes[dept_code] = "<prefix-not-found>"
 
             for course_code in course_codes:
                 cache_key, html_hash, response = get_course_page(course_code)
