@@ -1,7 +1,6 @@
 import hashlib
 import json
 
-from app.core.settings import get_path
 from app.core.errors import AppError
 
 
