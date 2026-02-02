@@ -6,7 +6,7 @@ from app.storage.s3 import acquire_lock, release_lock
 from app.pipelines.scrape import run_scrape
 from app.core.errors import AppError
 from app.core.logging import log_item
-from app.context.service import load_context, apply_context_updates, queue_request, get_next_request, detach_context, publish_context
+from app.context.service import load_context, queue_request, get_next_request, publish_context
 
 _allow_context_modification = False
 
@@ -21,8 +21,8 @@ def handle_request(request_type: RequestType):
         if not acquire_lock():
             if _allow_context_modification:
                 queue_request(request_type)
-                return ResponseModel(request_type=request_type,status="REQUEST_QUEUED",message="Request queued"), 202
-            return ResponseModel(request_type=request_type,status="BUSY",message="System is busy processing another request"), 503
+                return ResponseModel(request_type=request_type.value,status="REQUEST_QUEUED",message="Request queued"), 202
+            return ResponseModel(request_type=request_type.value,status="BUSY",message="System is busy processing another request"), 503
 
         _allow_context_modification = True
         load_context()
@@ -48,12 +48,10 @@ def handle_request(request_type: RequestType):
             cause=e,
         )
         log_item("error",logging.ERROR, err.to_log())
-        return ResponseModel(request_type=request_type,status="ERROR",message=err.message), 500
+        return ResponseModel(request_type=request_type.value,status="ERROR",message=err.message), 500
     finally:
         _allow_context_modification = False
-        apply_context_updates()
         publish_context()
-        detach_context()
         try:   
             if not release_lock():
                 raise AppError(

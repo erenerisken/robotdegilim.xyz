@@ -9,10 +9,10 @@ router = APIRouter()
 
 @router.get("/")
 def root():
-    model, status_code = handle_request(RequestType.ROOT.value)
+    model, status_code = handle_request(RequestType.ROOT)
     return JSONResponse(content=model.model_dump(), status_code=status_code)
 
 @router.get("/run-scrape")
 def run_scrape():
-    model, status_code = handle_request(RequestType.SCRAPE.value)
+    model, status_code = handle_request(RequestType.SCRAPE)
     return JSONResponse(content=model.model_dump(), status_code=status_code)

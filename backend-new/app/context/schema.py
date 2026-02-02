@@ -1,4 +1,3 @@
-from enum import Enum
 from pydantic import BaseModel, Field
 
 from app.core.constants import RequestType
@@ -13,12 +12,3 @@ class AppContext(BaseModel):
     in_queue: dict[str, bool] = Field(default_factory=_in_queue_factory)
     error_count: int = 0
     suspended: bool = False
-
-class ContextUpdateType(str, Enum):
-    NULL = "null"
-    ENQUEUE_REQUEST = "enqueue_request"
-    INCREMENT_ERROR_COUNT = "increment_error_count"
-
-class ContextUpdate(BaseModel):
-    update_type: ContextUpdateType = ContextUpdateType.NULL
-    request_type: RequestType | None = None
