@@ -23,3 +23,29 @@ DAYS_MAP = {
     "Saturday": 5,
     "Sunday": 6,
 }
+
+# Data directory names
+DATA_SUBDIR_RAW = "raw"
+DATA_SUBDIR_STAGED = "staged"
+DATA_SUBDIR_PUBLISHED = "published"
+DATA_SUBDIR_DOWNLOADED = "downloaded"
+DATA_SUBDIR_CACHE = "cache"
+
+# Shared file keys / names
+CONTEXT_KEY = "context.json"
+SCRAPE_CACHE_FILE = "scrape_cache.json"
+DEPARTMENTS_FILE = "departments.json"
+DEPARTMENTS_NO_PREFIX_FILE = "departmentsNoPrefix.json"
+DEPARTMENTS_OVERRIDES_FILE = "departmentsOverrides.json"
+DATA_FILE = "data.json"
+LAST_UPDATED_FILE = "lastUpdated.json"
+
+# Logger names
+LOGGER_APP = "app"
+LOGGER_SCRAPE = "scrape"
+LOGGER_ERROR = "error"
+
+# Log file names
+LOG_FILE_APP = "app.log"
+LOG_FILE_SCRAPE = "scrape.log"
+LOG_FILE_ERROR = "error.log"

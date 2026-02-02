@@ -6,10 +6,19 @@ from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 from pathlib import Path
 from typing import Any
 
+from app.core.constants import (
+    LOG_FILE_APP,
+    LOG_FILE_ERROR,
+    LOG_FILE_SCRAPE,
+    LOGGER_APP,
+    LOGGER_ERROR,
+    LOGGER_SCRAPE,
+)
 from app.core.errors import AppError
-from app.core.settings import get_path, get_settings
+from app.core.paths import log_dir
+from app.core.settings import get_settings
 
-_LOGGER_NAMES: tuple[str, ...] = ("app", "scrape", "error")
+_LOGGER_NAMES: tuple[str, ...] = (LOGGER_APP, LOGGER_SCRAPE, LOGGER_ERROR)
 
 
 def _build_formatter() -> logging.Formatter:
@@ -32,7 +41,7 @@ def log_item(
 ) -> None:
     """Log an item to a named logger with unified AppError support."""
     if logger_name not in _LOGGER_NAMES:
-        logger_name = "app"
+        logger_name = LOGGER_APP
     logger = logging.getLogger(logger_name)
     if isinstance(log, AppError):
         log.log(logger, level)
@@ -48,14 +57,14 @@ def setup_logging() -> None:
     """Configure app, scrape, and error loggers with file/console/mail handlers."""
     settings = get_settings()
 
-    log_dir = get_path("LOG_DIR")
-    log_dir.mkdir(parents=True, exist_ok=True)
+    log_dir_path = log_dir()
+    log_dir_path.mkdir(parents=True, exist_ok=True)
 
     level = getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO)
 
-    app_logger = logging.getLogger("app")
-    scrape_logger = logging.getLogger("scrape")
-    error_logger = logging.getLogger("error")
+    app_logger = logging.getLogger(LOGGER_APP)
+    scrape_logger = logging.getLogger(LOGGER_SCRAPE)
+    error_logger = logging.getLogger(LOGGER_ERROR)
 
     for lg in (app_logger, scrape_logger, error_logger):
         lg.setLevel(level)
@@ -64,12 +73,12 @@ def setup_logging() -> None:
 
     formatter = _build_formatter()
 
-    app_file = log_dir / "app.log"
-    jobs_file = log_dir / "jobs.log"
-    err_file = log_dir / "error.log"
+    app_file = log_dir_path / LOG_FILE_APP
+    scrape_file = log_dir_path / LOG_FILE_SCRAPE
+    err_file = log_dir_path / LOG_FILE_ERROR
 
     _add_handler(app_logger, app_file, formatter, level)
-    _add_handler(scrape_logger, jobs_file, formatter, level)
+    _add_handler(scrape_logger, scrape_file, formatter, level)
     _add_handler(error_logger, err_file, formatter, logging.ERROR)
 
     if settings.LOG_CONSOLE:
