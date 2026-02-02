@@ -8,10 +8,22 @@ import pytz
 from bs4 import BeautifulSoup
 
 from app.api.schemas import ResponseModel
-from app.core.constants import NO_PREFIX_VARIANTS, RequestType
+from app.core.constants import (
+    DATA_FILE,
+    DEPARTMENTS_FILE,
+    DEPARTMENTS_NO_PREFIX_FILE,
+    DEPARTMENTS_OVERRIDES_FILE,
+    LAST_UPDATED_FILE,
+    NO_PREFIX_VARIANTS,
+    RequestType,
+    SCRAPE_CACHE_FILE,
+    LOGGER_SCRAPE,
+    LOGGER_ERROR,
+)
 from app.core.errors import AppError
 from app.core.logging import log_item
-from app.core.settings import get_path, get_settings
+from app.core.paths import cache_path, published_path, raw_path, staged_path
+from app.core.settings import get_settings
 from app.scrape.fetch import (
     get_course_catalog_page,
     get_course_page,
@@ -36,13 +48,11 @@ from app.utils.cache import CacheStore
 def run_scrape() -> tuple[ResponseModel, int]:
     """Run full scrape process, publish output files, and return API response."""
     try:
-        logger_name = "scrape"
-        cache_dir = get_path("DATA_DIR") / "cache"
         settings = get_settings()
-        cache = CacheStore(path=cache_dir / "scrape_cache.json", parser_version=settings.SCRAPE_PARSER_VERSION)
+        cache = CacheStore(path=cache_path(SCRAPE_CACHE_FILE), parser_version=settings.SCRAPE_PARSER_VERSION)
         cache.load()
 
-        log_item(logger_name, logging.INFO, "Scraping process started.")
+        log_item(LOGGER_SCRAPE, logging.INFO, "Scraping process started.")
 
         cache_key, html_hash, response = get_main_page()
         parsed = cache.get(cache_key, html_hash)
@@ -134,7 +144,7 @@ def run_scrape() -> tuple[ResponseModel, int]:
                         context={"dept_code": dept_code},
                         cause=e,
                     )
-                    log_item("scrape", logging.WARNING, err)
+                    log_item(LOGGER_SCRAPE, logging.WARNING, err)
                     department_prefixes[dept_code] = "<prefix-not-found>"
 
             for course_code in course_codes:
@@ -162,7 +172,7 @@ def run_scrape() -> tuple[ResponseModel, int]:
                 data[int(course_code)] = course_node
             if index % 10 == 0:
                 progress = (index / dept_len) * 100
-                log_item("scrape", logging.INFO, f"completed {progress:.2f}% ({index}/{dept_len})")
+                log_item(LOGGER_SCRAPE, logging.INFO, f"completed {progress:.2f}% ({index}/{dept_len})")
 
         cache.flush()
 
@@ -179,15 +189,14 @@ def run_scrape() -> tuple[ResponseModel, int]:
                     "p": department_prefixes[dept_code],
                 }
         
-        data_dir = get_path("DATA_DIR")
-        departments_path = data_dir / "staged" / "departments.json"
-        departments_published_path = data_dir / "published" / "departments.json"
-        departments_noprefix_path = data_dir / "staged" / "departmentsNoPrefix.json"
-        departments_noprefix_published_path = data_dir / "published" / "departmentsNoPrefix.json"
-        data_path = data_dir / "staged" / "data.json"
-        data_published_path = data_dir / "published" / "data.json"
-        last_updated_path = data_dir / "staged" / "lastUpdated.json"
-        last_updated_published_path = data_dir / "published" / "lastUpdated.json"
+        departments_path = staged_path(DEPARTMENTS_FILE)
+        departments_published_path = published_path(DEPARTMENTS_FILE)
+        departments_noprefix_path = staged_path(DEPARTMENTS_NO_PREFIX_FILE)
+        departments_noprefix_published_path = published_path(DEPARTMENTS_NO_PREFIX_FILE)
+        data_path = staged_path(DATA_FILE)
+        data_published_path = published_path(DATA_FILE)
+        last_updated_path = staged_path(LAST_UPDATED_FILE)
+        last_updated_published_path = published_path(LAST_UPDATED_FILE)
 
         current_time = datetime.now(pytz.timezone(settings.TIMEZONE))
         formatted_time = current_time.strftime("%d.%m.%Y, %H.%M")
@@ -201,20 +210,20 @@ def run_scrape() -> tuple[ResponseModel, int]:
         write_json(data_path, data)
         write_json(last_updated_path, last_updated_info)
 
-        upload_file(departments_path, "departments.json")
-        upload_file(departments_noprefix_path, "departmentsNoPrefix.json")
-        upload_file(data_path, "data.json")
-        upload_file(last_updated_path, "lastUpdated.json")
-        departmentsOverrides_path = data_dir / "raw" / "departmentsOverrides.json"
-        if departmentsOverrides_path.exists():
-            upload_file(departmentsOverrides_path, "departmentsOverrides.json")
+        upload_file(departments_path, DEPARTMENTS_FILE)
+        upload_file(departments_noprefix_path, DEPARTMENTS_NO_PREFIX_FILE)
+        upload_file(data_path, DATA_FILE)
+        upload_file(last_updated_path, LAST_UPDATED_FILE)
+        departments_overrides_path = raw_path(DEPARTMENTS_OVERRIDES_FILE)
+        if departments_overrides_path.exists():
+            upload_file(departments_overrides_path, DEPARTMENTS_OVERRIDES_FILE)
 
         move_file(departments_path, departments_published_path)
         move_file(departments_noprefix_path, departments_noprefix_published_path)
         move_file(data_path, data_published_path)
         move_file(last_updated_path, last_updated_published_path)
 
-        log_item("scrape", logging.INFO, "Scraping process completed successfully and files uploaded to S3.")
+        log_item(LOGGER_SCRAPE, logging.INFO, "Scraping process completed successfully and files uploaded to S3.")
         return ResponseModel(request_type=RequestType.SCRAPE, status="SUCCESS", message="Scraping process completed successfully and files uploaded to S3."), 200
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError(
@@ -222,5 +231,5 @@ def run_scrape() -> tuple[ResponseModel, int]:
             code="SCRAPE_PROCESS_FAILED",
             cause=e,
         )
-        log_item("error", logging.ERROR, err)
+        log_item(LOGGER_ERROR, logging.ERROR, err)
         return ResponseModel(request_type=RequestType.SCRAPE, status="FAILED", message="Scrape process failed, see the error logs for details."), 500
