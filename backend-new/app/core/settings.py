@@ -44,7 +44,6 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_JSON: bool = False
     LOG_CONSOLE: bool = True
-    LOG_DIR: str = "data/logs"
     LOG_RETENTION_DAYS: int = 7
     TIMEZONE: str = "Europe/Istanbul"
     # Mail logging settings
@@ -58,6 +57,7 @@ class Settings(BaseSettings):
     MAIL_SUBJECT_PREFIX: str = "[robotdegilim]"
     # Paths
     DATA_DIR: str = "data"
+    LOG_DIR: str = "data/logs"
     # Scrape process settings
     SCRAPE_PARSER_VERSION: str = "1.0.0"
 
