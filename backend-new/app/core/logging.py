@@ -1,14 +1,19 @@
+"""Centralized logging setup and helper utilities for the application."""
+
 import json
 import logging
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 from pathlib import Path
+from typing import Any
 
-from app.core.settings import get_settings, get_path
 from app.core.errors import AppError
+from app.core.settings import get_path, get_settings
 
-_logger_names = ["app", "scrape", "error"]
+_LOGGER_NAMES: tuple[str, ...] = ("app", "scrape", "error")
 
-def _build_formatter():
+
+def _build_formatter() -> logging.Formatter:
+    """Build the configured formatter (plain text or JSON)."""
     settings = get_settings()
     if settings.LOG_JSON:
         return _JsonFormatter()
@@ -16,21 +21,31 @@ def _build_formatter():
     return logging.Formatter(fmt)
 
 
-def log_item(logger_name: str, level: int, log, *, exc_info=None, stack_info: bool = False, extra: dict | None = None):
-    if logger_name not in _logger_names:
+def log_item(
+    logger_name: str,
+    level: int,
+    log: Any,
+    *,
+    exc_info: Any = None,
+    stack_info: bool = False,
+    extra: dict[str, Any] | None = None,
+) -> None:
+    """Log an item to a named logger with unified AppError support."""
+    if logger_name not in _LOGGER_NAMES:
         logger_name = "app"
     logger = logging.getLogger(logger_name)
     if isinstance(log, AppError):
-        log.log(logger,level)
+        log.log(logger, level)
     else:
         try:
             logger.log(level, str(log), exc_info=exc_info, stack_info=stack_info, extra=extra)
         except Exception as e:
-            err=e if isinstance(e, AppError) else AppError("Logging failed", "LOGGING_FAILED", cause=e)
+            err = e if isinstance(e, AppError) else AppError("Logging failed", "LOGGING_FAILED", cause=e)
             raise err
 
 
-def setup_logging():
+def setup_logging() -> None:
+    """Configure app, scrape, and error loggers with file/console/mail handlers."""
     settings = get_settings()
 
     log_dir = get_path("LOG_DIR")
@@ -44,6 +59,8 @@ def setup_logging():
 
     for lg in (app_logger, scrape_logger, error_logger):
         lg.setLevel(level)
+        lg.handlers.clear()
+        lg.propagate = False
 
     formatter = _build_formatter()
 
@@ -65,7 +82,9 @@ def setup_logging():
 
     _add_email_handler(error_logger)
 
-def _add_handler(logger: logging.Logger, path: Path, formatter: logging.Formatter, level: int):
+
+def _add_handler(logger: logging.Logger, path: Path, formatter: logging.Formatter, level: int) -> None:
+    """Add a timed rotating file handler to a logger."""
     handler = TimedRotatingFileHandler(
         path,
         when="midnight",
@@ -104,6 +123,8 @@ def _add_email_handler(error_logger: logging.Logger) -> None:
 
 
 class _JsonFormatter(logging.Formatter):
+    """Minimal JSON formatter for structured logs."""
+
     def format(self, record: logging.LogRecord) -> str:
         payload = {
             "ts": self.formatTime(record, datefmt="%Y-%m-%dT%H:%M:%S%z"),
