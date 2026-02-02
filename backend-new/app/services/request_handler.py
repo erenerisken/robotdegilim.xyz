@@ -4,7 +4,7 @@ import logging
 
 from app.api.schemas import ResponseModel, RootResponse
 from app.context.service import get_next_request, load_context, publish_context, queue_request
-from app.core.constants import RequestType
+from app.core.constants import RequestType, LOGGER_ERROR
 from app.core.errors import AppError
 from app.core.logging import log_item
 from app.pipelines.scrape import run_scrape
@@ -56,7 +56,7 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
             code="REQUEST_HANDLING_FAILED",
             cause=e,
         )
-        log_item("error", logging.ERROR, err)
+        log_item(LOGGER_ERROR, logging.ERROR, err)
         return ResponseModel(request_type=request_type, status="ERROR", message=err.message), 500
     finally:
         _allow_context_modification = False
@@ -69,7 +69,7 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
                     code="CONTEXT_PUBLISH_FAILED",
                     cause=e,
                 )
-                log_item("error", logging.ERROR, err)
+                log_item(LOGGER_ERROR, logging.ERROR, err)
             try:
                 if not release_lock():
                     raise AppError(
@@ -82,4 +82,4 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
                     code="LOCK_RELEASE_FAILED",
                     cause=e,
                 )
-                log_item("error", logging.ERROR, err)
+                log_item(LOGGER_ERROR, logging.ERROR, err)
