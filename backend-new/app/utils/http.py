@@ -1,36 +1,57 @@
+"""HTTP helper functions with retry/backoff and shared session management."""
+
+from collections.abc import Iterable
 import random
 import time
+from typing import Any
+
 import requests
+from requests import Response, Session
 
 from app.core.errors import AppError
 from app.core.settings import get_settings
 
-_SESSION = None
+_SESSION: Session | None = None
 
-def get_session():
+
+def get_session() -> Session:
+    """Return a shared requests session configured with default headers."""
     global _SESSION
     if _SESSION is not None:
         return _SESSION
     session = requests.Session()
-    settings= get_settings()
+    settings = get_settings()
     headers = settings.DEFAULT_HEADERS
     if isinstance(headers, dict):
         session.headers.update(headers)
     _SESSION = session
     return _SESSION
 
-def reset_session():
+
+def reset_session() -> None:
+    """Reset the shared HTTP session."""
     global _SESSION
     _SESSION = None
 
-def request(method, url, *, params=None, data=None, json_body=None, ok_status=None, name=None):
+
+def request(
+    method: str,
+    url: str,
+    *,
+    params: Any = None,
+    data: Any = None,
+    json_body: Any = None,
+    ok_status: Iterable[int] | None = None,
+    name: str | None = None,
+) -> Response:
+    """Send an HTTP request with retries and backoff."""
     settings = get_settings()
     timeout = float(settings.HTTP_TIMEOUT)
     max_tries = int(settings.GLOBAL_RETRIES)
     base_delay = float(settings.RETRY_BASE_DELAY)
     jitter = float(settings.RETRY_JITTER)
 
-    ctx={"method": method, "url": url}
+    ctx: dict[str, Any] = {"method": method, "url": url}
     if params:
         ctx["params"] = params
     if data:
@@ -41,8 +62,10 @@ def request(method, url, *, params=None, data=None, json_body=None, ok_status=No
         ctx["name"] = name
 
     if ok_status is None:
-        ok_status = [200]
-    last_error = None
+        ok_status = {200}
+    else:
+        ok_status = set(ok_status)
+    last_error: Exception | None = None
     for attempt in range(1, max_tries + 1):
         _maybe_throttle()
         try:
@@ -74,23 +97,26 @@ def request(method, url, *, params=None, data=None, json_body=None, ok_status=No
     raise AppError("HTTP request failed, giving up", "HTTP_REQUEST_FAILED", context=ctx, cause=last_error)
 
 
-def get(url, **kwargs):
+def get(url: str, **kwargs: Any) -> Response:
+    """Send an HTTP GET request."""
     try:
         return request("GET", url, **kwargs)
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("GET request failed", "GET_REQUEST_FAILED", context={"url": url,**kwargs}, cause=e)
+        err = e if isinstance(e, AppError) else AppError("GET request failed", "GET_REQUEST_FAILED", context={"url": url, **kwargs}, cause=e)
         raise err
 
 
-def post(url, *, data=None, **kwargs):
+def post(url: str, *, data: Any = None, **kwargs: Any) -> Response:
+    """Send an HTTP POST request."""
     try:
         return request("POST", url, data=data, **kwargs)
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("POST request failed", "POST_REQUEST_FAILED", context={"url": url, "data": data, **kwargs}, cause=e)
+        err = e if isinstance(e, AppError) else AppError("POST request failed", "POST_REQUEST_FAILED", context={"url": url, "data": data, **kwargs}, cause=e)
         raise err
 
 
-def _should_retry(status_code):
+def _should_retry(status_code: int | None) -> bool:
+    """Return True if the response status should be retried."""
     if status_code is None:
         return True
     if status_code == 429:
@@ -100,14 +126,16 @@ def _should_retry(status_code):
     return False
 
 
-def _sleep_with_jitter(base_delay, jitter, attempt):
+def _sleep_with_jitter(base_delay: float, jitter: float, attempt: int) -> None:
+    """Sleep with linear backoff and random jitter."""
     delay = (base_delay * attempt) + random.uniform(0, jitter)
     time.sleep(max(0.0, delay))
 
 
-def _maybe_throttle():
+def _maybe_throttle() -> None:
+    """Apply throttling when enabled (placeholder)."""
     try:
-        throttle=get_settings().THROTTLE_ENABLED
+        throttle = get_settings().THROTTLE_ENABLED
         if throttle:
             # throttle will be implemented later
             pass
