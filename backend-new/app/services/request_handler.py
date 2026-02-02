@@ -6,7 +6,7 @@ from app.storage.s3 import acquire_lock, release_lock
 from app.pipelines.scrape import run_scrape
 from app.core.errors import AppError
 from app.core.logging import log_item
-from app.context.api import load_context, apply_context_updates, queue_request, get_next_request,detach_context, publish_context
+from app.context.service import load_context, apply_context_updates, queue_request, get_next_request, detach_context, publish_context
 
 _allow_context_modification = False
 

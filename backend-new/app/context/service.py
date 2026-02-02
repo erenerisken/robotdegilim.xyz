@@ -1,4 +1,4 @@
-from app.context.definitions import AppContext, ContextUpdate, ContextUpdateType, S3_CONTEXT_KEY
+from app.context.schema import AppContext, ContextUpdate, ContextUpdateType, S3_CONTEXT_KEY
 from app.storage.s3 import download_file, upload_file, file_exist
 from app.storage.local import move_file, read_json, write_json
 from app.core.settings import get_path
