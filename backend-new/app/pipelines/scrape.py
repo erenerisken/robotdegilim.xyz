@@ -1,27 +1,45 @@
-from datetime import datetime
-from bs4 import BeautifulSoup
-import pytz
-import logging
+"""Scrape pipeline orchestrator for full data refresh workflow."""
 
+from datetime import datetime
+import logging
+from typing import Any
+
+import pytz
+from bs4 import BeautifulSoup
+
+from app.api.schemas import ResponseModel
+from app.core.constants import NO_PREFIX_VARIANTS, RequestType
+from app.core.errors import AppError
 from app.core.logging import log_item
 from app.core.settings import get_path, get_settings
-from app.scrape.fetch import get_course_catalog_page, get_course_page, get_main_page, get_department_page
+from app.scrape.fetch import (
+    get_course_catalog_page,
+    get_course_page,
+    get_department_page,
+    get_main_page,
+)
 from app.scrape.io import load_local_dept_prefixes
-from app.scrape.parse import any_course, deptify, extract_courses, extract_current_semester, extract_departments, extract_dept_prefix, extract_sections
-from app.utils.cache import CacheStore
-from app.core.constants import NO_PREFIX_VARIANTS, RequestType
+from app.scrape.parse import (
+    any_course,
+    deptify,
+    extract_courses,
+    extract_current_semester,
+    extract_departments,
+    extract_dept_prefix,
+    extract_sections,
+)
 from app.storage.local import move_file, write_json
 from app.storage.s3 import upload_file
-from app.api.schemas import ResponseModel
-from app.core.errors import AppError
+from app.utils.cache import CacheStore
 
 
-def run_scrape():
+def run_scrape() -> tuple[ResponseModel, int]:
+    """Run full scrape process, publish output files, and return API response."""
     try:
         logger_name = "scrape"
-        cache_dir=get_path("DATA_DIR") / "cache"
-        settings= get_settings()
-        cache = CacheStore(path=cache_dir/"scrape_cache.json", parser_version=settings.SCRAPE_PARSER_VERSION)
+        cache_dir = get_path("DATA_DIR") / "cache"
+        settings = get_settings()
+        cache = CacheStore(path=cache_dir / "scrape_cache.json", parser_version=settings.SCRAPE_PARSER_VERSION)
         cache.load()
 
         log_item(logger_name, logging.INFO, "Scraping process started.")
@@ -29,9 +47,9 @@ def run_scrape():
         cache_key, html_hash, response = get_main_page()
         parsed = cache.get(cache_key, html_hash)
 
-        current_semester = None
-        dept_codes = []
-        dept_names = {}
+        current_semester: tuple[str, str] | None = None
+        dept_codes: list[str] = []
+        dept_names: dict[str, str] = {}
         if parsed:
             current_semester = parsed["current_semester"]
             dept_codes = parsed["dept_codes"]
@@ -49,16 +67,18 @@ def run_scrape():
                     "dept_names": dept_names,
                 },
             )
+        if current_semester is None:
+            raise AppError("Current semester could not be determined", "CURRENT_SEMESTER_MISSING")
 
         department_prefixes = load_local_dept_prefixes()
-        data = {}
+        data: dict[int, dict[str, Any]] = {}
         dept_len = len(dept_codes)
         for index, dept_code in enumerate(dept_codes, start=1):
             cache_key, html_hash, response = get_department_page(dept_code, current_semester[0])
             parsed = cache.get(cache_key, html_hash)
 
-            course_codes = []
-            course_names = {}
+            course_codes: list[str] = []
+            course_names: dict[str, str] = {}
             if parsed:
                 course_codes = parsed["course_codes"]
                 course_names = parsed["course_names"]
@@ -87,8 +107,8 @@ def run_scrape():
                 if dept_code not in department_prefixes:
                     department_prefixes[dept_code] = "<no-course>"
                 continue
-            
-            if(dept_code not in department_prefixes or department_prefixes[dept_code] in NO_PREFIX_VARIANTS):
+
+            if dept_code not in department_prefixes or department_prefixes[dept_code] in NO_PREFIX_VARIANTS:
                 try:
                     cache_key, html_hash, response = get_course_catalog_page(dept_code, course_codes[0])
                     parsed = cache.get(cache_key, html_hash)
@@ -109,27 +129,27 @@ def run_scrape():
                     department_prefixes[dept_code] = dept_prefix
                 except Exception as e:
                     err = e if isinstance(e, AppError) else AppError(
-                            message="dept_prefix determination failed",
-                            code="DEPT_PREFIX_FAILED",
-                            context={"dept_code": dept_code},
-                            cause=e,
-                        )
+                        message="dept_prefix determination failed",
+                        code="DEPT_PREFIX_FAILED",
+                        context={"dept_code": dept_code},
+                        cause=e,
+                    )
                     log_item("scrape", logging.WARNING, err)
                     department_prefixes[dept_code] = "<prefix-not-found>"
 
             for course_code in course_codes:
                 cache_key, html_hash, response = get_course_page(course_code)
                 parsed = cache.get(cache_key, html_hash)
-                
-                course_node = {}
+
+                course_node: dict[str, Any] = {}
                 if parsed:
                     course_node = parsed["course_node"]
                 else:
                     course_soup = BeautifulSoup(response.text, "html.parser")
-                    sections = {}
+                    sections: dict[str, Any] = {}
                     extract_sections(cache, course_soup, sections)
                     course_node["Course Code"] = course_code
-                    if (dept_code not in department_prefixes or department_prefixes[dept_code] in NO_PREFIX_VARIANTS):
+                    if dept_code not in department_prefixes or department_prefixes[dept_code] in NO_PREFIX_VARIANTS:
                         course_node["Course Name"] = (course_code + " - " + course_names[course_code])
                     else:
                         course_node["Course Name"] = (deptify(department_prefixes[dept_code], course_code) + " - " + course_names[course_code])
@@ -143,11 +163,11 @@ def run_scrape():
             if index % 10 == 0:
                 progress = (index / dept_len) * 100
                 log_item("scrape", logging.INFO, f"completed {progress:.2f}% ({index}/{dept_len})")
-                    
+
         cache.flush()
 
-        departments_json = {}
-        departments_noprefix = {}
+        departments_json: dict[str, dict[str, str]] = {}
+        departments_noprefix: dict[str, dict[str, str]] = {}
         for dept_code in dept_codes:
             departments_json[dept_code] = {
                 "n": dept_names[dept_code],
@@ -195,12 +215,12 @@ def run_scrape():
         move_file(last_updated_path, last_updated_published_path)
 
         log_item("scrape", logging.INFO, "Scraping process completed successfully and files uploaded to S3.")
-        return ResponseModel(request_type=RequestType.SCRAPE,status="SUCCESS",message="Scraping process completed successfully and files uploaded to S3."), 200
+        return ResponseModel(request_type=RequestType.SCRAPE, status="SUCCESS", message="Scraping process completed successfully and files uploaded to S3."), 200
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError(
+        err = e if isinstance(e, AppError) else AppError(
             message="Scrape process failed",
             code="SCRAPE_PROCESS_FAILED",
             cause=e,
         )
         log_item("error", logging.ERROR, err)
-        return ResponseModel(request_type=RequestType.SCRAPE,status="FAILED",message="Scrape process failed, see the error logs for details."), 500
+        return ResponseModel(request_type=RequestType.SCRAPE, status="FAILED", message="Scrape process failed, see the error logs for details."), 500
