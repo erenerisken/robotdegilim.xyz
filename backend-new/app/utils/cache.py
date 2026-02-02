@@ -29,13 +29,14 @@ def hash_content(content):
 
 
 class CacheStore:
-    def __init__(self, *, parser_version):
+    def __init__(self, *, path, parser_version: str):
+        self.path = path
         self.parser_version = parser_version
         self._cache = {}
         self._loaded = False
 
     def load(self):
-        self._cache = _load_cache()
+        self._cache = _load_cache(self.path)
         self._loaded = True
 
     def get(self, cache_key, html_hash):
@@ -62,22 +63,9 @@ class CacheStore:
     def flush(self):
         if not self._loaded:
             return
-        _save_cache(self._cache)
+        _save_cache(self._cache, self.path)
 
-
-def _cache_dir():
-    base = get_path("DATA_DIR")
-    path = base / "cache"
-    path.mkdir(parents=True, exist_ok=True)
-    return path
-
-
-def _cache_path():
-    return _cache_dir() / "parsed_cache.json"
-
-
-def _load_cache():
-    path = _cache_path()
+def _load_cache(path):
     if not path.exists():
         return {}
     try:
@@ -85,9 +73,7 @@ def _load_cache():
     except Exception:
         return {}
 
-
-def _save_cache(cache):
-    path = _cache_path()
+def _save_cache(cache, path):
     try:
         path.write_text(json.dumps(cache, ensure_ascii=False, indent=4), encoding="utf-8")
     except Exception as e:
