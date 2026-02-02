@@ -1,117 +1,13 @@
 import datetime
 import uuid
-from flask import Flask, request
-from flask_restful import Resource, Api
 from flask_cors import CORS
-import logging
-import os
-from werkzeug.exceptions import HTTPException
 
-from src.errors import AppError
-from src.utils.timezone import TZ_TR, time_converter_factory, TzTimedRotatingFileHandler
 from src.config import app_constants
-from src.scrape.scrape import run_scrape
 from src.musts.musts import run_musts
 from src.nte.nte_available import nte_available
 from src.nte.nte_list import nte_list
-from src.utils.emailer import get_email_handler
 from src.services.status_service import get_status, set_status, init_status, set_busy, set_idle
-from src.utils.logging import JsonFormatter
 from src.utils.timing import set_speed_mode, get_speed_mode
-
-# Set up structured logging split: app, jobs, and errors
-fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
-fmt.converter = time_converter_factory(TZ_TR)
-
-parent_logger = logging.getLogger(app_constants.log_parent)
-app_logger = logging.getLogger(app_constants.log_app)
-scrape_logger = logging.getLogger(app_constants.log_scrape)
-musts_logger = logging.getLogger(app_constants.log_musts)
-nte_available_logger = logging.getLogger(app_constants.log_nte_available)
-nte_list_logger = logging.getLogger(app_constants.log_nte_list)
-
-_lvl = getattr(logging, app_constants.log_level, logging.INFO)
-parent_logger.setLevel(_lvl)
-app_logger.setLevel(_lvl)
-scrape_logger.setLevel(_lvl)
-musts_logger.setLevel(_lvl)
-nte_available_logger.setLevel(_lvl)
-nte_list_logger.setLevel(_lvl)
-
-# app.log (INFO+) - rotate daily at TR midnight, keep 5 days
-_log_days = 5
-_log_dir = app_constants.log_dir
-_log_dir.mkdir(parents=True, exist_ok=True)
-
-app_file = str(_log_dir / app_constants.app_log_file)
-if not any(
-    isinstance(h, TzTimedRotatingFileHandler)
-    and os.path.basename(getattr(h, "baseFilename", "")) == app_constants.app_log_file
-    for h in app_logger.handlers
-):
-    h = TzTimedRotatingFileHandler(
-        app_file,
-        when="midnight",
-        interval=1,
-        backupCount=_log_days,
-        encoding=app_constants.log_encoding,
-    )
-    h.setLevel(logging.INFO)
-    h.setFormatter(fmt)
-    app_logger.addHandler(h)
-
-# jobs.log (INFO+) for scrape, musts and nte - rotate daily at TR midnight, keep 5 days
-jobs_file = str(_log_dir / app_constants.jobs_log_file)
-for job_logger in (scrape_logger, musts_logger, nte_available_logger, nte_list_logger):
-    if not any(
-        isinstance(h, TzTimedRotatingFileHandler)
-        and os.path.basename(getattr(h, "baseFilename", "")) == app_constants.jobs_log_file
-        for h in job_logger.handlers
-    ):
-        h = TzTimedRotatingFileHandler(
-            jobs_file,
-            when="midnight",
-            interval=1,
-            backupCount=_log_days,
-            encoding=app_constants.log_encoding,
-        )
-        h.setLevel(logging.INFO)
-        h.setFormatter(fmt)
-        job_logger.addHandler(h)
-
-# error.log (ERROR+) on parent so children propagate up - rotate daily at TR midnight, keep 5 days
-err_file = str(_log_dir / app_constants.error_log_file)
-if not any(
-    isinstance(h, TzTimedRotatingFileHandler)
-    and os.path.basename(getattr(h, "baseFilename", "")) == app_constants.error_log_file
-    for h in parent_logger.handlers
-):
-    h = TzTimedRotatingFileHandler(
-        err_file,
-        when="midnight",
-        interval=1,
-        backupCount=_log_days,
-        encoding=app_constants.log_encoding,
-    )
-    h.setLevel(logging.ERROR)
-    h.setFormatter(fmt)
-    parent_logger.addHandler(h)
-
-# Email handler (ERROR+) on parent if configured
-email_handler = get_email_handler()
-if email_handler and not any(isinstance(h, type(email_handler)) for h in parent_logger.handlers):
-    email_handler.setLevel(logging.ERROR)
-    parent_logger.addHandler(email_handler)
-
-# Use app logger for this module
-_logger = app_logger
-
-# Optional JSON log formatting
-if app_constants.log_json:
-    jf = JsonFormatter(converter=fmt.converter)
-    for lg in (app_logger, scrape_logger, musts_logger, nte_available_logger, nte_list_logger, parent_logger):
-        for h in lg.handlers:
-            h.setFormatter(jf)
 
 # Initialize status defaults in S3 at startup
 try:
@@ -159,41 +55,6 @@ def _access_log_end(response):
     except Exception:
         pass
     return response
-
-
-# Global error handler to standardize JSON errors
-
-
-@app.errorhandler(Exception)
-def _handle_error(e):
-    req_id = getattr(request, "_request_id", None)
-    # Application errors with structured details
-    if isinstance(e, AppError):
-        _logger.error(str(e))
-        payload = {
-            "error": e.__class__.__name__,
-            "message": e.message,
-            "code": e.code or "ERROR",
-            "details": e.details,
-            "request_id": req_id,
-        }
-        return payload, 500
-    if isinstance(e, HTTPException):
-        code = e.code or 500
-        _logger.error(f"http_error status={code} path={request.path} msg={e}")
-        return {"error": e.name, "message": str(e), "code": "ERROR", "request_id": req_id}, code
-    _logger.exception(f"unhandled_error path={request.path}")
-    return {"error": "Internal Server Error", "code": "ERROR", "request_id": req_id}, 500
-
-
-@app.route("/")
-def index():
-    """Root endpoint for API server (no static files)."""
-    return {
-        "service": "robotdegilim-backend",
-        "endpoints": ["/run-scrape", "/run-musts", "/status", "/speed"],
-    }, 200
-
 
 class RunScrape(Resource):
     def get(self):

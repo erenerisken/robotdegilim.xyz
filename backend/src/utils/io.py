@@ -6,52 +6,6 @@ from typing import Any, Dict, Union
 
 from src.config import app_constants
 from src.utils.s3 import get_s3_client
-from src.errors import IOError
-
-
-logger = logging.getLogger(app_constants.log_utils)
-
-
-PathLike = Union[str, Path]
-
-
-def _to_str_path(path: PathLike) -> str:
-    try:
-        return os.fspath(path)  # supports str, Path
-    except Exception:
-        return str(path)
-
-
-def write_json(data: dict, file_path: PathLike) -> None:
-    """Write a JSON object to the given path with UTF-8 and indentation.
-
-    Accepts str or Path for file_path.
-    """
-    path_str = _to_str_path(file_path)
-    try:
-        os.makedirs(os.path.dirname(path_str) or ".", exist_ok=True)
-        with open(path_str, "w", encoding="utf-8") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
-    except Exception as e:
-        raise IOError(f"Failed to write json, file_path: {path_str}, error: {str(e)}") from e
-
-
-def load_json_safe(file_path: PathLike) -> Dict[str, Any]:
-    """Load JSON dict from a file, returning {} on any failure.
-
-    Accepts str or Path for file_path.
-    """
-    path_str = _to_str_path(file_path)
-    if not os.path.exists(path_str):
-        return {}
-    try:
-        with open(path_str, "r", encoding="utf-8") as file:
-            data = json.load(file)
-            return data if isinstance(data, dict) else {}
-    except Exception as e:
-        logger.error(f"Failed to read json file {path_str}, error: {str(e)}")
-        return {}
-
 
 def load_json_local_then_s3(
     local_path: PathLike,
