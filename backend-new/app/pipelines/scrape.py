@@ -195,7 +195,7 @@ def run_scrape():
         move_file(last_updated_path, last_updated_published_path)
 
         log_item("scrape", logging.INFO, "Scraping process completed successfully and files uploaded to S3.")
-        return ResponseModel(request_type=RequestType.SCRAPE,status="SUCCESS",message="Scraping process completed successfully and files uploaded to S3."), 200
+        return ResponseModel(request_type=RequestType.SCRAPE.value,status="SUCCESS",message="Scraping process completed successfully and files uploaded to S3."), 200
     except Exception as e:
         err=e if isinstance(e, AppError) else AppError(
             message="Scrape process failed",
@@ -203,4 +203,4 @@ def run_scrape():
             cause=e,
         )
         log_item("error", logging.ERROR, err.to_log())
-        return ResponseModel(request_type=RequestType.SCRAPE,status="FAILED",message="Scrape process failed, see the error logs for details."), 500
+        return ResponseModel(request_type=RequestType.SCRAPE.value,status="FAILED",message="Scrape process failed, see the error logs for details."), 500
