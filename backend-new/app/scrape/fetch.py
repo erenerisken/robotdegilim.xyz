@@ -1,5 +1,4 @@
 from app.utils.http import get, post
-from app.core.logging import log_item
 from app.core.errors import AppError
 from app.utils.cache import make_key, hash_content
 from app.core.constants import OIBS64_URL, COURSE_CATALOG_URL

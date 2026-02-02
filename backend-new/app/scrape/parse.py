@@ -1,11 +1,12 @@
 from typing import List, Dict, Tuple, cast
 from bs4 import BeautifulSoup
 from bs4.element import Tag
+import logging
 
-from app.core.errors import ScrapeError
+from app.core.errors import AppError
 from app.core.constants import DAYS_MAP
 from app.scrape.fetch import get_section_page
-from app.core.logging import get_logger
+from app.core.logging import log_item
 
 def _strip_upper(s) -> str:
     return str(s or "").strip().upper()
@@ -13,52 +14,64 @@ def _strip_upper(s) -> str:
 def extract_departments(
     soup: BeautifulSoup, dept_codes: List[str], dept_names: Dict[str, str]
 ) -> None:
-    dept_select = soup.find("select", {"name": "select_dept"})
-    if dept_select:
-        dept_options = dept_select.find_all("option")
-        if dept_options:
-            for option in dept_options:
-                value = option.get("value")
-                text = option.get_text()
-                if value and text:
-                    value = _strip_upper(value)
-                    text = (text or "").strip()
-                    dept_codes.append(value)
-                    dept_names[value] = text
+    try:
+        dept_select = soup.find("select", {"name": "select_dept"})
+        if dept_select:
+            dept_options = dept_select.find_all("option")
+            if dept_options:
+                for option in dept_options:
+                    value = option.get("value")
+                    text = option.get_text()
+                    if value and text:
+                        value = _strip_upper(value)
+                        text = (text or "").strip()
+                        dept_codes.append(value)
+                        dept_names[value] = text
+    except Exception as e:
+        err=e if isinstance(e, AppError) else AppError("Failed to extract departments", "EXTRACT_DEPARTMENTS_FAILED", cause=e)
+        raise err
 
 def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
-    semester_select = soup.find("select", {"name": "select_semester"})
-    if semester_select:
-        current_semester_option = semester_select.find("option")
-        if current_semester_option:
-            value = _strip_upper(current_semester_option.get("value"))
-            text = (current_semester_option.get_text() or "").strip()
-            return (value, text)
-    raise ScrapeError("Extracting current semester failed", "SCRAPE_EXTRACT_CURRENT_SEMESTER_FAILED")
+    try:
+        semester_select = soup.find("select", {"name": "select_semester"})
+        if semester_select:
+            current_semester_option = semester_select.find("option")
+            if current_semester_option:
+                value = _strip_upper(current_semester_option.get("value"))
+                text = (current_semester_option.get_text() or "").strip()
+                return (value, text)
+        raise AppError("Extracting current semester failed", "EXTRACT_CURRENT_SEMESTER_FAILED")
+    except Exception as e:
+        err=e if isinstance(e, AppError) else AppError("Failed to extract current semester", "EXTRACT_CURRENT_SEMESTER_FAILED", cause=e)
+        raise err
 
 def extract_courses(
     soup: BeautifulSoup, course_codes: List[str], course_names: Dict[str, str]
 ) -> None:
-    form = soup.find("form")
-    if not form:
-        return
-    tables = form.find_all("table")
-    if len(tables) < 4:
-        return
-    course_table = cast(Tag, tables[3])
-    if course_table:
-        course_rows = course_table.find_all("tr")[1:]
-        if course_rows:
-            for course_row in course_rows:
-                course_cells = course_row.find_all("td")
-                if course_cells and len(course_cells) >= 3:
-                    course_code = course_cells[0].find("input").get("value")
-                    course_name = course_cells[2].get_text()
-                    if course_code and course_name:
-                        course_code = _strip_upper(course_code)
-                        course_name = (course_name or "").strip()
-                        course_codes.append(course_code)
-                        course_names[course_code] = course_name
+    try:
+        form = soup.find("form")
+        if not form:
+            return
+        tables = form.find_all("table")
+        if len(tables) < 4:
+            return
+        course_table = cast(Tag, tables[3])
+        if course_table:
+            course_rows = course_table.find_all("tr")[1:]
+            if course_rows:
+                for course_row in course_rows:
+                    course_cells = course_row.find_all("td")
+                    if course_cells and len(course_cells) >= 3:
+                        course_code = course_cells[0].find("input").get("value")
+                        course_name = course_cells[2].get_text()
+                        if course_code and course_name:
+                            course_code = _strip_upper(course_code)
+                            course_name = (course_name or "").strip()
+                            course_codes.append(course_code)
+                            course_names[course_code] = course_name
+    except Exception as e:
+        err=e if isinstance(e, AppError) else AppError("Failed to extract courses", "EXTRACT_COURSES_FAILED", cause=e)
+        raise err
 
 def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
     try:
@@ -128,11 +141,8 @@ def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> N
             sections[section_code] = section_node
 
     except Exception as e:
-        raise ScrapeError(
-            message="Failed to extract sections",
-            code="SCRAPE_EXTRACT_SECTIONS_FAILED",
-            cause=e,
-            )
+        err=e if isinstance(e, AppError) else AppError("Failed to extract sections", "EXTRACT_SECTIONS_FAILED", cause=e)
+        raise err
 
 def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) -> None:
     try:
@@ -148,35 +158,40 @@ def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) 
                 }
             )
     except Exception as e:
-        raise ScrapeError(
-            message="Failed to extract constraints",
-            code="SCRAPE_EXTRACT_CONSTRAINTS_FAILED",
-            cause=e,
-        )
+        err=e if isinstance(e, AppError) else AppError("Failed to extract constraints", "EXTRACT_CONSTRAINTS_FAILED", cause=e)
+        raise err
 
 def any_course(soup: BeautifulSoup) -> bool:
-    form_msg = soup.find("div", id="formmessage").find("b").get_text()
-    if form_msg:
-        return False
-    return True
+    try:
+        form_msg = soup.find("div", id="formmessage").find("b").get_text()
+        if form_msg:
+            return False
+        return True
+    except Exception as e:
+        err=e if isinstance(e, AppError) else AppError("Failed to determine if any course exists", "ANY_COURSE_FAILED", cause=e)
+        raise err
 
 def deptify(prefix: str, course_code: str) -> str:
-    result = "" + prefix
-    if course_code[3] == "0":
-        result += course_code[4:]
-    else:
-        result += course_code[3:]
-    return result
+    try:
+        result = "" + prefix
+        if course_code[3] == "0":
+            result += course_code[4:]
+        else:
+            result += course_code[3:]
+        return result
+    except Exception as e:
+        err=e if isinstance(e, AppError) else AppError("Failed to deptify course code", "DEPTIFY_FAILED", cause=e)
+        raise err
 
 def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List[str]:
-    stack: List[str] = []
-    tags: List[str] = []
-    sindex = 0
-    cindex = 0
-    word_length = len(end_tag)
-    diff = len(end_tag) - len(start_tag)
-
     try:
+        stack: List[str] = []
+        tags: List[str] = []
+        sindex = 0
+        cindex = 0
+        word_length = len(end_tag)
+        diff = len(end_tag) - len(start_tag)
+
         while cindex < len(html_code):
             if (cindex + word_length) > len(html_code):
                 break
@@ -197,15 +212,10 @@ def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List
                     stack.pop()
 
             cindex += 1
-
+        return tags
     except Exception as e:
-        raise ScrapeError(
-            message="Failed to extract tags as string",
-            code="SCRAPE_EXTRACT_TAGS_AS_STRING_FAILED",
-            cause=e,
-        )
-
-    return tags
+        err=e if isinstance(e, AppError) else AppError("Failed to extract tags as string", "EXTRACT_TAGS_AS_STRING_FAILED", cause=e)
+        raise err
 
 def extract_dept_prefix(catalog_soup):
     try:
@@ -216,11 +226,10 @@ def extract_dept_prefix(catalog_soup):
             return dept_prefix
         return None
     except Exception as e:
-        err = ScrapeError(
+        err = e if isinstance(e, AppError) else AppError(
             message="Failed to extract department prefix",
-            code="SCRAPE_EXTRACT_DEPT_PREFIX_FAILED",
+            code="EXTRACT_DEPT_PREFIX_FAILED",
             cause=e,
         )
-        logger = get_logger("scrape")
-        logger.warning(err.to_log())
+        log_item("scrape", logging.WARNING, err.to_log())
         return None
