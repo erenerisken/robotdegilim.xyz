@@ -31,7 +31,7 @@ class AppError(Exception):
     def __str__(self) -> str:
         return self.message
 
-    def to_log(self) -> dict:
+    def to_log(self) -> str:
         payload = {"message": self.message}
         if self.code:
             payload["code"] = self.code
@@ -43,4 +43,4 @@ class AppError(Exception):
             payload["traceback"] = self.traceback_info
         if self.call_stack:
             payload["stack"] = self.call_stack
-        return payload
+        return str(payload)

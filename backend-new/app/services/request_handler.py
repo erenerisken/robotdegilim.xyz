@@ -1,5 +1,4 @@
 import logging
-from multiprocessing import get_logger
 
 from app.core.constants import RequestType
 from app.api.schemas import ResponseModel, RootResponse
@@ -57,7 +56,7 @@ def handle_request(request_type: RequestType):
         detach_context()
         try:   
             if not release_lock():
-                raise
+                raise None
         except Exception as e:
             err = e if isinstance(e, AppError) else AppError(
                 message="Failed to release lock after request handling",
