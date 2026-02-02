@@ -1,10 +1,16 @@
+"""Pydantic schemas used by API routes and service responses."""
+
+from typing import Any
+
 from pydantic import BaseModel, Field
 
-from app.core.settings import get_settings
 from app.core.constants import RequestType
+from app.core.settings import get_settings
+
 
 def _build_root_payload() -> dict:
-    settings=get_settings()
+    """Build the root endpoint payload from application settings."""
+    settings = get_settings()
     return {
         "app_name": settings.APP_NAME,
         "admin_email": settings.ADMIN_EMAIL,
@@ -22,11 +28,17 @@ def _build_root_payload() -> dict:
         },
     }
 
+
 class RootResponse(BaseModel):
+    """Response model for the root endpoint."""
+
     root: dict = Field(default_factory=_build_root_payload)
 
+
 class ResponseModel(BaseModel):
+    """Common response model returned by request handlers."""
+
     request_type: RequestType
     status: str
     message: str
-    extra:dict | None = None
+    extra: dict[str, Any] | None = None
