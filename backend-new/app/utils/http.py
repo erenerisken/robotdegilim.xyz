@@ -1,36 +1,44 @@
 import random
 import time
-
 import requests
 
-from app.core.errors import NetworkError
-from app.core.settings import get_setting
+from app.core.errors import AppError
+from app.core.settings import get_settings
 
 _SESSION = None
-
 
 def get_session():
     global _SESSION
     if _SESSION is not None:
         return _SESSION
     session = requests.Session()
-    headers = get_setting("DEFAULT_HEADERS", {})
+    settings= get_settings()
+    headers = settings.DEFAULT_HEADERS
     if isinstance(headers, dict):
         session.headers.update(headers)
     _SESSION = session
     return _SESSION
 
-
 def reset_session():
     global _SESSION
     _SESSION = None
 
-
 def request(method, url, *, params=None, data=None, json_body=None, ok_status=200, name=None):
-    timeout = float(get_setting("HTTP_TIMEOUT", 15))
-    max_tries = int(get_setting("GLOBAL_RETRIES", 5))
-    base_delay = float(get_setting("RETRY_BASE_DELAY", 1.0))
-    jitter = float(get_setting("RETRY_JITTER", 0.25))
+    settings = get_settings()
+    timeout = float(settings.HTTP_TIMEOUT)
+    max_tries = int(settings.GLOBAL_RETRIES)
+    base_delay = float(settings.RETRY_BASE_DELAY)
+    jitter = float(settings.RETRY_JITTER)
+
+    ctx={"method": method, "url": url}
+    if params:
+        ctx["params"] = params
+    if data:
+        ctx["data"] = data
+    if json_body:
+        ctx["json"] = json_body
+    if name:
+        ctx["name"] = name
 
     last_error = None
     for attempt in range(1, max_tries + 1):
@@ -53,29 +61,31 @@ def request(method, url, *, params=None, data=None, json_body=None, ok_status=20
             return resp
 
         if _should_retry(resp.status_code):
-            last_error = NetworkError(_format_error(method, url, name, resp.status_code))
+            ctx["status_code"] = resp.status_code
+            last_error = AppError("HTTP request failed, retrying", "HTTP_REQUEST_ERROR", context=ctx)
             _sleep_with_jitter(base_delay, jitter, attempt)
             continue
 
-        raise NetworkError(_format_error(method, url, name, resp.status_code))
+        ctx["status_code"] = resp.status_code
+        raise AppError("HTTP request failed, no need to retry", "HTTP_REQUEST_ERROR", context=ctx)
 
-    raise NetworkError(
-        _format_error(
-            method,
-            url,
-            name,
-            None,
-            extra=str(last_error) if last_error else "unknown error",
-        )
-    )
+    raise AppError("HTTP request failed, giving up", "HTTP_REQUEST_ERROR", context=ctx, cause=last_error)
 
 
 def get(url, **kwargs):
-    return request("GET", url, **kwargs)
+    try:
+        return request("GET", url, **kwargs)
+    except AppError as e:
+        err=e if isinstance(e, AppError) else AppError("GET request failed", "GET_REQUEST_ERROR", context={"url": url,**kwargs}, cause=e)
+        raise err
 
 
 def post(url, *, data=None, **kwargs):
-    return request("POST", url, data=data, **kwargs)
+    try:
+        return request("POST", url, data=data, **kwargs)
+    except AppError as e:
+        err=e if isinstance(e, AppError) else AppError("POST request failed", "POST_REQUEST_ERROR", context={"url": url, "data": data, **kwargs}, cause=e)
+        raise err
 
 
 def _should_retry(status_code):
@@ -88,13 +98,6 @@ def _should_retry(status_code):
     return False
 
 
-def _format_error(method, url, name, status, *, extra=None):
-    label = name or f"{method} {url}"
-    if status is None:
-        return f"Request failed for {label}: {extra}"
-    return f"HTTP {status} for {label}"
-
-
 def _sleep_with_jitter(base_delay, jitter, attempt):
     delay = (base_delay * attempt) + random.uniform(0, jitter)
     time.sleep(max(0.0, delay))
@@ -102,7 +105,7 @@ def _sleep_with_jitter(base_delay, jitter, attempt):
 
 def _maybe_throttle():
     try:
-        throttle=get_setting("THROTTLE_ENABLED", False)
+        throttle=get_settings().THROTTLE_ENABLED
         if throttle:
             # throttle will be implemented later
             pass

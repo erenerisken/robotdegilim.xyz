@@ -1,8 +1,8 @@
 import hashlib
 import json
-from pathlib import Path
 
 from app.core.settings import get_path
+from app.core.errors import AppError
 
 
 def make_key(method, url, params=None, data=None, json_body=None):
@@ -19,7 +19,9 @@ def make_key(method, url, params=None, data=None, json_body=None):
 def hash_content(content):
     if isinstance(content, str):
         content = content.encode("utf-8", errors="replace")
-    return hashlib.sha256(content).hexdigest()
+        return hashlib.sha256(content).hexdigest()
+    else:
+        raise AppError("Content to hash must be a string", "HASH_CONTENT_ERROR")
 
 
 class CacheStore:
@@ -82,4 +84,7 @@ def _load_cache():
 
 def _save_cache(cache):
     path = _cache_path()
-    path.write_text(json.dumps(cache), encoding="utf-8")
+    try:
+        path.write_text(json.dumps(cache, ensure_ascii=False, indent=4), encoding="utf-8")
+    except Exception as e:
+        raise AppError("Failed to save cache", "SAVE_CACHE_ERROR", context={"path": str(path)}, cause=e)
