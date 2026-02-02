@@ -231,5 +231,5 @@ def extract_dept_prefix(catalog_soup):
             code="EXTRACT_DEPT_PREFIX_FAILED",
             cause=e,
         )
-        log_item("scrape", logging.WARNING, err.to_log())
+        log_item("scrape", logging.WARNING, err)
         return None

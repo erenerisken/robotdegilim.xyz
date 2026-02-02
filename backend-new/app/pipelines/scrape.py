@@ -114,7 +114,7 @@ def run_scrape():
                             context={"dept_code": dept_code},
                             cause=e,
                         )
-                    log_item("scrape", logging.WARNING, err.to_log())
+                    log_item("scrape", logging.WARNING, err)
                     department_prefixes[dept_code] = "<prefix-not-found>"
 
             for course_code in course_codes:
@@ -202,5 +202,5 @@ def run_scrape():
             code="SCRAPE_PROCESS_FAILED",
             cause=e,
         )
-        log_item("error", logging.ERROR, err.to_log())
+        log_item("error", logging.ERROR, err)
         return ResponseModel(request_type=RequestType.SCRAPE.value,status="FAILED",message="Scrape process failed, see the error logs for details."), 500

@@ -4,6 +4,7 @@ from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 from pathlib import Path
 
 from app.core.settings import get_settings, get_path
+from app.core.errors import AppError
 
 _logger_names = ["app", "scrape", "error"]
 
@@ -15,11 +16,19 @@ def _build_formatter():
     return logging.Formatter(fmt)
 
 
-def log_item(logger_name: str, level: int, message: str):
+def log_item(logger_name: str, level: int, log, *, exc_info=None, stack_info: bool = False, extra: dict | None = None):
     if logger_name not in _logger_names:
         logger_name = "app"
     logger = logging.getLogger(logger_name)
-    logger.log(level, message)
+    if isinstance(log, AppError):
+        log.log(logger,level)
+    else:
+        try:
+            logger.log(level, str(log), exc_info=exc_info, stack_info=stack_info, extra=extra)
+        except Exception as e:
+            err=e if isinstance(e, AppError) else AppError("Logging failed", "LOGGING_FAILED", cause=e)
+            raise err
+
 
 def setup_logging():
     settings = get_settings()

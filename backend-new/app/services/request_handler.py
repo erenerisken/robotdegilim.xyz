@@ -49,7 +49,7 @@ def handle_request(request_type: RequestType):
             code="REQUEST_HANDLING_FAILED",
             cause=e,
         )
-        log_item("error",logging.ERROR, err.to_log())
+        log_item("error",logging.ERROR, err)
         return ResponseModel(request_type=request_type.value,status="ERROR",message=err.message), 500
     finally:
         _allow_context_modification = False
@@ -66,4 +66,4 @@ def handle_request(request_type: RequestType):
                 code="LOCK_RELEASE_FAILED",
                 cause=e,
             )
-            log_item("error",logging.ERROR, err.to_log())
+            log_item("error",logging.ERROR, err)

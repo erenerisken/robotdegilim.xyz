@@ -26,5 +26,5 @@ def load_local_dept_prefixes():
         return prefixes
     except Exception as e:
         err=e if isinstance(e, AppError) else AppError("Failed to load local department prefixes","LOAD_LOCAL_DEPT_PREFIXES_FAILED", cause=e)
-        log_item("scrape", logging.WARNING, err.to_log())
+        log_item("scrape", logging.WARNING, err)
         return {}
