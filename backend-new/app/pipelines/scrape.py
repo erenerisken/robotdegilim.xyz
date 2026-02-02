@@ -1,27 +1,30 @@
 from datetime import datetime
 from bs4 import BeautifulSoup
 import pytz
+import logging
 
-from app.core.logging import get_logger
-from app.core.settings import get_path, get_setting
+from app.core.logging import log_item
+from app.core.settings import get_path, get_settings
 from app.scrape.fetch import get_course_catalog_page, get_course_page, get_main_page, get_department_page
 from app.scrape.io import load_local_dept_prefixes
 from app.scrape.parse import any_course, deptify, extract_courses, extract_current_semester, extract_departments, extract_dept_prefix, extract_sections
 from app.utils.cache import CacheStore
-from app.core.constants import NO_PREFIX_VARIANTS
+from app.core.constants import NO_PREFIX_VARIANTS, RequestType
 from app.storage.local import move_file, write_json
 from app.storage.s3 import upload_file
-from app.api.schemas import ErrorResponse, ScrapeResponse
-from app.core.errors import AppError, ScrapeError
+from app.api.schemas import ResponseModel
+from app.core.errors import AppError
 
 
 def run_scrape():
     try:
-        logger = get_logger("scrape")
-        cache = CacheStore(parser_version=get_setting("SCRAPE_PARSER_VERSION"))
+        logger_name = "scrape"
+        cache_dir=get_path("DATA_DIR") / "cache"
+        settings= get_settings()
+        cache = CacheStore(cache_dir/"scrape_cache.json", settings.SCRAPE_PARSER_VERSION)
         cache.load()
 
-        logger.info("Scraping process started.")
+        log_item(logger_name, logging.INFO, "Scraping process started.")
 
         cache_key, html_hash, response = get_main_page()
         parsed = cache.get(cache_key, html_hash)
@@ -105,16 +108,13 @@ def run_scrape():
                         )
                     department_prefixes[dept_code] = dept_prefix
                 except Exception as e:
-                    if isinstance(e, AppError):
-                        logger.warning(e.to_log())
-                    else:
-                        err = ScrapeError(
+                    err = e if isinstance(e, AppError) else AppError(
                             message="dept_prefix determination failed",
-                            code="SCRAPE_DEPT_PREFIX_FAILED",
+                            code="DEPT_PREFIX_FAILED",
                             context={"dept_code": dept_code},
                             cause=e,
                         )
-                        logger.warning(err.to_log())
+                    log_item("scrape", logging.WARNING, err.to_log())
                     department_prefixes[dept_code] = "<prefix-not-found>"
 
             for course_code in course_codes:
@@ -142,7 +142,7 @@ def run_scrape():
                 data[int(course_code)] = course_node
             if index % 10 == 0:
                 progress = (index / dept_len) * 100
-                logger.info(f"completed {progress:.2f}% ({index}/{dept_len})")
+                log_item("scrape", logging.INFO, f"completed {progress:.2f}% ({index}/{dept_len})")
                     
         cache.flush()
 
@@ -169,7 +169,7 @@ def run_scrape():
         last_updated_path = data_dir / "staged" / "lastUpdated.json"
         last_updated_published_path = data_dir / "published" / "lastUpdated.json"
 
-        current_time = datetime.now(pytz.timezone(get_setting("TIMEZONE")))
+        current_time = datetime.now(pytz.timezone(settings.TIMEZONE))
         formatted_time = current_time.strftime("%d.%m.%Y, %H.%M")
         last_updated_info = {
             "t": current_semester[0] + ":" + current_semester[1],
@@ -194,13 +194,13 @@ def run_scrape():
         move_file(data_path, data_published_path)
         move_file(last_updated_path, last_updated_published_path)
 
-        logger.info("Scraping process completed successfully and files uploaded to S3.")
-        return ScrapeResponse(), 200
+        log_item("scrape", logging.INFO, "Scraping process completed successfully and files uploaded to S3.")
+        return ResponseModel(request_type=RequestType.SCRAPE,status="SUCCESS",message="Scraping process completed successfully and files uploaded to S3."), 200
     except Exception as e:
-        error_logger = get_logger("error")
-        if isinstance(e, AppError):
-            error_logger.exception(e.to_log())
-        else:
-            err = ScrapeError(message="Scrape failed", code="SCRAPE_FAILED", cause=e)
-            error_logger.exception(err.to_log())
-        return ErrorResponse(message="Scrape process failed, see the error logs for details."), 500
+        err=e if isinstance(e, AppError) else AppError(
+            message="Scrape process failed",
+            code="SCRAPE_PROCESS_FAILED",
+            cause=e,
+        )
+        log_item("error", logging.ERROR, err.to_log())
+        return ResponseModel(request_type=RequestType.SCRAPE,status="FAILED",message="Scrape process failed, see the error logs for details."), 500
