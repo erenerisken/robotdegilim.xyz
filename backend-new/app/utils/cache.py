@@ -17,11 +17,15 @@ def make_key(method, url, params=None, data=None, json_body=None):
 
 
 def hash_content(content):
+    if content is None:
+        raise AppError("Content to hash must not be None", "HASH_CONTENT_ERROR")
     if isinstance(content, str):
         content = content.encode("utf-8", errors="replace")
-        return hashlib.sha256(content).hexdigest()
+    elif isinstance(content, (bytes, bytearray, memoryview)):
+        content = bytes(content)
     else:
-        raise AppError("Content to hash must be a string", "HASH_CONTENT_ERROR")
+        raise AppError("Content to hash must be str or bytes-like", "HASH_CONTENT_ERROR")
+    return hashlib.sha256(content).hexdigest()
 
 
 class CacheStore:

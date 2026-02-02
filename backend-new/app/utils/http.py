@@ -23,7 +23,7 @@ def reset_session():
     global _SESSION
     _SESSION = None
 
-def request(method, url, *, params=None, data=None, json_body=None, ok_status=200, name=None):
+def request(method, url, *, params=None, data=None, json_body=None, ok_status=[200], name=None):
     settings = get_settings()
     timeout = float(settings.HTTP_TIMEOUT)
     max_tries = int(settings.GLOBAL_RETRIES)
@@ -57,7 +57,7 @@ def request(method, url, *, params=None, data=None, json_body=None, ok_status=20
             _sleep_with_jitter(base_delay, jitter, attempt)
             continue
 
-        if resp.status_code == ok_status:
+        if resp.status_code in ok_status:
             return resp
 
         if _should_retry(resp.status_code):
@@ -75,7 +75,7 @@ def request(method, url, *, params=None, data=None, json_body=None, ok_status=20
 def get(url, **kwargs):
     try:
         return request("GET", url, **kwargs)
-    except AppError as e:
+    except Exception as e:
         err=e if isinstance(e, AppError) else AppError("GET request failed", "GET_REQUEST_ERROR", context={"url": url,**kwargs}, cause=e)
         raise err
 
@@ -83,7 +83,7 @@ def get(url, **kwargs):
 def post(url, *, data=None, **kwargs):
     try:
         return request("POST", url, data=data, **kwargs)
-    except AppError as e:
+    except Exception as e:
         err=e if isinstance(e, AppError) else AppError("POST request failed", "POST_REQUEST_ERROR", context={"url": url, "data": data, **kwargs}, cause=e)
         raise err
 
