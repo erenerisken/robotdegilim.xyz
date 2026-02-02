@@ -1,44 +1,67 @@
+import logging
+from multiprocessing import get_logger
+
 from app.core.constants import RequestType
-from app.api.schemas import ErrorResponse, RootResponse, ScrapeResponse
+from app.api.schemas import ResponseModel, RootResponse
 from app.storage.s3 import acquire_lock, release_lock
 from app.pipelines.scrape import run_scrape
 from app.core.errors import AppError
-from app.core.logging import get_logger
+from app.core.logging import log_item
+from app.context.api import load_context, apply_context_updates, queue_request, get_next_request,detach_context, publish_context
 
 _allow_context_modification = False
 
 
 def handle_request(request_type: RequestType):
     global _allow_context_modification
-    try:
-        req_type = RequestType(request_type)
-    except ValueError:
-        return ErrorResponse(message="Invalid request type"), 400
 
-    if req_type == RequestType.ROOT:
+    if request_type == RequestType.ROOT:
         return RootResponse(), 200
-
-    if not acquire_lock():
-        if _allow_context_modification:
-            # queue logic will be added later
-            return ErrorResponse(message="Request queued"), 202
-        return ErrorResponse(message="Request handling failed, system is busy"), 503
-
-    _allow_context_modification = True
-    # in here fetch and look at the ctx to see what to run
+    
     try:
-        if req_type == RequestType.SCRAPE:
+        if not acquire_lock():
+            if _allow_context_modification:
+                queue_request(request_type)
+                return ResponseModel(request_type=request_type,status="REQUEST_QUEUED",message="Request queued"), 202
+            return ResponseModel(request_type=request_type,status="BUSY",message="System is busy processing another request"), 503
+
+        _allow_context_modification = True
+        load_context()
+        from_queue, next_req = get_next_request(request_type)
+        model = None
+        status_code = None
+        
+        if next_req == RequestType.SCRAPE:
             model, status_code = run_scrape()
-            return model, status_code
+        # Request types can be extended here with additional elif blocks
+
+        if from_queue:
+            if not model.extra:
+                model.extra = {"from_queue": True}
+            else:
+                model.extra["from_queue"] = True
+
+        return model, status_code
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError(
+            message="Failed to handle request",
+            code="REQUEST_HANDLING_FAILED",
+            cause=e,
+        )
+        log_item("error",logging.ERROR, err.to_log())
+        return ResponseModel(request_type=request_type,status="ERROR",message=err.message), 500
     finally:
         _allow_context_modification = False
-        # in here ctx updates
-        if not release_lock():
-            logger = get_logger("app")
-            err = AppError(
+        apply_context_updates()
+        publish_context()
+        detach_context()
+        try:   
+            if not release_lock():
+                raise
+        except Exception as e:
+            err = e if isinstance(e, AppError) else AppError(
                 message="Failed to release lock after request handling",
                 code="LOCK_RELEASE_FAILED",
+                cause=e,
             )
-            logger.warning(err.to_log())
-
-    return ErrorResponse(message="Unknown request type"), 400
+            log_item("error",logging.ERROR, err.to_log())
