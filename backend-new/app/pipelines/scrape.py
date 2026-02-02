@@ -21,7 +21,7 @@ def run_scrape():
         logger_name = "scrape"
         cache_dir=get_path("DATA_DIR") / "cache"
         settings= get_settings()
-        cache = CacheStore(cache_dir/"scrape_cache.json", settings.SCRAPE_PARSER_VERSION)
+        cache = CacheStore(path=cache_dir/"scrape_cache.json", parser_version=settings.SCRAPE_PARSER_VERSION)
         cache.load()
 
         log_item(logger_name, logging.INFO, "Scraping process started.")
