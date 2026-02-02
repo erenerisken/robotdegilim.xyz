@@ -4,8 +4,6 @@ from pydantic import BaseModel, Field
 
 from app.core.constants import RequestType
 
-S3_CONTEXT_KEY = "context.json"
-
 
 def _in_queue_factory() -> dict[str, bool]:
     """Build default in-queue lookup map for all request types."""

@@ -1,11 +1,9 @@
 """Context state service for loading, mutating, and publishing app context."""
 
-from pathlib import Path
-
-from app.context.schema import AppContext, S3_CONTEXT_KEY
-from app.core.constants import RequestType
+from app.context.schema import AppContext
+from app.core.constants import CONTEXT_KEY, RequestType
 from app.core.errors import AppError
-from app.core.settings import get_path
+from app.core.paths import downloaded_path, published_path, staged_path
 from app.storage.local import move_file, read_json, write_json
 from app.storage.s3 import download_file, file_exists, upload_file
 
@@ -13,33 +11,14 @@ _original_context: AppContext | None = None
 _copy_context: AppContext | None = None
 _loaded: bool = False
 
-
-def _local_download_path() -> Path:
-    """Return local path used for downloaded context snapshots."""
-    data_dir = get_path("DATA_DIR")
-    return data_dir / "downloaded" / S3_CONTEXT_KEY
-
-
-def _local_staged_path() -> Path:
-    """Return local path used for staged context writes."""
-    data_dir = get_path("DATA_DIR")
-    return data_dir / "staged" / S3_CONTEXT_KEY
-
-
-def _local_published_path() -> Path:
-    """Return local path used for published context snapshots."""
-    data_dir = get_path("DATA_DIR")
-    return data_dir / "published" / S3_CONTEXT_KEY
-
-
 def load_context() -> None:
     """Load context from storage once and keep original/copy snapshots in memory."""
     global _original_context, _copy_context, _loaded
     try:
         if not _loaded:
-            if file_exists(S3_CONTEXT_KEY):
-                local_path = _local_download_path()
-                download_file(S3_CONTEXT_KEY, local_path)
+            if file_exists(CONTEXT_KEY):
+                local_path = downloaded_path(CONTEXT_KEY)
+                download_file(CONTEXT_KEY, local_path)
                 data = read_json(local_path)
                 _original_context = AppContext(**data)
                 _copy_context = _original_context.model_copy(deep=True)
@@ -58,10 +37,10 @@ def publish_context() -> None:
     try:
         if _loaded and _copy_context is not None:
             _original_context = _copy_context.model_copy(deep=True)
-            local_staged_path = _local_staged_path()
+            local_staged_path = staged_path(CONTEXT_KEY)
             write_json(local_staged_path, _original_context.model_dump())
-            upload_file(local_staged_path, S3_CONTEXT_KEY)
-            move_file(local_staged_path, _local_published_path())
+            upload_file(local_staged_path, CONTEXT_KEY)
+            move_file(local_staged_path, published_path(CONTEXT_KEY))
             detach_context()
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to publish context", "CONTEXT_PUBLISH_FAILED", cause=e)
