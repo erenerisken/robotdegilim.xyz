@@ -59,11 +59,11 @@ def get_next_request(request_type):
     pass
 
 def apply_context_updates() -> None:
+    # to be implemented
     pass
 
-def update_context(update_type: ContextUpdateType, **kwargs) -> None:
+def update_context(update:ContextUpdate) -> None:
     global _updates
-    update = ContextUpdate(update_type=update_type, **kwargs)
     _updates.append(update)
 
 
