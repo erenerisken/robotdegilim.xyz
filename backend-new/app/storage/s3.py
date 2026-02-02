@@ -39,7 +39,8 @@ def acquire_lock():
 
         return False
     except Exception as e:
-        raise AppError("Failed to acquire lock", "LOCK_ACQUIRE_FAILED", cause=e)
+        err=e if isinstance(e, AppError) else AppError("Failed to acquire lock", "LOCK_ACQUIRE_FAILED", cause=e)
+        raise err
 
 
 def release_lock():
@@ -57,20 +58,22 @@ def release_lock():
             return True
         return False
     except Exception as e:
-        raise AppError("Failed to release lock", "LOCK_RELEASE_FAILED", cause=e)
+        err=e if isinstance(e, AppError) else AppError("Failed to release lock", "LOCK_RELEASE_FAILED", cause=e)
+        raise err
 
 def upload_file(local_path, key):
     """Placeholder for actual s3-based mechanism."""
     try:
         src = Path(local_path)
         if not src.exists():
-            raise AppError("Failed to upload the file to s3","S3_UPLOAD_FILE_FAILED",context={"local_path": local_path, "key": key, "reason": "path does not exist"})
+            raise AppError("Failed to upload the file to s3","UPLOAD_FILE_FAILED",context={"local_path": local_path, "key": key, "reason": "path does not exist"})
         dst = _mock_dir() / key
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src, dst)
         return str(dst)
     except Exception as e:
-        raise AppError("Failed to upload the file to s3","S3_UPLOAD_FILE_FAILED",context={"local_path": local_path, "key": key}, cause=e)
+        err=e if isinstance(e, AppError) else AppError("Failed to upload the file to s3","UPLOAD_FILE_FAILED",context={"local_path": local_path, "key": key}, cause=e)
+        raise err
 
 
 def download_file(key, local_path):
@@ -78,15 +81,16 @@ def download_file(key, local_path):
     try:
         src = _mock_dir() / key
         if not src.exists():
-            raise AppError("Failed to download the file from s3","S3_DOWNLOAD_FILE_FAILED",context={"local_path": local_path, "key": key, "reason": "key does not exist"})
+            raise AppError("Failed to download the file from s3","DOWNLOAD_FILE_FAILED",context={"local_path": local_path, "key": key, "reason": "key does not exist"})
         dst = Path(local_path)
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src, dst)
         return str(dst)
     except Exception as e:
-        raise AppError("Failed to download the file from s3","S3_DOWNLOAD_FILE_FAILED",context={"local_path": local_path, "key": key}, cause=e)
+        err=e if isinstance(e, AppError) else AppError("Failed to download the file from s3","DOWNLOAD_FILE_FAILED",context={"local_path": local_path, "key": key}, cause=e)
+        raise err
 
-def file_exist(key):
+def file_exists(key):
     """Placeholder for actual s3-based mechanism."""
     return (_mock_dir() / key).exists()
 

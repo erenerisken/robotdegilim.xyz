@@ -17,13 +17,13 @@ def make_key(method, url, params=None, data=None, json_body=None):
 
 def hash_content(content):
     if content is None:
-        raise AppError("Content to hash must not be None", "HASH_CONTENT_ERROR")
+        raise AppError("Content to hash must not be None", "HASH_CONTENT_FAILED")
     if isinstance(content, str):
         content = content.encode("utf-8", errors="replace")
     elif isinstance(content, (bytes, bytearray, memoryview)):
         content = bytes(content)
     else:
-        raise AppError("Content to hash must be str or bytes-like", "HASH_CONTENT_ERROR")
+        raise AppError("Content to hash must be str or bytes-like", "HASH_CONTENT_FAILED")
     return hashlib.sha256(content).hexdigest()
 
 
@@ -76,4 +76,5 @@ def _save_cache(cache, path):
     try:
         path.write_text(json.dumps(cache, ensure_ascii=False, indent=4), encoding="utf-8")
     except Exception as e:
-        raise AppError("Failed to save cache", "SAVE_CACHE_ERROR", context={"path": str(path)}, cause=e)
+        err=e if isinstance(e, AppError) else AppError("Failed to save cache", "SAVE_CACHE_FAILED", context={"path": str(path)}, cause=e)
+        raise err

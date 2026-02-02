@@ -64,21 +64,21 @@ def request(method, url, *, params=None, data=None, json_body=None, ok_status=No
 
         if _should_retry(resp.status_code):
             ctx["status_code"] = resp.status_code
-            last_error = AppError("HTTP request failed, retrying", "HTTP_REQUEST_ERROR", context=ctx)
+            last_error = AppError("HTTP request failed, retrying", "HTTP_REQUEST_FAILED", context=ctx)
             _sleep_with_jitter(base_delay, jitter, attempt)
             continue
 
         ctx["status_code"] = resp.status_code
-        raise AppError("HTTP request failed, no need to retry", "HTTP_REQUEST_ERROR", context=ctx)
+        raise AppError("HTTP request failed, no need to retry", "HTTP_REQUEST_FAILED", context=ctx)
 
-    raise AppError("HTTP request failed, giving up", "HTTP_REQUEST_ERROR", context=ctx, cause=last_error)
+    raise AppError("HTTP request failed, giving up", "HTTP_REQUEST_FAILED", context=ctx, cause=last_error)
 
 
 def get(url, **kwargs):
     try:
         return request("GET", url, **kwargs)
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("GET request failed", "GET_REQUEST_ERROR", context={"url": url,**kwargs}, cause=e)
+        err=e if isinstance(e, AppError) else AppError("GET request failed", "GET_REQUEST_FAILED", context={"url": url,**kwargs}, cause=e)
         raise err
 
 
@@ -86,7 +86,7 @@ def post(url, *, data=None, **kwargs):
     try:
         return request("POST", url, data=data, **kwargs)
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("POST request failed", "POST_REQUEST_ERROR", context={"url": url, "data": data, **kwargs}, cause=e)
+        err=e if isinstance(e, AppError) else AppError("POST request failed", "POST_REQUEST_FAILED", context={"url": url, "data": data, **kwargs}, cause=e)
         raise err
 
 
