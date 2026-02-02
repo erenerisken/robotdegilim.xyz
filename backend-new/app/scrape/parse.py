@@ -1,19 +1,26 @@
-from typing import List, Dict, Tuple, cast
+"""HTML parsing helpers for scrape pipeline extraction stages."""
+
+import logging
+from typing import Any, cast
+
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-import logging
 
-from app.core.errors import AppError
 from app.core.constants import DAYS_MAP
-from app.scrape.fetch import get_section_page
+from app.core.errors import AppError
 from app.core.logging import log_item
+from app.scrape.fetch import get_section_page
 
-def _strip_upper(s) -> str:
+
+def _strip_upper(s: Any) -> str:
+    """Normalize string-like values by stripping and upper-casing."""
     return str(s or "").strip().upper()
 
+
 def extract_departments(
-    soup: BeautifulSoup, dept_codes: List[str], dept_names: Dict[str, str]
+    soup: BeautifulSoup, dept_codes: list[str], dept_names: dict[str, str]
 ) -> None:
+    """Extract department codes and names from the main page."""
     try:
         dept_select = soup.find("select", {"name": "select_dept"})
         if dept_select:
@@ -28,10 +35,12 @@ def extract_departments(
                         dept_codes.append(value)
                         dept_names[value] = text
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to extract departments", "EXTRACT_DEPARTMENTS_FAILED", cause=e)
+        err = e if isinstance(e, AppError) else AppError("Failed to extract departments", "EXTRACT_DEPARTMENTS_FAILED", cause=e)
         raise err
 
-def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
+
+def extract_current_semester(soup: BeautifulSoup) -> tuple[str, str]:
+    """Extract current semester code and label from the main page."""
     try:
         semester_select = soup.find("select", {"name": "select_semester"})
         if semester_select:
@@ -42,12 +51,14 @@ def extract_current_semester(soup: BeautifulSoup) -> Tuple[str, str]:
                 return (value, text)
         raise AppError("Extracting current semester failed", "EXTRACT_CURRENT_SEMESTER_FAILED")
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to extract current semester", "EXTRACT_CURRENT_SEMESTER_FAILED", cause=e)
+        err = e if isinstance(e, AppError) else AppError("Failed to extract current semester", "EXTRACT_CURRENT_SEMESTER_FAILED", cause=e)
         raise err
 
+
 def extract_courses(
-    soup: BeautifulSoup, course_codes: List[str], course_names: Dict[str, str]
+    soup: BeautifulSoup, course_codes: list[str], course_names: dict[str, str]
 ) -> None:
+    """Extract course codes and names from department page table."""
     try:
         form = soup.find("form")
         if not form:
@@ -61,7 +72,7 @@ def extract_courses(
             if course_rows:
                 for course_row in course_rows:
                     course_cells = course_row.find_all("td")
-                    if course_cells and len(course_cells) >= 3:
+                    if course_cells and len(course_cells) >= 3 and course_cells[0].find("input"):
                         course_code = course_cells[0].find("input").get("value")
                         course_name = course_cells[2].get_text()
                         if course_code and course_name:
@@ -70,10 +81,12 @@ def extract_courses(
                             course_codes.append(course_code)
                             course_names[course_code] = course_name
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to extract courses", "EXTRACT_COURSES_FAILED", cause=e)
+        err = e if isinstance(e, AppError) else AppError("Failed to extract courses", "EXTRACT_COURSES_FAILED", cause=e)
         raise err
 
-def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> None:
+
+def extract_sections(cache: Any, soup: BeautifulSoup, sections: dict[str, dict[str, Any]]) -> None:
+    """Extract sections, constraints, and time slots from a course detail page."""
     try:
         form = soup.find("form")
         if not form:
@@ -86,7 +99,7 @@ def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> N
         section_rows = extract_tags_as_string(section_table_string, "<tr>", "</tr>")[2:]
 
         for section_row in section_rows:
-            section_node = {}
+            section_node: dict[str, Any] = {}
 
             time_row = extract_tags_as_string(section_row[4:-5], "<tr>", "</tr>")[0]
             section_info = section_row.replace(time_row, "")
@@ -102,6 +115,8 @@ def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> N
             for time_row in time_rows:
                 time_row = cast(Tag, time_row)
                 time_cells = time_row.find_all("td")
+                if len(time_cells) < 4:
+                    continue
                 if (
                     not time_cells[0].get_text()
                     or time_cells[0].get_text() not in DAYS_MAP
@@ -116,7 +131,10 @@ def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> N
                     }
                 )
 
-            section_code = info_cells[0].find("input").get("value")
+            section_input = info_cells[0].find("input") if info_cells else None
+            section_code = section_input.get("value") if section_input else None
+            if not section_code:
+                continue
             section_instructors = [info_cells[1].get_text(), info_cells[2].get_text()]
             cache_key, html_hash, response = get_section_page(section_code)
             parsed = cache.get(cache_key, html_hash)
@@ -126,7 +144,8 @@ def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> N
                 section_constraints = parsed["section_constraints"]
             else:
                 section_soup = BeautifulSoup(response.text, "html.parser")
-                form_msg = section_soup.find("div", id="formmessage").find("b").get_text()
+                form_msg_node = section_soup.find("div", id="formmessage")
+                form_msg = form_msg_node.find("b").get_text() if form_msg_node and form_msg_node.find("b") else ""
                 if not form_msg:
                     extract_constraints(section_soup, section_constraints)
                 cache.set(
@@ -141,10 +160,12 @@ def extract_sections(cache, soup: BeautifulSoup, sections: Dict[str, Dict]) -> N
             sections[section_code] = section_node
 
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to extract sections", "EXTRACT_SECTIONS_FAILED", cause=e)
+        err = e if isinstance(e, AppError) else AppError("Failed to extract sections", "EXTRACT_SECTIONS_FAILED", cause=e)
         raise err
 
-def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) -> None:
+
+def extract_constraints(soup: BeautifulSoup, constraints: list[dict[str, str]]) -> None:
+    """Extract section constraints table rows."""
     try:
         cons_table = cast(Tag, soup.find("form").find_all("table")[2])
         cons_rows = cons_table.find_all("tr")[1:]
@@ -158,35 +179,42 @@ def extract_constraints(soup: BeautifulSoup, constraints: List[Dict[str, str]]) 
                 }
             )
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to extract constraints", "EXTRACT_CONSTRAINTS_FAILED", cause=e)
+        err = e if isinstance(e, AppError) else AppError("Failed to extract constraints", "EXTRACT_CONSTRAINTS_FAILED", cause=e)
         raise err
 
+
 def any_course(soup: BeautifulSoup) -> bool:
+    """Return False when form message indicates no courses for department."""
     try:
-        form_msg = soup.find("div", id="formmessage").find("b").get_text()
+        form_msg_node = soup.find("div", id="formmessage")
+        form_msg = form_msg_node.find("b").get_text() if form_msg_node and form_msg_node.find("b") else ""
         if form_msg:
             return False
         return True
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to determine if any course exists", "ANY_COURSE_FAILED", cause=e)
+        err = e if isinstance(e, AppError) else AppError("Failed to determine if any course exists", "ANY_COURSE_FAILED", cause=e)
         raise err
 
+
 def deptify(prefix: str, course_code: str) -> str:
+    """Build prefixed human-readable course code from numeric code."""
     try:
         result = "" + prefix
-        if course_code[3] == "0":
+        if len(course_code) > 4 and course_code[3] == "0":
             result += course_code[4:]
         else:
             result += course_code[3:]
         return result
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to deptify course code", "DEPTIFY_FAILED", cause=e)
+        err = e if isinstance(e, AppError) else AppError("Failed to deptify course code", "DEPTIFY_FAILED", cause=e)
         raise err
 
-def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List[str]:
+
+def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> list[str]:
+    """Extract nested HTML tag blocks as strings using stack matching."""
     try:
-        stack: List[str] = []
-        tags: List[str] = []
+        stack: list[str] = []
+        tags: list[str] = []
         sindex = 0
         cindex = 0
         word_length = len(end_tag)
@@ -214,12 +242,16 @@ def extract_tags_as_string(html_code: str, start_tag: str, end_tag: str) -> List
             cindex += 1
         return tags
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to extract tags as string", "EXTRACT_TAGS_AS_STRING_FAILED", cause=e)
+        err = e if isinstance(e, AppError) else AppError("Failed to extract tags as string", "EXTRACT_TAGS_AS_STRING_FAILED", cause=e)
         raise err
 
-def extract_dept_prefix(catalog_soup):
+
+def extract_dept_prefix(catalog_soup: BeautifulSoup) -> str | None:
+    """Extract alphabetic department prefix from catalog page heading."""
     try:
         h2 = catalog_soup.find("h2")
+        if h2 is None:
+            return None
         course_code_with_prefix = h2.get_text().split(" ")[0]
         dept_prefix = "".join([char for char in course_code_with_prefix if char.isalpha()])
         if dept_prefix:
