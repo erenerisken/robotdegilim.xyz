@@ -6,7 +6,7 @@ from typing import Any, cast
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from app.core.constants import DAYS_MAP
+from app.core.constants import DAYS_MAP, LOGGER_SCRAPE
 from app.core.errors import AppError
 from app.core.logging import log_item
 from app.scrape.fetch import get_section_page
@@ -263,5 +263,5 @@ def extract_dept_prefix(catalog_soup: BeautifulSoup) -> str | None:
             code="EXTRACT_DEPT_PREFIX_FAILED",
             cause=e,
         )
-        log_item("scrape", logging.WARNING, err)
+        log_item(LOGGER_SCRAPE, logging.WARNING, err)
         return None
