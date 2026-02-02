@@ -40,6 +40,10 @@ DEPARTMENTS_OVERRIDES_FILE = "departmentsOverrides.json"
 DATA_FILE = "data.json"
 LAST_UPDATED_FILE = "lastUpdated.json"
 
+# Mock S3 filesystem names
+S3_MOCK_DIR_NAME = "s3-mock"
+S3_LOCK_FILE = "lockfile.lock"
+
 # Logger names
 LOGGER_APP = "app"
 LOGGER_SCRAPE = "scrape"

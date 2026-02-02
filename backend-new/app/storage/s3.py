@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from app.core.constants import S3_LOCK_FILE, S3_MOCK_DIR_NAME
 from app.core.errors import AppError
 from app.core.settings import get_settings
 
@@ -15,14 +16,24 @@ _lock_acquired = False
 def _lock_path() -> Path:
     """Return lock file path in mock S3 directory."""
     base = _mock_dir()
-    return base / "lockfile.lock"
+    return base / S3_LOCK_FILE
 
 
 def _mock_dir() -> Path:
     """Return local directory that emulates S3 storage."""
-    base = Path(__file__).resolve().parents[2] / "s3-mock"
+    base = Path(__file__).resolve().parents[2] / S3_MOCK_DIR_NAME
     base.mkdir(parents=True, exist_ok=True)
     return base
+
+
+def _ensure_lock(operation: str, **context: Any) -> None:
+    """Raise when lock is not currently held by this instance."""
+    if not _lock_acquired:
+        raise AppError(
+            f"Lock not acquired before {operation}",
+            "LOCK_NOT_ACQUIRED",
+            context=context,
+        )
 
 
 def acquire_lock() -> bool:
@@ -84,9 +95,7 @@ def release_lock() -> bool:
 def upload_file(local_path: str | Path, key: str) -> str:
     """Upload local file to mock S3 key path."""
     try:
-        global _lock_acquired
-        if not _lock_acquired:
-            raise AppError("Lock not acquired before uploading file to s3", "LOCK_NOT_ACQUIRED", context={"local_path": local_path, "key": key})
+        _ensure_lock("uploading file to s3", local_path=local_path, key=key)
         src = Path(local_path)
         if not src.exists():
             raise AppError("Failed to upload the file to s3", "UPLOAD_FILE_FAILED", context={"local_path": local_path, "key": key, "reason": "path does not exist"})
@@ -102,9 +111,7 @@ def upload_file(local_path: str | Path, key: str) -> str:
 def download_file(key: str, local_path: str | Path) -> str:
     """Download mock S3 key to local path."""
     try:
-        global _lock_acquired
-        if not _lock_acquired:
-            raise AppError("Lock not acquired before downloading file from s3", "LOCK_NOT_ACQUIRED", context={"local_path": local_path, "key": key})
+        _ensure_lock("downloading file from s3", local_path=local_path, key=key)
         src = _mock_dir() / key
         if not src.exists():
             raise AppError("Failed to download the file from s3", "DOWNLOAD_FILE_FAILED", context={"local_path": local_path, "key": key, "reason": "key does not exist"})
@@ -119,17 +126,13 @@ def download_file(key: str, local_path: str | Path) -> str:
 
 def file_exists(key: str) -> bool:
     """Check whether a key exists in mock S3."""
-    global _lock_acquired
-    if not _lock_acquired:
-        raise AppError("Lock not acquired before checking file existence in s3", "LOCK_NOT_ACQUIRED", context={"key": key})
+    _ensure_lock("checking file existence in s3", key=key)
     return (_mock_dir() / key).exists()
 
 
 def delete_file(key: str) -> bool:
     """Delete a key from mock S3 if present."""
-    global _lock_acquired
-    if not _lock_acquired:
-        raise AppError("Lock not acquired before deleting file from s3", "LOCK_NOT_ACQUIRED", context={"key": key})
+    _ensure_lock("deleting file from s3", key=key)
     path = _mock_dir() / key
     if path.exists():
         path.unlink()
