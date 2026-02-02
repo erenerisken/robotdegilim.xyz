@@ -56,7 +56,10 @@ def handle_request(request_type: RequestType):
         detach_context()
         try:   
             if not release_lock():
-                raise None
+                raise AppError(
+                message="Failed to release lock after request handling",
+                code="LOCK_RELEASE_FAILED",
+            )
         except Exception as e:
             err = e if isinstance(e, AppError) else AppError(
                 message="Failed to release lock after request handling",
