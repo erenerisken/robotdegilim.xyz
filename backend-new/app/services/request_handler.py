@@ -21,10 +21,10 @@ def handle_request(request_type: RequestType):
         if not acquire_lock():
             if _allow_context_modification:
                 if queue_request(request_type):
-                    return ResponseModel(request_type=request_type.value,status="REQUEST_QUEUED",message="Request queued"), 202
+                    return ResponseModel(request_type=request_type,status="REQUEST_QUEUED",message="Request queued"), 202
                 else:
-                    return ResponseModel(request_type=request_type.value,status="QUEUE_FAILED",message="Either queue is not supported for this request type or the request is already in the queue"), 503
-            return ResponseModel(request_type=request_type.value,status="BUSY",message="System is busy processing another request"), 503
+                    return ResponseModel(request_type=request_type,status="QUEUE_FAILED",message="Either queue is not supported for this request type or the request is already in the queue"), 503
+            return ResponseModel(request_type=request_type,status="BUSY",message="System is busy processing another request"), 503
 
         _allow_context_modification = True
         load_context()
@@ -50,7 +50,7 @@ def handle_request(request_type: RequestType):
             cause=e,
         )
         log_item("error",logging.ERROR, err)
-        return ResponseModel(request_type=request_type.value,status="ERROR",message=err.message), 500
+        return ResponseModel(request_type=request_type,status="ERROR",message=err.message), 500
     finally:
         _allow_context_modification = False
         publish_context()

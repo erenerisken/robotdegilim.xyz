@@ -26,7 +26,7 @@ class RootResponse(BaseModel):
     root: dict = Field(default_factory=_build_root_payload)
 
 class ResponseModel(BaseModel):
-    request_type: str
+    request_type: RequestType
     status: str
     message: str
     extra:dict | None = None
