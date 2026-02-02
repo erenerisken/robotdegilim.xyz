@@ -23,7 +23,7 @@ def reset_session():
     global _SESSION
     _SESSION = None
 
-def request(method, url, *, params=None, data=None, json_body=None, ok_status=[200], name=None):
+def request(method, url, *, params=None, data=None, json_body=None, ok_status=None, name=None):
     settings = get_settings()
     timeout = float(settings.HTTP_TIMEOUT)
     max_tries = int(settings.GLOBAL_RETRIES)
@@ -40,6 +40,8 @@ def request(method, url, *, params=None, data=None, json_body=None, ok_status=[2
     if name:
         ctx["name"] = name
 
+    if ok_status is None:
+        ok_status = [200]
     last_error = None
     for attempt in range(1, max_tries + 1):
         _maybe_throttle()
