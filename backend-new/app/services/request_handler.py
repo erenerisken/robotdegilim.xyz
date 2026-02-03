@@ -19,7 +19,7 @@ from app.pipelines.scrape import run_scrape
 from app.pipelines.musts import run_musts
 from app.storage.s3 import acquire_lock, release_lock
 
-_allow_context_modification = False
+_allow_context_modification: bool = False
 
 INCREMENT_ERROR_STATUS_CODES = (500,)
 DECREMENT_ERROR_STATUS_CODES = (200,)

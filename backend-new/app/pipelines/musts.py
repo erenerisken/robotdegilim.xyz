@@ -1,20 +1,49 @@
+"""Musts pipeline orchestrator for building and publishing musts.json."""
+
 import logging
+from typing import Any
+
 from bs4 import BeautifulSoup
 
-from app.core.settings import get_settings
-from app.core.paths import cache_path, staged_path, published_path
-from app.core.constants import RequestType, MUSTS_CACHE_FILE, LOGGER_MUSTS, NO_PREFIX_VARIANTS, MUSTS_FILE, LOGGER_ERROR
-from app.core.logging import log_item
-from app.utils.cache import CacheStore
-from app.musts.io import load_departments
-from app.musts.fetch import get_department_catalog_page
-from app.core.errors import AppError
-from app.storage.local import write_json, move_file
-from app.storage.s3 import upload_file
 from app.api.schemas import ResponseModel
+from app.core.constants import (
+    LOGGER_ERROR,
+    LOGGER_MUSTS,
+    MUSTS_CACHE_FILE,
+    MUSTS_FILE,
+    NO_PREFIX_VARIANTS,
+    RequestType,
+)
+from app.core.errors import AppError
+from app.core.logging import log_item
+from app.core.paths import cache_path, published_path, staged_path
+from app.core.settings import get_settings
+from app.musts.fetch import get_department_catalog_page
+from app.musts.io import load_departments
 from app.musts.parse import extract_dept_node
+from app.storage.local import move_file, write_json
+from app.storage.s3 import upload_file
+from app.utils.cache import CacheStore
 
-def run_musts():
+MUSTS_DEPENDENCY_ERROR_CODES: tuple[str, ...] = (
+    "DEPARTMENTS_FILE_NOT_FOUND",
+    "DOWNLOAD_DEPARTMENTS_FAILED",
+    "LOAD_DEPARTMENTS_FAILED",
+)
+
+
+def _is_dependency_error(err: AppError) -> bool:
+    """Return True when the error or one of its causes is a musts dependency failure."""
+    current: Exception | None = err
+    while isinstance(current, AppError):
+        if current.code in MUSTS_DEPENDENCY_ERROR_CODES:
+            return True
+        current = current.cause if isinstance(current.cause, Exception) else None
+    return False
+
+
+def run_musts() -> tuple[ResponseModel, int]:
+    """Execute musts pipeline and publish musts.json artifact."""
     try:
         settings = get_settings()
         cache = CacheStore(path=cache_path(MUSTS_CACHE_FILE), parser_version=settings.MUSTS_PARSER_VERSION)
@@ -22,22 +51,23 @@ def run_musts():
 
         log_item(LOGGER_MUSTS, logging.INFO, "Musts process started.")
         
-        departments = load_departments()
+        departments: dict[str, dict[str, Any]] = load_departments()
 
-        data = {}
+        data: dict[str, dict[int, list[str]]] = {}
         dept_codes = list(departments.keys())
         dept_len = len(dept_codes)
         for index, dept_code in enumerate(dept_codes, start=1):
-            if ( not departments[dept_code].get("p",None) or departments[dept_code]["p"] in NO_PREFIX_VARIANTS ):
+            dept_meta = departments.get(dept_code, {})
+            prefix = dept_meta.get("p")
+            if not isinstance(prefix, str) or prefix in NO_PREFIX_VARIANTS:
                 continue
-            prefix=departments[dept_code]["p"]
 
             cache_key, html_hash, response = get_department_catalog_page(dept_code)
-            parsed=cache.get(cache_key, html_hash)
+            parsed: dict[str, Any] | None = cache.get(cache_key, html_hash)
 
-            dept_node={}
+            dept_node: dict[int, list[str]] = {}
             if parsed:
-                dept_node=parsed["dept_node"]
+                dept_node = parsed["dept_node"]
             else:
                 dept_soup = BeautifulSoup(response.text, "html.parser")
                 dept_node = extract_dept_node(dept_soup)
@@ -62,13 +92,23 @@ def run_musts():
         move_file(musts_path, musts_published_path)
 
         log_item(LOGGER_MUSTS, logging.INFO, "Musts process completed successfully and files uploaded to S3.")
-        return ResponseModel(request_type=RequestType.MUSTS, status="SUCCESS", message="Musts process completed successfully and files uploaded to S3."), 200
+        return ResponseModel(
+            request_type=RequestType.MUSTS,
+            status="SUCCESS",
+            message="Musts process completed successfully and files uploaded to S3.",
+        ), 200
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Musts process failed.", "MUSTS_PROCESS_FAILED", cause=e)
-        if err.code and "DEPARTMENTS_FAILED" in err.code:
+        if _is_dependency_error(err):
             log_item(LOGGER_MUSTS, logging.ERROR, err)
-            status_code = 503
+            status_code = 409
+            message = "Musts process requires departments data from scrape."
         else:
             log_item(LOGGER_ERROR, logging.ERROR, err)
             status_code = 500
-        return ResponseModel(request_type=RequestType.MUSTS, status="FAILED", message="Musts process failed, see the error logs for details."), status_code
+            message = "Musts process failed, see the error logs for details."
+        return ResponseModel(
+            request_type=RequestType.MUSTS,
+            status="FAILED",
+            message=message,
+        ), status_code
