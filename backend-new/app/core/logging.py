@@ -9,16 +9,18 @@ from typing import Any
 from app.core.constants import (
     LOG_FILE_APP,
     LOG_FILE_ERROR,
+    LOG_FILE_MUSTS,
     LOG_FILE_SCRAPE,
     LOGGER_APP,
     LOGGER_ERROR,
+    LOGGER_MUSTS,
     LOGGER_SCRAPE,
 )
 from app.core.errors import AppError
 from app.core.paths import log_dir
 from app.core.settings import get_settings
 
-_LOGGER_NAMES: tuple[str, ...] = (LOGGER_APP, LOGGER_SCRAPE, LOGGER_ERROR)
+_LOGGER_NAMES: tuple[str, ...] = (LOGGER_APP, LOGGER_SCRAPE, LOGGER_MUSTS, LOGGER_ERROR)
 
 
 def _build_formatter() -> logging.Formatter:
@@ -64,9 +66,10 @@ def setup_logging() -> None:
 
     app_logger = logging.getLogger(LOGGER_APP)
     scrape_logger = logging.getLogger(LOGGER_SCRAPE)
+    musts_logger = logging.getLogger(LOGGER_MUSTS)
     error_logger = logging.getLogger(LOGGER_ERROR)
 
-    for lg in (app_logger, scrape_logger, error_logger):
+    for lg in (app_logger, scrape_logger, musts_logger, error_logger):
         lg.setLevel(level)
         lg.handlers.clear()
         lg.propagate = False
@@ -75,10 +78,12 @@ def setup_logging() -> None:
 
     app_file = log_dir_path / LOG_FILE_APP
     scrape_file = log_dir_path / LOG_FILE_SCRAPE
+    musts_file = log_dir_path / LOG_FILE_MUSTS
     err_file = log_dir_path / LOG_FILE_ERROR
 
     _add_handler(app_logger, app_file, formatter, level)
     _add_handler(scrape_logger, scrape_file, formatter, level)
+    _add_handler(musts_logger, musts_file, formatter, level)
     _add_handler(error_logger, err_file, formatter, logging.ERROR)
 
     if settings.LOG_CONSOLE:
@@ -87,6 +92,7 @@ def setup_logging() -> None:
         console.setFormatter(formatter)
         app_logger.addHandler(console)
         scrape_logger.addHandler(console)
+        musts_logger.addHandler(console)
         error_logger.addHandler(console)
 
     _add_email_handler(error_logger)

@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     LOG_DIR: str = "data/logs"
     # Scrape process settings
     SCRAPE_PARSER_VERSION: str = "1.0.0"
+    # Musts process settings
+    MUSTS_PARSER_VERSION: str = "1.0.0"
     # AppContext settings
     CONTEXT_MAX_ERRORS: int = 5
 

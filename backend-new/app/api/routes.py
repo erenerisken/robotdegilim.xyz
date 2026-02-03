@@ -22,3 +22,9 @@ def run_scrape() -> Response:
     """Trigger the scrape workflow and return execution status."""
     model, status_code = handle_request(RequestType.SCRAPE)
     return JSONResponse(content=model.model_dump(), status_code=status_code)
+
+@router.get("/run-musts")
+def run_musts() -> Response:
+    """Trigger the musts processing workflow and return execution status."""
+    model, status_code = handle_request(RequestType.MUSTS)
+    return JSONResponse(content=model.model_dump(), status_code=status_code)

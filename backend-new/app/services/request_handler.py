@@ -77,6 +77,8 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
 
         if next_req == RequestType.SCRAPE:
             model, status_code = run_scrape()
+        elif next_req == RequestType.MUSTS:
+            model, status_code = run_musts()
         # Request types can be extended here with additional elif blocks
 
         if model is None or status_code is None:

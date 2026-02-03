@@ -25,6 +25,10 @@ def _build_root_payload() -> dict:
                 "path": "/run-scrape",
                 "description": "Endpoint to trigger the scraping process",
             },
+            "musts": {
+                "path": "/run-musts",
+                "description": "Endpoint to trigger the musts processing workflow",
+            },
         },
     }
 
