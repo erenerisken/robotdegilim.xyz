@@ -12,11 +12,12 @@ from app.context.service import (
     record_success,
     resolve_request,
 )
-from app.core.constants import RequestType, LOGGER_ERROR
+from app.core.constants import RequestType, LOGGER_APP, LOGGER_ERROR
 from app.core.errors import AppError
 from app.core.logging import log_item
 from app.pipelines.scrape import run_scrape
 from app.pipelines.musts import run_musts
+from app.storage.local import clear_downloaded_dir
 from app.storage.s3 import acquire_lock, release_lock
 
 _allow_context_modification: bool = False
@@ -116,6 +117,21 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
                     cause=e,
                 )
                 log_item(LOGGER_ERROR, logging.ERROR, err)
+            try:
+                cleared_entries = clear_downloaded_dir()
+                if cleared_entries > 0:
+                    log_item(
+                        LOGGER_APP,
+                        logging.INFO,
+                        f"Cleared downloaded directory entries: {cleared_entries}",
+                    )
+            except Exception as e:
+                err = e if isinstance(e, AppError) else AppError(
+                    message="Failed to clear downloaded directory after request handling",
+                    code="DOWNLOADED_CLEANUP_FAILED",
+                    cause=e,
+                )
+                log_item(LOGGER_APP, logging.WARNING, err)
             try:
                 if not release_lock():
                     raise AppError(

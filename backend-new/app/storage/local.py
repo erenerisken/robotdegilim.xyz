@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from app.core.errors import AppError
+from app.core.paths import downloaded_dir
 
 
 def read_json(path: str | Path) -> dict[str, Any]:
@@ -58,4 +59,31 @@ def delete_file(path: str | Path) -> bool:
         return False
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to delete file", "DELETE_FILE_FAILED", context={"path": str(path)}, cause=e)
+        raise err
+
+
+def clear_downloaded_dir() -> int:
+    """Delete all files/directories under downloaded dir and return removed entry count."""
+    try:
+        root = downloaded_dir()
+        if not root.exists():
+            return 0
+
+        removed = 0
+        # Delete children before parents so nested directories can be removed safely.
+        for entry in sorted(root.rglob("*"), key=lambda p: len(p.parts), reverse=True):
+            if entry.is_file():
+                entry.unlink()
+                removed += 1
+            elif entry.is_dir():
+                entry.rmdir()
+                removed += 1
+        return removed
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError(
+            "Failed to clear downloaded directory",
+            "CLEAR_DOWNLOADED_DIR_FAILED",
+            context={"path": str(downloaded_dir())},
+            cause=e,
+        )
         raise err
