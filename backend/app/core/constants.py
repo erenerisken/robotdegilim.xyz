@@ -56,6 +56,7 @@ NTE_AVAILABLE_FILE = "nteAvailable.json"
 # Mock S3 filesystem names
 S3_MOCK_DIR_NAME = "s3-mock"
 S3_LOCK_FILE = "lockfile.lock"
+S3_ADMIN_LOCK_FILE = "admin_lockfile.lock"
 
 # Logger names
 LOGGER_APP = "app"
