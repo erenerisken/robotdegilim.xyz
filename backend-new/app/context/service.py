@@ -1,8 +1,11 @@
 """Context state service for loading, mutating, and publishing app context."""
+import logging
 
 from app.context.schema import AppContext
-from app.core.constants import CONTEXT_KEY, RequestType
+from app.core.constants import CONTEXT_KEY, LOGGER_APP, RequestType
 from app.core.errors import AppError
+from app.core.settings import get_settings
+from app.core.logging import log_item
 from app.core.paths import downloaded_path, published_path, staged_path
 from app.storage.local import move_file, read_json, write_json
 from app.storage.s3 import download_file, file_exists, upload_file
@@ -58,13 +61,10 @@ def detach_context() -> None:
 def queue_request(request_type: RequestType) -> bool:
     """Queue a request type if queueing is supported and it is not already queued."""
     try:
-        global _copy_context, _loaded
+        global _copy_context
         if request_type == RequestType.SCRAPE:
             return False
-        if not _loaded:
-            load_context()
-        if _copy_context is None:
-            raise AppError("Context copy is not loaded", "CONTEXT_NOT_LOADED")
+        _ensure_context_loaded()
         if _copy_context.in_queue[request_type.value]:
             return False
         _copy_context.queue.append(request_type.value)
@@ -78,11 +78,8 @@ def queue_request(request_type: RequestType) -> bool:
 def get_next_request(request_type: RequestType) -> tuple[bool, RequestType]:
     """Return the next queued request or the incoming request when queue is empty."""
     try:
-        global _copy_context, _loaded
-        if not _loaded:
-            load_context()
-        if _copy_context is None:
-            raise AppError("Context copy is not loaded", "CONTEXT_NOT_LOADED")
+        global _copy_context
+        _ensure_context_loaded()
         if not _copy_context.queue:
             return False, request_type
         next_request = _copy_context.queue.pop(0)
@@ -90,4 +87,49 @@ def get_next_request(request_type: RequestType) -> tuple[bool, RequestType]:
         return True, RequestType(next_request)
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to get next request", "REQUEST_GET_FAILED", cause=e)
+        raise err
+
+def increment_error() -> None:
+    """Increment the error count in the context."""
+    try:
+        global _copy_context
+        _ensure_context_loaded()
+        _copy_context.error_count += 1
+        if _copy_context.error_count >= get_settings().CONTEXT_MAX_ERRORS:
+            _copy_context.error_count = 0
+            _copy_context.suspended = True
+            log_item(LOGGER_APP, logging.WARNING, AppError("AppContext has been suspended due to exceeding maximum error count", "CONTEXT_SUSPENDED"))
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError("Failed to increment error count", "ERROR_INCREMENT_FAILED", cause=e)
+        raise err
+    
+def decrement_error() -> None:
+    """Decrement the error count in the context."""
+    try:
+        global _copy_context
+        _ensure_context_loaded()
+        if _copy_context.error_count > 0:
+            _copy_context.error_count -= 1
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError("Failed to decrement error count", "ERROR_DECREMENT_FAILED", cause=e)
+        raise err
+
+def _ensure_context_loaded() -> None:
+    """Ensure that the context is loaded in memory."""
+    global _loaded, _copy_context, _original_context
+    if not _loaded:
+        load_context()
+    if _copy_context is None or _original_context is None:
+        raise AppError("Context is not loaded", "CONTEXT_NOT_LOADED")
+    
+def clear_queue() -> None:
+    """Clear the request queue in the context."""
+    try:
+        global _copy_context
+        _ensure_context_loaded()
+        _copy_context.queue.clear()
+        for key in _copy_context.in_queue.keys():
+            _copy_context.in_queue[key] = False
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError("Failed to clear request queue", "QUEUE_CLEAR_FAILED", cause=e)
         raise err
