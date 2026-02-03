@@ -14,7 +14,7 @@ _original_context: AppContext | None = None
 _copy_context: AppContext | None = None
 _loaded: bool = False
 
-def load_context() -> None:
+def load_context_state() -> None:
     """Load context from storage once and keep original/copy snapshots in memory."""
     global _original_context, _copy_context, _loaded
     try:
@@ -34,7 +34,7 @@ def load_context() -> None:
         raise err
 
 
-def publish_context() -> None:
+def publish_context_state() -> None:
     """Persist the current context copy and mark it as published locally and in S3."""
     global _original_context, _copy_context, _loaded
     try:
@@ -58,62 +58,51 @@ def detach_context() -> None:
     _loaded = False
 
 
-def queue_request(request_type: RequestType) -> bool:
+def enqueue_request(request_type: RequestType) -> bool:
     """Queue a request type if queueing is supported and it is not already queued."""
     try:
         global _copy_context
-        if request_type == RequestType.SCRAPE:
-            return False
         _ensure_context_loaded()
         _ensure_not_suspended()
-        if _copy_context.in_queue[request_type.value]:
-            return False
-        _copy_context.queue.append(request_type.value)
-        _copy_context.in_queue[request_type.value] = True
-        return True
+        return _copy_context.enqueue(request_type)
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to queue request", "REQUEST_QUEUE_FAILED", cause=e)
         raise err
 
 
-def get_next_request(request_type: RequestType) -> tuple[bool, RequestType]:
+def resolve_request(request_type: RequestType) -> tuple[bool, RequestType]:
     """Return the next queued request or the incoming request when queue is empty."""
     try:
         global _copy_context
         _ensure_context_loaded()
         _ensure_not_suspended()
-        if not _copy_context.queue:
+        next_request = _copy_context.dequeue()
+        if next_request is None:
             return False, request_type
-        next_request = _copy_context.queue.pop(0)
-        _copy_context.in_queue[next_request] = False
-        return True, RequestType(next_request)
+        return True, next_request
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to get next request", "REQUEST_GET_FAILED", cause=e)
         raise err
 
-def increment_error() -> None:
+def record_failure() -> None:
     """Increment the error count in the context."""
     try:
         global _copy_context
         _ensure_context_loaded()
         _ensure_not_suspended()
-        _copy_context.error_count += 1
-        if _copy_context.error_count >= get_settings().CONTEXT_MAX_ERRORS:
-            _copy_context.error_count = 0
-            _copy_context.suspended = True
+        if _copy_context.mark_failure(get_settings().CONTEXT_MAX_ERRORS):
             log_item(LOGGER_APP, logging.WARNING, AppError("AppContext has been suspended due to exceeding maximum error count", "CONTEXT_SUSPENDED"))
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to increment error count", "ERROR_INCREMENT_FAILED", cause=e)
         raise err
     
-def decrement_error() -> None:
+def record_success() -> None:
     """Decrement the error count in the context."""
     try:
         global _copy_context
         _ensure_context_loaded()
         _ensure_not_suspended()
-        if _copy_context.error_count > 0:
-            _copy_context.error_count -= 1
+        _copy_context.mark_success()
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to decrement error count", "ERROR_DECREMENT_FAILED", cause=e)
         raise err
@@ -122,7 +111,7 @@ def _ensure_context_loaded() -> None:
     """Ensure that the context is loaded in memory."""
     global _loaded, _copy_context, _original_context
     if not _loaded:
-        load_context()
+        load_context_state()
     if _copy_context is None or _original_context is None:
         raise AppError("Context is not loaded", "CONTEXT_NOT_LOADED")
     
@@ -132,9 +121,7 @@ def clear_queue() -> None:
         global _copy_context
         _ensure_context_loaded()
         _ensure_not_suspended()
-        _copy_context.queue.clear()
-        for key in _copy_context.in_queue.keys():
-            _copy_context.in_queue[key] = False
+        _copy_context.clear_queue()
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to clear request queue", "QUEUE_CLEAR_FAILED", cause=e)
         raise err
@@ -146,32 +133,32 @@ def _ensure_not_suspended() -> None:
     if _copy_context.suspended:
         raise AppError("AppContext is suspended", "CONTEXT_SUSPENDED")
 
-def unsuspend_context() -> None:
+def unsuspend_processing() -> None:
     """Unsuspend the context."""
     try:
         global _copy_context
         _ensure_context_loaded()
-        _copy_context.suspended = False
+        _copy_context.unsuspend()
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to unsuspend context", "CONTEXT_UNSUSPEND_FAILED", cause=e)
         raise err
     
-def suspend_context() -> None:
+def suspend_processing() -> None:
     """Suspend the context immediately."""
     try:
         global _copy_context
         _ensure_context_loaded()
-        _copy_context.suspended = True
+        _copy_context.suspend()
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to suspend context", "CONTEXT_SUSPEND_FAILED", cause=e)
         raise err
     
-def reset_error_count() -> None:
+def reset_failure_count() -> None:
     """Reset the error count in the context to zero."""
     try:
         global _copy_context
         _ensure_context_loaded()
-        _copy_context.error_count = 0
+        _copy_context.reset_failures()
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to reset error count", "ERROR_COUNT_RESET_FAILED", cause=e)
         raise err

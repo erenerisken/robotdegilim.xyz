@@ -4,7 +4,14 @@ from dataclasses import dataclass
 import logging
 
 from app.api.schemas import ResponseModel, RootResponse
-from app.context.service import decrement_error, get_next_request, increment_error, load_context, publish_context, queue_request
+from app.context.service import (
+    enqueue_request,
+    load_context_state,
+    publish_context_state,
+    record_failure,
+    record_success,
+    resolve_request,
+)
 from app.core.constants import RequestType, LOGGER_ERROR
 from app.core.errors import AppError
 from app.core.logging import log_item
@@ -55,7 +62,7 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
     try:
         if not acquire_lock():
             if _allow_context_modification:
-                if queue_request(request_type):
+                if enqueue_request(request_type):
                     return _finalize_response(ResponseModel(request_type=request_type, status="REQUEST_QUEUED", message="Request queued"), 202, flags=error_flags)
                 else:
                     return _finalize_response(ResponseModel(request_type=request_type, status="QUEUE_FAILED", message="Either queue is not supported for this request type or the request is already in the queue"), 503, flags=error_flags)
@@ -63,8 +70,8 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
 
         lock_owned = True
         _allow_context_modification = True
-        load_context()
-        from_queue, next_req = get_next_request(request_type)
+        load_context_state()
+        from_queue, next_req = resolve_request(request_type)
         model: ResponseModel | None = None
         status_code: int | None = None
 
@@ -95,10 +102,10 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
             try:
                 if not error_flags.suspended:
                     if error_flags.increment:
-                        increment_error()
+                        record_failure()
                     if error_flags.decrement:
-                        decrement_error()
-                publish_context()
+                        record_success()
+                publish_context_state()
             except Exception as e:
                 err = e if isinstance(e, AppError) else AppError(
                     message="Failed to publish context after request handling",
