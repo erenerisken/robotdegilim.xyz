@@ -6,8 +6,6 @@ class app_constants:
     aws_secret_access_key = os.environ.get("SECRET_ACCESS_KEY")
     # aws_region_name = os.environ.get('AWS_REGION')
 
-    DAY_MAP = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
-
     # Adaptive backoff factors (faster on good network, harsher on failures)
     adaptive_fast_base_delay = float(os.environ.get("ADAPTIVE_FAST_BASE_DELAY", "1.25"))
     adaptive_base_delay = float(os.environ.get("ADAPTIVE_BASE_DELAY", "1.5"))  # Base delay in seconds
