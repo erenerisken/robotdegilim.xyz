@@ -43,7 +43,10 @@ def _is_dependency_error(err: AppError) -> bool:
 
 
 def run_musts() -> tuple[ResponseModel, int]:
-    """Execute musts pipeline and publish musts.json artifact."""
+    """Execute musts pipeline and publish musts.json artifact.
+
+    NTE list refresh is run as best-effort post-step and does not fail musts output.
+    """
     try:
         settings = get_settings()
         cache = CacheStore(path=cache_path(MUSTS_CACHE_FILE), parser_version=settings.MUSTS_PARSER_VERSION)
@@ -93,9 +96,15 @@ def run_musts() -> tuple[ResponseModel, int]:
 
         log_item(LOGGER_MUSTS, logging.INFO, "Musts process completed successfully and files uploaded to S3.")
         
-        # NTE LIST PROCESS
-        run_nte_list()
-        # End NTE LIST PROCESS
+        try:
+            run_nte_list()
+        except Exception as e:
+            err = e if isinstance(e, AppError) else AppError(
+                "NTE list process failed after musts.",
+                "NTE_LIST_POST_MUSTS_FAILED",
+                cause=e,
+            )
+            log_item(LOGGER_MUSTS, logging.WARNING, err)
 
         return ResponseModel(
             request_type=RequestType.MUSTS,

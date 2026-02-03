@@ -10,17 +10,25 @@ from app.core.constants import (
     LOG_FILE_APP,
     LOG_FILE_ERROR,
     LOG_FILE_MUSTS,
+    LOG_FILE_NTE_LIST,
     LOG_FILE_SCRAPE,
     LOGGER_APP,
     LOGGER_ERROR,
     LOGGER_MUSTS,
+    LOGGER_NTE_LIST,
     LOGGER_SCRAPE,
 )
 from app.core.errors import AppError
 from app.core.paths import log_dir
 from app.core.settings import get_settings
 
-_LOGGER_NAMES: tuple[str, ...] = (LOGGER_APP, LOGGER_SCRAPE, LOGGER_MUSTS, LOGGER_ERROR)
+_LOGGER_NAMES: tuple[str, ...] = (
+    LOGGER_APP,
+    LOGGER_SCRAPE,
+    LOGGER_MUSTS,
+    LOGGER_NTE_LIST,
+    LOGGER_ERROR,
+)
 
 
 def _build_formatter() -> logging.Formatter:
@@ -67,9 +75,10 @@ def setup_logging() -> None:
     app_logger = logging.getLogger(LOGGER_APP)
     scrape_logger = logging.getLogger(LOGGER_SCRAPE)
     musts_logger = logging.getLogger(LOGGER_MUSTS)
+    nte_list_logger = logging.getLogger(LOGGER_NTE_LIST)
     error_logger = logging.getLogger(LOGGER_ERROR)
 
-    for lg in (app_logger, scrape_logger, musts_logger, error_logger):
+    for lg in (app_logger, scrape_logger, musts_logger, nte_list_logger, error_logger):
         lg.setLevel(level)
         lg.handlers.clear()
         lg.propagate = False
@@ -79,11 +88,13 @@ def setup_logging() -> None:
     app_file = log_dir_path / LOG_FILE_APP
     scrape_file = log_dir_path / LOG_FILE_SCRAPE
     musts_file = log_dir_path / LOG_FILE_MUSTS
+    nte_list_file = log_dir_path / LOG_FILE_NTE_LIST
     err_file = log_dir_path / LOG_FILE_ERROR
 
     _add_handler(app_logger, app_file, formatter, level)
     _add_handler(scrape_logger, scrape_file, formatter, level)
     _add_handler(musts_logger, musts_file, formatter, level)
+    _add_handler(nte_list_logger, nte_list_file, formatter, level)
     _add_handler(error_logger, err_file, formatter, logging.ERROR)
 
     if settings.LOG_CONSOLE:
@@ -93,6 +104,7 @@ def setup_logging() -> None:
         app_logger.addHandler(console)
         scrape_logger.addHandler(console)
         musts_logger.addHandler(console)
+        nte_list_logger.addHandler(console)
         error_logger.addHandler(console)
 
     _add_email_handler(error_logger)

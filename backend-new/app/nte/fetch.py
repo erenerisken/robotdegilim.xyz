@@ -1,14 +1,17 @@
 
+"""HTTP fetch helpers for NTE pipelines."""
+
 from requests import Response
 
 from app.core.constants import NTE_COURSES_URL
-from app.utils.http import get
-from app.utils.cache import make_key, hash_content
 from app.core.errors import AppError
+from app.utils.cache import hash_content, make_key
+from app.utils.http import get
 
 # NTE List fetching functions
 
 def get_nte_courses() -> tuple[str, str, Response]:
+    """Fetch NTE courses page and return cache key, response hash, and response."""
     try:
         response = get(NTE_COURSES_URL, name="get_nte_courses")
         response.encoding = "utf-8"
@@ -23,7 +26,8 @@ def get_nte_courses() -> tuple[str, str, Response]:
         )
         raise err
 
-def get_department_page(dept_url) -> tuple[str, str, Response]:
+def get_department_page(dept_url: str) -> tuple[str, str, Response]:
+    """Fetch NTE department page and return cache key, response hash, and response."""
     try:
         response = get(dept_url, name="get_nte_department_page")
         response.encoding = "utf-8"
