@@ -1,19 +1,3 @@
-import datetime
-import uuid
-from flask_cors import CORS
-
-from src.config import app_constants
-from src.musts.musts import run_musts
-from src.nte.nte_available import nte_available
-from src.nte.nte_list import nte_list
-from src.services.status_service import get_status, set_status, init_status, set_busy, set_idle
-from src.utils.timing import set_speed_mode, get_speed_mode
-
-# Initialize status defaults in S3 at startup
-try:
-    init_status()
-except Exception as e:
-    app_logger.warning(f"Could not initialize status in S3, error: {str(e)}")
 
 # Initialize Flask app (serve static assets from src/public under /static)
 app = Flask(
@@ -21,54 +5,10 @@ app = Flask(
     static_folder=app_constants.static_folder,
     static_url_path='/'
 )
-api = Api(app)
-origins = app_constants.allowed_origins
-if origins and origins != "*":
-    cors = CORS(
-        app, resources={r"/*": {"origins": [o.strip() for o in origins.split(",") if o.strip()]}}
-    )
-else:
-    cors = CORS(app)
-
-
-@app.before_request
-def _access_log_start():
-    request._start_time = datetime.datetime.now()
-    request._request_id = uuid.uuid4().hex
-
-
-@app.after_request
-def _access_log_end(response):
-    try:
-        start = getattr(request, "_start_time", None)
-        if start:
-            duration_ms = int((datetime.datetime.now() - start).total_seconds() * 1000)
-        else:
-            duration_ms = -1
-        app_logger.info(
-            f"access method={request.method} path={request.path} status={response.status_code} duration_ms={duration_ms} req_id={getattr(request, '_request_id', '-') }"
-        )
-        # Security headers
-        response.headers.setdefault("X-Content-Type-Options", "nosniff")
-        response.headers.setdefault("Referrer-Policy", "no-referrer")
-        response.headers.setdefault("X-Frame-Options", "DENY")
-    except Exception:
-        pass
-    return response
 
 class RunScrape(Resource):
     def get(self):
-        # Reject if already busy
-        current = get_status()
-        if current.get("status") == "busy":
-            return {"status": "System is busy", "code": "BUSY"}, 503
         try:
-            # Mark busy early
-            set_busy()
-            # Run scrape (now purely functional w.r.t busy state)
-            run_scrape()
-            # Mark departments ready
-            st = set_status(depts_ready=True)
 
             # Run NTE list scraping and processing after successful scrape
             nte_metrics = None
@@ -160,57 +100,3 @@ class RunMusts(Resource):
                 set_idle()
             except Exception as ie:
                 _logger.error(f"failed to set idle after musts, error: {str(ie)}")
-
-
-# Add API resources
-api.add_resource(RunScrape, "/run-scrape")
-api.add_resource(RunMusts, "/run-musts")
-
-
-@app.route("/status")
-def status():
-    """Report backend readiness and S3 status.json busy/idle state."""
-    try:
-        st = get_status()
-        return {
-            "status": st.get("status"),
-            "queued_musts": st.get("queued_musts"),
-            "depts_ready": st.get("depts_ready"),
-            "version": app_constants.app_version,
-        }, 200
-    except Exception as e:
-        _logger.error(f"status check failed, error: {str(e)}")
-        return {"status": "unknown", "error": "status check failed"}, 500
-
-@app.route("/speed", methods=["GET", "POST"])
-def speed():
-    """Get or set throttling speed mode: fast | slow | normal.
-
-    GET: returns current mode and scale.
-    POST: accepts ONLY a JSON body: {"mode": "<value>"}
-    """
-    if request.method == "POST":
-        if not request.is_json:
-            return {"ok": False, "error": "JSON body required"}, 400
-        data = request.get_json(silent=True) or {}
-        mode = data.get("mode")
-        if mode is None:
-            return {"ok": False, "error": "Missing 'mode' in JSON body"}, 400
-        try:
-            state = set_speed_mode(mode)
-        except ValueError as ve:
-            return {"ok": False, "error": str(ve)}, 400
-        except Exception as e:
-            _logger.error(f"speed toggle failed, error: {str(e)}")
-            return {"ok": False, "error": "speed toggle failed"}, 500
-        return {"ok": True, **state}, 200
-
-    # GET
-    return get_speed_mode(), 200
-
-# For local debugging, uncomment the below lines
-
-if __name__ == "__main__":
-    app.run(host="localhost", port=8000)
-
-
