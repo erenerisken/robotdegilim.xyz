@@ -23,6 +23,7 @@ class ErrorFlags:
 
     increment: bool = False
     decrement: bool = False
+    suspended: bool = False
 
 
 def _finalize_response(response_model: ResponseModel, status_code: int, *, flags: ErrorFlags) -> tuple[ResponseModel, int]:
@@ -83,16 +84,20 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
             code="REQUEST_HANDLING_FAILED",
             cause=e,
         )
+        if err.code == "CONTEXT_SUSPENDED":
+            error_flags.suspended = True
+            return _finalize_response(ResponseModel(request_type=request_type, status="CONTEXT_SUSPENDED", message="AppContext is suspended due to excessive errors"), 503, flags=error_flags)
         log_item(LOGGER_ERROR, logging.ERROR, err)
         return _finalize_response(ResponseModel(request_type=request_type, status="ERROR", message=err.message), 500, flags=error_flags)
     finally:
         _allow_context_modification = False
         if lock_owned:
             try:
-                if error_flags.increment:
-                    increment_error()
-                if error_flags.decrement:
-                    decrement_error()
+                if not error_flags.suspended:
+                    if error_flags.increment:
+                        increment_error()
+                    if error_flags.decrement:
+                        decrement_error()
                 publish_context()
             except Exception as e:
                 err = e if isinstance(e, AppError) else AppError(

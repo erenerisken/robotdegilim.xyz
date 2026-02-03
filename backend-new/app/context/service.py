@@ -65,6 +65,7 @@ def queue_request(request_type: RequestType) -> bool:
         if request_type == RequestType.SCRAPE:
             return False
         _ensure_context_loaded()
+        _ensure_not_suspended()
         if _copy_context.in_queue[request_type.value]:
             return False
         _copy_context.queue.append(request_type.value)
@@ -80,6 +81,7 @@ def get_next_request(request_type: RequestType) -> tuple[bool, RequestType]:
     try:
         global _copy_context
         _ensure_context_loaded()
+        _ensure_not_suspended()
         if not _copy_context.queue:
             return False, request_type
         next_request = _copy_context.queue.pop(0)
@@ -94,6 +96,7 @@ def increment_error() -> None:
     try:
         global _copy_context
         _ensure_context_loaded()
+        _ensure_not_suspended()
         _copy_context.error_count += 1
         if _copy_context.error_count >= get_settings().CONTEXT_MAX_ERRORS:
             _copy_context.error_count = 0
@@ -108,6 +111,7 @@ def decrement_error() -> None:
     try:
         global _copy_context
         _ensure_context_loaded()
+        _ensure_not_suspended()
         if _copy_context.error_count > 0:
             _copy_context.error_count -= 1
     except Exception as e:
@@ -127,9 +131,47 @@ def clear_queue() -> None:
     try:
         global _copy_context
         _ensure_context_loaded()
+        _ensure_not_suspended()
         _copy_context.queue.clear()
         for key in _copy_context.in_queue.keys():
             _copy_context.in_queue[key] = False
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to clear request queue", "QUEUE_CLEAR_FAILED", cause=e)
+        raise err
+    
+def _ensure_not_suspended() -> None:
+    """Ensure that the context is not suspended."""
+    global _copy_context
+    _ensure_context_loaded()
+    if _copy_context.suspended:
+        raise AppError("AppContext is suspended", "CONTEXT_SUSPENDED")
+
+def unsuspend_context() -> None:
+    """Unsuspend the context."""
+    try:
+        global _copy_context
+        _ensure_context_loaded()
+        _copy_context.suspended = False
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError("Failed to unsuspend context", "CONTEXT_UNSUSPEND_FAILED", cause=e)
+        raise err
+    
+def suspend_context() -> None:
+    """Suspend the context immediately."""
+    try:
+        global _copy_context
+        _ensure_context_loaded()
+        _copy_context.suspended = True
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError("Failed to suspend context", "CONTEXT_SUSPEND_FAILED", cause=e)
+        raise err
+    
+def reset_error_count() -> None:
+    """Reset the error count in the context to zero."""
+    try:
+        global _copy_context
+        _ensure_context_loaded()
+        _copy_context.error_count = 0
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError("Failed to reset error count", "ERROR_COUNT_RESET_FAILED", cause=e)
         raise err
