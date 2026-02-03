@@ -14,6 +14,7 @@ class RequestType(str, Enum):
 # Scrape process constants
 OIBS64_URL: str = "https://oibs2.metu.edu.tr/View_Program_Course_Details_64/main.php"
 COURSE_CATALOG_URL: str = "https://catalog.metu.edu.tr/course.php?prog={dept_code}&course_code={course_code}"
+DEPARTMENT_CATALOG_URL: str = "http://catalog.metu.edu.tr/program.php?fac_prog={dept_code}"
 NO_PREFIX_VARIANTS: tuple[str, str] = ("<no-course>", "<prefix-not-found>")
 DAYS_MAP = {
     "Monday": 0,
