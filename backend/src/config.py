@@ -13,9 +13,6 @@ class app_constants:
     # No department data error message
     noDeptsErrMsg = "No departments data available."
 
-
-    department_catalog_url = "http://catalog.metu.edu.tr/program.php?fac_prog={dept_code}"
-
     # NTE scraping
     nte_base_url = "https://muhfd.metu.edu.tr"
     nte_courses_url = "https://muhfd.metu.edu.tr/en/nte-courses"
