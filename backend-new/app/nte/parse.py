@@ -43,7 +43,7 @@ def extract_courses(soup: BeautifulSoup, courses: list[dict[str, str]]) -> str:
     """Extract department name and course rows from a department page table."""
     try:
         dept_name = ""
-        header_el = soup.find("h1", id="page-title")
+        header_el = soup.find("h1")
         if header_el:
             dept_name = header_el.get_text(strip=True)
 
