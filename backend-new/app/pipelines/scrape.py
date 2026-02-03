@@ -43,6 +43,7 @@ from app.scrape.parse import (
 from app.storage.local import move_file, write_json
 from app.storage.s3 import upload_file
 from app.utils.cache import CacheStore
+from app.pipelines.nte_available import run_nte_available
 
 
 def run_scrape() -> tuple[ResponseModel, int]:
@@ -224,6 +225,17 @@ def run_scrape() -> tuple[ResponseModel, int]:
         move_file(last_updated_path, last_updated_published_path)
 
         log_item(LOGGER_SCRAPE, logging.INFO, "Scraping process completed successfully and files uploaded to S3.")
+        
+        try:
+            run_nte_available()
+        except Exception as e:
+            err = e if isinstance(e, AppError) else AppError(
+                "NTE available process failed after scrape.",
+                "NTE_AVAILABLE_POST_SCRAPE_FAILED",
+                cause=e,
+            )
+            log_item(LOGGER_SCRAPE, logging.WARNING, err)
+        
         return ResponseModel(request_type=RequestType.SCRAPE, status="SUCCESS", message="Scraping process completed successfully and files uploaded to S3."), 200
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError(

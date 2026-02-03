@@ -51,6 +51,8 @@ MUSTS_FILE = "musts.json"
 NTE_LIST_CACHE_FILE = "nteListCache.json"
 NTE_LIST_FILE = "nteList.json"
 
+NTE_AVAILABLE_FILE = "nteAvailable.json"
+
 # Mock S3 filesystem names
 S3_MOCK_DIR_NAME = "s3-mock"
 S3_LOCK_FILE = "lockfile.lock"
@@ -60,6 +62,7 @@ LOGGER_APP = "app"
 LOGGER_SCRAPE = "scrape"
 LOGGER_MUSTS = "musts"
 LOGGER_NTE_LIST = "nteList"
+LOGGER_NTE_AVAILABLE = "nteAvailable"
 LOGGER_ERROR = "error"
 
 # Log file names
@@ -67,4 +70,5 @@ LOG_FILE_APP = "app.log"
 LOG_FILE_SCRAPE = "scrape.log"
 LOG_FILE_MUSTS = "musts.log"
 LOG_FILE_NTE_LIST = "nteList.log"
+LOG_FILE_NTE_AVAILABLE = "nteAvailable.log"
 LOG_FILE_ERROR = "error.log"
