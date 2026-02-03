@@ -8,7 +8,7 @@ from app.core.settings import get_settings
 from app.core.logging import log_item
 from app.core.paths import downloaded_path, published_path, staged_path
 from app.storage.local import move_file, read_json, write_json
-from app.storage.s3 import download_file, file_exists, upload_file
+from app.storage.s3 import download_file, s3_file_exists, upload_file
 
 _original_context: AppContext | None = None
 _copy_context: AppContext | None = None
@@ -19,7 +19,7 @@ def load_context_state() -> None:
     global _original_context, _copy_context, _loaded
     try:
         if not _loaded:
-            if file_exists(CONTEXT_KEY):
+            if s3_file_exists(CONTEXT_KEY):
                 local_path = downloaded_path(CONTEXT_KEY)
                 download_file(CONTEXT_KEY, local_path)
                 data = read_json(local_path)

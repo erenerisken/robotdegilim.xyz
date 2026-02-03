@@ -65,5 +65,10 @@ def run_musts():
         return ResponseModel(request_type=RequestType.MUSTS, status="SUCCESS", message="Musts process completed successfully and files uploaded to S3."), 200
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Musts process failed.", "MUSTS_PROCESS_FAILED", cause=e)
-        log_item(LOGGER_ERROR, logging.ERROR, err)
-        return ResponseModel(request_type=RequestType.MUSTS, status="FAILED", message="Musts process failed, see the error logs for details."), 500
+        if "DEPARTMENTS_FAILED" in err.code:
+            log_item(LOGGER_MUSTS, logging.ERROR, "Musts process failed due to departments data loading issue.")
+            status_code = 503
+        else:
+            log_item(LOGGER_ERROR, logging.ERROR, err)
+            status_code = 500
+        return ResponseModel(request_type=RequestType.MUSTS, status="FAILED", message="Musts process failed, see the error logs for details."), status_code

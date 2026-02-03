@@ -124,7 +124,7 @@ def download_file(key: str, local_path: str | Path) -> str:
         raise err
 
 
-def file_exists(key: str) -> bool:
+def s3_file_exists(key: str) -> bool:
     """Check whether a key exists in mock S3."""
     _ensure_lock("checking file existence in s3", key=key)
     return (_mock_dir() / key).exists()

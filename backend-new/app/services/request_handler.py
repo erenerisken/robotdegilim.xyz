@@ -16,6 +16,7 @@ from app.core.constants import RequestType, LOGGER_ERROR
 from app.core.errors import AppError
 from app.core.logging import log_item
 from app.pipelines.scrape import run_scrape
+from app.pipelines.musts import run_musts
 from app.storage.s3 import acquire_lock, release_lock
 
 _allow_context_modification = False
