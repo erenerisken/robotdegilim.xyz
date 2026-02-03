@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-import pytz
 
 class app_constants:
     # s3
@@ -9,18 +6,11 @@ class app_constants:
     aws_secret_access_key = os.environ.get("SECRET_ACCESS_KEY")
     # aws_region_name = os.environ.get('AWS_REGION')
 
-
-    # No department data error message
-    noDeptsErrMsg = "No departments data available."
-
     # NTE scraping
     nte_base_url = "https://muhfd.metu.edu.tr"
     nte_courses_url = "https://muhfd.metu.edu.tr/en/nte-courses"
 
     DAY_MAP = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
-
-    # API / Runtime config
-    allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*")  # comma-separated or *
 
     # Adaptive backoff factors (faster on good network, harsher on failures)
     adaptive_fast_base_delay = float(os.environ.get("ADAPTIVE_FAST_BASE_DELAY", "1.25"))
@@ -39,6 +29,3 @@ class app_constants:
     breaker_error_rate_threshold = float(os.environ.get("BREAKER_ERROR_RATE_THRESHOLD", "0.5"))
     breaker_cooldown_seconds = int(os.environ.get("BREAKER_COOLDOWN_SECONDS", "120"))
     breaker_probe_interval_seconds = int(os.environ.get("BREAKER_PROBE_INTERVAL_SECONDS", "30"))
-
-    # Static folder: Flask app runs with package root at backend/src, we need absolute path to src/public
-    static_folder = backend_dir / "src" / "public"
