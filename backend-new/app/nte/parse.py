@@ -1,5 +1,6 @@
 """Parsing helpers for NTE pipelines."""
 
+from typing import Any
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -12,6 +13,7 @@ _EXTRA_DEPARTMENT_LINKS: tuple[str, str] = (
     "https://muhfd.metu.edu.tr/en/computer-education-and-instructional-technology",
     "https://muhfd.metu.edu.tr/en/meslek-yuksek-okulu-myo",
 )
+_DAY_BY_INDEX: dict[int, str] = {index: day for day, index in DAYS_MAP.items()}
 
 # NTE List parsing functions
 
@@ -40,7 +42,10 @@ def extract_department_links(soup: BeautifulSoup, department_links: list[str]) -
         raise err
 
 
-def extract_courses(soup: BeautifulSoup, courses: list[dict[str, str]]) -> str:
+def extract_courses(
+    soup: BeautifulSoup,
+    courses: list[dict[str, str]],
+) -> str:
     """Extract department name and course rows from a department page table."""
     try:
         dept_name = ""
@@ -77,7 +82,8 @@ def extract_courses(soup: BeautifulSoup, courses: list[dict[str, str]]) -> str:
 
 # NTE Available parsing functions
 
-def _is_available_section(section: Dict[str, Any]) -> bool:
+def _is_available_section(section: dict[str, Any]) -> bool:
+    """Return True when section has no constraints or is open to all departments."""
     _ALLOWED = {"ALL", "TUM", "TÜM"}
     constraints = section.get("c", [])
     if not constraints:
@@ -90,32 +96,37 @@ def _is_available_section(section: Dict[str, Any]) -> bool:
             return True
     return False
 
-def build_available_index(courses: Dict[str, Any], dept_map: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
-    """
-    Build index of available courses with prefixed codes.
-    Returns: {"ARCH440": {"numeric": "1200440", "name": "ARCH440 - ..."}}
-    """
+def build_available_index(
+    courses: dict[str, Any],
+    dept_map: dict[str, Any],
+) -> dict[str, dict[str, str]]:
+    """Build index of available courses keyed by prefixed course code."""
     try:
-        index = {}
-    
+        index: dict[str, dict[str, str]] = {}
+
         for course_code, course_node in courses.items():
+            if not isinstance(course_node, dict):
+                continue
             sections = course_node.get("Sections", {})
+            if not isinstance(sections, dict):
+                sections = {}
             
-            # Check if course has any available sections
             if not any(_is_available_section(s) for s in sections.values()):
                 continue
-            dept_code= course_code[:3]
-            dept_prefix= dept_map.get(dept_code, {}).get("p", "")
+            course_code_str = str(course_code)
+            dept_code = course_code_str[:3]
+            dept_meta = dept_map.get(dept_code, {})
+            dept_prefix = dept_meta.get("p", "") if isinstance(dept_meta, dict) else ""
             if not dept_prefix or dept_prefix in NO_PREFIX_VARIANTS:
                 continue
-            prefixed_course_code = deptify(dept_prefix, course_code)
-            course_name = course_node.get("Course Name", "")
+            prefixed_course_code = deptify(dept_prefix, course_code_str)
+            course_name = str(course_node.get("Course Name", ""))
             
             index[prefixed_course_code] = {
-                "numeric": str(course_code),
+                "numeric": course_code_str,
                 "name": course_name
             }
-        
+
         return index
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError(
@@ -125,39 +136,61 @@ def build_available_index(courses: Dict[str, Any], dept_map: Dict[str, Any]) -> 
         )
         raise err
     
-def extract_nte_courses(nte_data: object, nte_courses) -> None:
-    course_codes_seen: set[str] = set()
-    for dept_courses in nte_data.values():
-        for course in dept_courses:
-            code= str(course.get("code", "")).strip().upper().replace(" ", "")
-            if not code or code in course_codes_seen:
-                continue
-            course_codes_seen.add(code)
-            nte_courses.append(course)
-    if not nte_courses:
-        raise AppError("Extracted NTE courses list is empty.", "NTE_AVAILABLE_NO_NTE_COURSES")
+def extract_nte_courses(nte_data: dict[str, list[dict[str, str]]], nte_courses: list[dict[str, str]]) -> None:
+    """Flatten NTE list by departments into unique course rows by prefixed code."""
+    try:
+        course_codes_seen: set[str] = set()
+        for dept_courses in nte_data.values():
+            for course in dept_courses:
+                code = str(course.get("code", "")).strip().upper().replace(" ", "")
+                if not code or code in course_codes_seen:
+                    continue
+                course_codes_seen.add(code)
+                nte_courses.append(course)
+        if not nte_courses:
+            raise AppError("Extracted NTE courses list is empty.", "NTE_AVAILABLE_NO_NTE_COURSES")
+    except Exception as e:
+        err = e if isinstance(e, AppError) else AppError(
+            "Failed to extract NTE courses from NTE list data.",
+            "NTE_AVAILABLE_EXTRACT_COURSES_FAILED",
+            cause=e,
+        )
+        raise err
     
-def build_course_output(course_code: str, prefixed_code: str, course_name: str, 
-                       credits: str, courses_data: Dict[str, Any]) -> Dict[str, Any]:
+def build_course_output(
+    course_code: str,
+    prefixed_code: str,
+    course_name: str,
+    credits: str,
+    courses_data: dict[str, Any],
+) -> dict[str, Any]:
+    """Build output course node with available sections only."""
     try:
         course_node = courses_data.get(course_code, {})
+        if not isinstance(course_node, dict):
+            course_node = {}
         sections = course_node.get("Sections", {})
+        if not isinstance(sections, dict):
+            sections = {}
         
-        output_sections = []
+        output_sections: list[dict[str, Any]] = []
         
         for section_id, section in sections.items():
+            if not isinstance(section, dict):
+                continue
             if not _is_available_section(section):
                 continue
             
-            # Process times
             times = section.get("t", [])
             if not times:
                 time_list = [{"day": "No Timestamp Added Yet"}]
             else:
-                time_list = []
+                time_list: list[dict[str, str]] = []
                 for time_slot in times:
+                    if not isinstance(time_slot, dict):
+                        continue
                     day_num = time_slot.get("d", "")
-                    day = DAYS_MAP.get(day_num, "no day info")
+                    day = _DAY_BY_INDEX.get(day_num, "no day info") if isinstance(day_num, int) else "no day info"
                     time_list.append({
                         "day": day,
                         "start": time_slot.get("s", ""),
@@ -165,8 +198,9 @@ def build_course_output(course_code: str, prefixed_code: str, course_name: str,
                         "room": time_slot.get("p", "")
                     })
             
-            # Process instructors
             instructors = section.get("i", [])
+            if not isinstance(instructors, list):
+                instructors = []
             
             output_sections.append({
                 "section_id": section_id,

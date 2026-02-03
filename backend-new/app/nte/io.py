@@ -27,16 +27,23 @@ def download_dependencies() -> None:
         raise err
 
 
-def load_dependencies() -> dict[str, dict[str, Any]]:
+def load_dependencies() -> dict[str, Any]:
     """Load downloaded departments, nte list, and data JSON and validate it as a non-empty mapping."""
     try:
         download_dependencies()
         departments = read_json(downloaded_path(DEPARTMENTS_FILE))
         nte_list = read_json(downloaded_path(NTE_LIST_FILE))
         data = read_json(downloaded_path(DATA_FILE))
-        valid=departments and nte_list and data
-        vadid= valid and isinstance(departments, dict) and isinstance(nte_list, list) and isinstance(data, dict)
-        if not vadid:
+
+        valid = (
+            isinstance(departments, dict)
+            and isinstance(nte_list, dict)
+            and isinstance(data, dict)
+            and bool(departments)
+            and bool(nte_list)
+            and bool(data)
+        )
+        if not valid:
             raise AppError("Dependencies data loading failed", "LOAD_DEPENDENCIES_FAILED")
         return {
             "departments": departments,
