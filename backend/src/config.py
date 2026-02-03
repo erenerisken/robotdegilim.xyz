@@ -6,10 +6,6 @@ class app_constants:
     aws_secret_access_key = os.environ.get("SECRET_ACCESS_KEY")
     # aws_region_name = os.environ.get('AWS_REGION')
 
-    # NTE scraping
-    nte_base_url = "https://muhfd.metu.edu.tr"
-    nte_courses_url = "https://muhfd.metu.edu.tr/en/nte-courses"
-
     DAY_MAP = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
 
     # Adaptive backoff factors (faster on good network, harsher on failures)

@@ -5,61 +5,7 @@ from bs4 import BeautifulSoup
 
 from src.config import app_constants
 from src.errors import AbortNteListError
-
-
-def extract_department_links(soup: BeautifulSoup, department_links: list[str]):
-    try:
-        links=soup.find_all('a')
-        if links:
-            for link in links:
-                href = link.get('href', '')
-                # Ör: href="department-architecture"
-                if "department-" in href:
-                    # /en/ ifadesi gerekebilir, urljoin ile birleştiriyoruz:
-                    full_url = urljoin(app_constants.nte_base_url + "/en/", href)
-                    department_links.append(full_url)
-            try:
-                department_links.append("https://muhfd.metu.edu.tr/en/computer-education-and-instructional-technology")
-            except:
-                pass
-
-            try:
-                department_links.append("https://muhfd.metu.edu.tr/en/meslek-yuksek-okulu-myo")
-            except:
-                pass
-    except Exception as e:
-        raise AbortNteListError(f"Failed to extract department links, error: {str(e)}") from e
     
-def extract_courses(soup: BeautifulSoup, courses:list[dict]) -> str:
-    try:
-        # 1) Departman adını al
-        header_el = soup.find('h1', id='page-title')
-        if header_el:
-            department_name = header_el.get_text(strip=True)
-        else:
-            department_name = "Unknown Department"
-
-        # 2) Tabloyu bul
-        table = soup.find('table')
-
-        if table:
-            rows = table.find_all('tr')
-            # İlk satır tablo başlığı, [1:] ile atlıyoruz
-            for row in rows[1:]:
-                cols = row.find_all('td')
-                if len(cols) >= 3:
-                    code = cols[0].get_text(strip=True)
-                    name = cols[1].get_text(strip=True)
-                    credits = cols[2].get_text(strip=True)
-                    courses.append({
-                        "code": code,
-                        "name": name,
-                        "credits": credits
-                    })
-
-        return department_name
-    except Exception as e:
-        raise AbortNteListError(f"Failed to extract courses, error: {str(e)}") from e
     
 def _deptify(prefix: str, full_code: str) -> str:
     """Convert numeric course code to prefixed format."""

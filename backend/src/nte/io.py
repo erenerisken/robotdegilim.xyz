@@ -17,15 +17,6 @@ def write_nte_available(nte_data: List[Dict[str, Any]]) -> Path:
     except Exception as e:
         raise AbortNteAvailableError(f"Failed to write NTE available courses, error: {str(e)}") from e
 
-def write_nte_list(nte_list: Dict[str, List[Dict[str, Any]]]) -> Path:
-    """Write raw NTE list (by department) to JSON and return path."""
-    try:
-        output_path = app_constants.data_dir / app_constants.nte_list_json
-        write_json(nte_list, output_path)
-        return output_path
-    except Exception as e:
-        raise AbortNteListError(f"Failed to write NTE list, error: {str(e)}") from e
-
 def load_data() -> Dict[str, Any]:
     """Load data.json used by nte.
 
