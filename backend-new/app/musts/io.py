@@ -13,7 +13,7 @@ def download_departments() -> str:
     """Download departments artifact from S3 into the local downloaded directory."""
     try:
         if not s3_file_exists(DEPARTMENTS_FILE):
-            raise AppError("Departments file does not exist in S3", "DEPARTMENTS_FILE_NOT_FOUND")
+            raise AppError("Departments file does not exist in S3", "DOWNLOAD_DEPARTMENTS_FAILED")
         return download_file(DEPARTMENTS_FILE, downloaded_path(DEPARTMENTS_FILE))
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError(

@@ -26,7 +26,6 @@ from app.storage.s3 import upload_file
 from app.utils.cache import CacheStore
 
 MUSTS_DEPENDENCY_ERROR_CODES: tuple[str, ...] = (
-    "DEPARTMENTS_FILE_NOT_FOUND",
     "DOWNLOAD_DEPARTMENTS_FAILED",
     "LOAD_DEPARTMENTS_FAILED",
 )
@@ -101,8 +100,8 @@ def run_musts() -> tuple[ResponseModel, int]:
         err = e if isinstance(e, AppError) else AppError("Musts process failed.", "MUSTS_PROCESS_FAILED", cause=e)
         if _is_dependency_error(err):
             log_item(LOGGER_MUSTS, logging.ERROR, err)
-            status_code = 409
-            message = "Musts process requires departments data from scrape."
+            status_code = 503
+            message = "Departments data could not be loaded from S3."
         else:
             log_item(LOGGER_ERROR, logging.ERROR, err)
             status_code = 500
