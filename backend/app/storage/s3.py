@@ -221,4 +221,4 @@ def admin_release_lock() -> bool:
 
 def admin_lock_exists() -> bool:
     """Check if the admin lock is currently acquired by any instance."""
-    return s3_file_exists(S3_ADMIN_LOCK_FILE)
+    return (_mock_dir() / S3_ADMIN_LOCK_FILE).exists()
