@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     SCRAPE_PARSER_VERSION: str = "1.0.0"
     # Musts process settings
     MUSTS_PARSER_VERSION: str = "1.0.0"
+    # NTE List process settings
+    NTE_LIST_PARSER_VERSION: str = "1.0.0"
     # AppContext settings
     CONTEXT_MAX_ERRORS: int = 5
 

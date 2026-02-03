@@ -24,6 +24,7 @@ from app.musts.parse import extract_dept_node
 from app.storage.local import move_file, write_json
 from app.storage.s3 import upload_file
 from app.utils.cache import CacheStore
+from app.pipelines.nte_list import run_nte_list
 
 MUSTS_DEPENDENCY_ERROR_CODES: tuple[str, ...] = (
     "DOWNLOAD_DEPARTMENTS_FAILED",
@@ -91,6 +92,11 @@ def run_musts() -> tuple[ResponseModel, int]:
         move_file(musts_path, musts_published_path)
 
         log_item(LOGGER_MUSTS, logging.INFO, "Musts process completed successfully and files uploaded to S3.")
+        
+        # NTE LIST PROCESS
+        run_nte_list()
+        # End NTE LIST PROCESS
+
         return ResponseModel(
             request_type=RequestType.MUSTS,
             status="SUCCESS",
