@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     ADMIN_SECRET: str = ""
     APP_VERSION: str = "1.0.0"
     # S3 Settings
-    S3_BUCKET: str = "cdn.robotdegilim.xyz"
+    S3_BUCKET: str = ""
     S3_ACCESS_KEY_ID: str = ""
     S3_SECRET_ACCESS_KEY: str = ""
     S3_LOCK_OWNER_ID: str = Field(default_factory=lambda: str(uuid.uuid4()))
