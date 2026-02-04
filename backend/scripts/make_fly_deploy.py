@@ -25,7 +25,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--app-name",
         type=str,
-        default="robotdegilim-backend",
+        default="robotdegilim-xyz",
         help="Fly application name used in generated fly.toml.",
     )
     parser.add_argument(
@@ -143,6 +143,11 @@ def _build_fly_toml(app_name: str) -> str:
             "  auto_start_machines = false",
             "  min_machines_running = 1",
             '  processes = ["app"]',
+            "",
+            "[[vm]]",
+            'cpu_kind = "shared"',
+            "cpus = 1",
+            'memory = "1gb"',
             "",
         ]
     )
