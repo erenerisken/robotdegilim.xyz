@@ -29,14 +29,14 @@ class S3StorageTests(unittest.TestCase):
             ADMIN_LOCK_TIMEOUT_SECONDS=3 * 60 * 60,
         )
 
-        self._patch_mock_dir = patch("app.storage.s3._mock_dir", return_value=self.mock_dir)
-        self._patch_settings = patch("app.storage.s3.get_settings", return_value=self.mock_settings)
+        self._patch_mock_dir = patch("app.storage.s3.common._mock_dir", return_value=self.mock_dir)
+        self._patch_settings = patch("app.storage.s3.common.get_settings", return_value=self.mock_settings)
         self._patch_mock_dir.start()
         self._patch_settings.start()
-        s3._run_lock_held = False
+        s3._set_run_lock_held_for_tests(False)
 
     def tearDown(self) -> None:
-        s3._run_lock_held = False
+        s3._set_run_lock_held_for_tests(False)
         self._patch_settings.stop()
         self._patch_mock_dir.stop()
         shutil.rmtree(self.mock_dir, ignore_errors=True)
