@@ -34,6 +34,7 @@ logs/
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+.tmp/
 
 # Build artifacts
 build/
