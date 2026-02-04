@@ -43,7 +43,9 @@ class S3StorageTests(unittest.TestCase):
 
     def test_run_lock_acquire_and_release(self) -> None:
         self.assertTrue(s3.acquire_lock())
+        self.assertTrue(s3.run_lock_exists())
         self.assertTrue(s3.release_lock())
+        self.assertFalse(s3.run_lock_exists())
 
     def test_run_lock_blocked_while_admin_lock_active(self) -> None:
         acquired = s3.admin_acquire_lock()

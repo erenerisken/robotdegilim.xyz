@@ -12,6 +12,13 @@ from app.services.admin_handler import handle_admin_action
 class AdminHandlerTests(unittest.TestCase):
     """Validate response flow for lock and mutating admin actions."""
 
+    def setUp(self) -> None:
+        self._status_patcher = patch("app.services.admin_handler.sync_status_from_locks", return_value=None)
+        self._status_patcher.start()
+
+    def tearDown(self) -> None:
+        self._status_patcher.stop()
+
     @patch("app.services.admin_handler.admin_validate_lock_token", return_value=False)
     def test_mutating_action_requires_valid_token(self, _validate) -> None:
         model, status = handle_admin_action(AdminAction.CONTEXT_CLEAR_QUEUE, payload={})

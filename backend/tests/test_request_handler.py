@@ -21,9 +21,15 @@ class RequestHandlerTests(unittest.TestCase):
 
     def setUp(self) -> None:
         request_handler._allow_context_modification = False
+        self._status_patcher = patch("app.services.request_handler.publish_status", return_value=None)
+        self._sync_patcher = patch("app.services.request_handler.sync_status_from_locks", return_value=None)
+        self._status_patcher.start()
+        self._sync_patcher.start()
 
     def tearDown(self) -> None:
         request_handler._allow_context_modification = False
+        self._sync_patcher.stop()
+        self._status_patcher.stop()
 
     @patch("app.services.request_handler.acquire_lock")
     def test_root_short_circuits_without_lock(self, acquire_lock) -> None:

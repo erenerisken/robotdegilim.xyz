@@ -76,6 +76,14 @@ Default API base: `http://127.0.0.1:8000`
 - `GET /run-musts` - trigger musts pipeline
 - `POST /admin` - admin actions
 
+Public status object (for frontend traffic gating):
+
+- `status.json` on S3
+  - shape: `{"status": "idle|busy", "updated_at": "<UTC ISO>"}`
+  - rule:
+    - `busy` if run lock is active OR admin lock is active
+    - `idle` only when both are inactive
+
 Admin auth headers:
 
 - `X-Admin-Secret` (required)
@@ -147,6 +155,7 @@ python -m unittest discover -s tests
 - `data/` and `s3-mock/` are runtime folders.
 - Folder structure is versioned with `.gitkeep`; runtime files are git-ignored.
 - Logs are written under `data/logs/`.
+- Frontend should use public `status.json` for busy checks, not lock files.
 
 ## Security notes
 
