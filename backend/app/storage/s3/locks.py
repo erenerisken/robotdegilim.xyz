@@ -14,6 +14,15 @@ from .state import is_run_lock_held, set_run_lock_held
 from .store import delete_object, is_expired, read_json_payload, write_json_payload
 
 
+def _active_run_lock_data() -> dict[str, Any] | None:
+    """Return active run lock payload and cleanup stale lock file."""
+    payload = read_json_payload(S3_LOCK_FILE)
+    if is_expired(payload):
+        delete_object(S3_LOCK_FILE)
+        return None
+    return payload
+
+
 def _active_admin_lock_data() -> dict[str, Any] | None:
     """Return active admin lock payload and cleanup stale lock file."""
     payload = read_json_payload(S3_ADMIN_LOCK_FILE)
@@ -46,6 +55,11 @@ def admin_lock_exists() -> bool:
     return _active_admin_lock_data() is not None
 
 
+def run_lock_exists() -> bool:
+    """Return whether run lock is currently active."""
+    return _active_run_lock_data() is not None
+
+
 def admin_op_lock_exists() -> bool:
     """Return whether admin operation lock is currently active and valid."""
     return _active_admin_op_lock_data() is not None
@@ -61,8 +75,8 @@ def acquire_lock() -> bool:
 
         now = time.time()
         settings = get_settings()
-        current_payload = read_json_payload(S3_LOCK_FILE)
-        if current_payload and not is_expired(current_payload, now=now):
+        current_payload = _active_run_lock_data()
+        if current_payload:
             return False
 
         payload = {

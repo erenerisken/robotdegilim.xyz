@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from app.api.schemas import AdminResponse
@@ -14,8 +15,10 @@ from app.context.service import (
     reset_failure_count,
     unsuspend_processing,
 )
-from app.core.constants import AdminAction
+from app.core.constants import AdminAction, LOGGER_APP
 from app.core.errors import AppError
+from app.core.logging import log_item
+from app.services.status_service import sync_status_from_locks
 from app.services.settings_admin import apply_settings_updates, get_public_settings
 from app.storage.s3 import (
     admin_acquire_lock,
@@ -70,6 +73,18 @@ def _handle_action(
     if action == AdminAction.ADMIN_LOCK_ACQUIRE:
         result = admin_acquire_lock()
         if result.get("acquired"):
+            try:
+                sync_status_from_locks()
+            except Exception as e:
+                log_item(
+                    LOGGER_APP,
+                    logging.WARNING,
+                    e if isinstance(e, AppError) else AppError(
+                        "Failed to sync status after admin lock acquisition.",
+                        "STATUS_SYNC_FAILED",
+                        cause=e,
+                    ),
+                )
             return _ok(
                 action,
                 "Admin lock acquired.",
@@ -87,6 +102,18 @@ def _handle_action(
                 409,
             )
         if admin_release_lock(lock_token):
+            try:
+                sync_status_from_locks()
+            except Exception as e:
+                log_item(
+                    LOGGER_APP,
+                    logging.WARNING,
+                    e if isinstance(e, AppError) else AppError(
+                        "Failed to sync status after admin lock release.",
+                        "STATUS_SYNC_FAILED",
+                        cause=e,
+                    ),
+                )
             return _ok(action, "Admin lock released.", data=admin_lock_status())
         return _failed(action, "Admin lock release failed.", 409, data=admin_lock_status())
 

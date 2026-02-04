@@ -17,6 +17,7 @@ from app.core.errors import AppError
 from app.core.logging import log_item
 from app.pipelines.scrape import run_scrape
 from app.pipelines.musts import run_musts
+from app.services.status_service import publish_status, sync_status_from_locks
 from app.storage.local import clear_downloaded_dir
 from app.storage.s3 import acquire_lock, release_lock
 
@@ -71,6 +72,15 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
             return _finalize_response(ResponseModel(request_type=request_type, status="BUSY", message="System is busy processing another request"), 503, flags=error_flags)
 
         lock_owned = True
+        try:
+            publish_status("busy")
+        except Exception as e:
+            err = e if isinstance(e, AppError) else AppError(
+                message="Failed to publish busy status after run lock acquisition",
+                code="STATUS_PUBLISH_FAILED",
+                cause=e,
+            )
+            log_item(LOGGER_APP, logging.WARNING, err)
         _allow_context_modification = True
         load_context_state()
         from_queue, next_req = resolve_request(request_type)
@@ -145,3 +155,12 @@ def handle_request(request_type: RequestType) -> tuple[RootResponse | ResponseMo
                     cause=e,
                 )
                 log_item(LOGGER_ERROR, logging.ERROR, err)
+            try:
+                sync_status_from_locks()
+            except Exception as e:
+                err = e if isinstance(e, AppError) else AppError(
+                    message="Failed to synchronize status after request handling",
+                    code="STATUS_SYNC_FAILED",
+                    cause=e,
+                )
+                log_item(LOGGER_APP, logging.WARNING, err)

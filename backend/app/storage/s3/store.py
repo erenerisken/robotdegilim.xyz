@@ -63,10 +63,14 @@ def read_json_payload(key: str) -> dict[str, Any] | None:
     return payload if payload else None
 
 
-def write_json_payload(key: str, payload: dict[str, Any]) -> None:
+def write_json_payload(key: str, payload: dict[str, Any], public_read: bool = False) -> None:
     """Write JSON payload to storage key."""
     if _is_real_s3_enabled():
-        write_object_bytes_real(key, json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+        write_object_bytes_real(
+            key,
+            json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+            public_read=public_read,
+        )
         return
     write_local_json(_mock_path(key), payload)
 

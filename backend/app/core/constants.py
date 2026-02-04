@@ -66,6 +66,7 @@ NTE_LIST_CACHE_FILE = "nteListCache.json"
 NTE_LIST_FILE = "nteList.json"
 
 NTE_AVAILABLE_FILE = "nteAvailable.json"
+STATUS_FILE = "status.json"
 
 # S3 keys that must be publicly readable for frontend clients
 PUBLIC_S3_FILES: tuple[str, ...] = (
@@ -76,6 +77,7 @@ PUBLIC_S3_FILES: tuple[str, ...] = (
     DEPARTMENTS_NO_PREFIX_FILE,
     NTE_LIST_FILE,
     NTE_AVAILABLE_FILE,
+    STATUS_FILE,
 )
 
 # Mock S3 filesystem names

@@ -14,6 +14,7 @@ from .locks import (
     admin_release_lock,
     admin_release_op_lock,
     admin_validate_lock_token,
+    run_lock_exists,
     release_lock,
 )
 from .real_backend import reset_cached_client
@@ -45,6 +46,7 @@ __all__ = [
     "admin_release_op_lock",
     "admin_lock_exists",
     "admin_op_lock_exists",
+    "run_lock_exists",
     "_reset_s3_client_for_tests",
     "_set_run_lock_held_for_tests",
     "_mock_dir",
