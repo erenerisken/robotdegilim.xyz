@@ -67,6 +67,17 @@ NTE_LIST_FILE = "nteList.json"
 
 NTE_AVAILABLE_FILE = "nteAvailable.json"
 
+# S3 keys that must be publicly readable for frontend clients
+PUBLIC_S3_FILES: tuple[str, ...] = (
+    DATA_FILE,
+    LAST_UPDATED_FILE,
+    MUSTS_FILE,
+    DEPARTMENTS_FILE,
+    DEPARTMENTS_NO_PREFIX_FILE,
+    NTE_LIST_FILE,
+    NTE_AVAILABLE_FILE,
+)
+
 # Mock S3 filesystem names
 S3_MOCK_DIR_NAME = "s3-mock"
 S3_LOCK_FILE = "lockfile.lock"

@@ -76,12 +76,28 @@ def read_object_bytes(key: str) -> bytes | None:
         )
 
 
-def write_object_bytes(key: str, content: bytes) -> None:
+def write_object_bytes(key: str, content: bytes, public_read: bool = False) -> None:
     """Write object bytes to real S3."""
     client = _get_s3_client()
     try:
-        client.put_object(Bucket=_s3_bucket(), Key=_normalize_key(key), Body=content)
+        put_kwargs: dict[str, Any] = {
+            "Bucket": _s3_bucket(),
+            "Key": _normalize_key(key),
+            "Body": content,
+        }
+        if public_read:
+            put_kwargs["ACL"] = "public-read"
+        client.put_object(**put_kwargs)
     except Exception as e:
+        if public_read and isinstance(e, ClientError):
+            code = str(e.response.get("Error", {}).get("Code", ""))
+            if code == "AccessControlListNotSupported":
+                raise AppError(
+                    "Bucket does not allow ACL-based public reads. Enable ACLs or use a public-read bucket policy.",
+                    "S3_PUBLIC_ACL_NOT_SUPPORTED",
+                    context={"key": key},
+                    cause=e,
+                )
         raise e if isinstance(e, AppError) else AppError(
             "Failed to write object to S3.",
             "S3_WRITE_FAILED",

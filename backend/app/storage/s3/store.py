@@ -29,12 +29,12 @@ def read_object_bytes(key: str) -> bytes | None:
     return read_object_bytes_real(key) if _is_real_s3_enabled() else read_object_bytes_mock(key)
 
 
-def write_object_bytes(key: str, content: bytes) -> None:
+def write_object_bytes(key: str, content: bytes, public_read: bool = False) -> None:
     """Write object bytes to configured backend."""
     if _is_real_s3_enabled():
-        write_object_bytes_real(key, content)
+        write_object_bytes_real(key, content, public_read=public_read)
     else:
-        write_object_bytes_mock(key, content)
+        write_object_bytes_mock(key, content, public_read=public_read)
 
 
 def object_exists(key: str) -> bool:

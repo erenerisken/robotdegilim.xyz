@@ -13,7 +13,7 @@ def read_object_bytes(key: str) -> bytes | None:
     return path.read_bytes()
 
 
-def write_object_bytes(key: str, content: bytes) -> None:
+def write_object_bytes(key: str, content: bytes, public_read: bool = False) -> None:
     """Write object bytes to local mock storage atomically."""
     path = _mock_path(key)
     path.parent.mkdir(parents=True, exist_ok=True)

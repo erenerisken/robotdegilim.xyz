@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from app.core.constants import PUBLIC_S3_FILES
 from app.core.errors import AppError
 
 from .common import _is_real_s3_enabled, _normalize_key, _mock_path
@@ -49,6 +50,13 @@ def _ensure_mutation_allowed(*, admin: bool, operation: str, **context: Any) -> 
         _ensure_run_mutation_allowed(operation, **context)
 
 
+def _should_upload_public(key: str) -> bool:
+    """Return whether a storage key should be uploaded as publicly readable."""
+    normalized = _normalize_key(key)
+    filename = Path(normalized).name
+    return filename in PUBLIC_S3_FILES
+
+
 def upload_file(local_path: str | Path, key: str, _admin: bool = False) -> str:
     """Upload a local file to storage key path (mutating; lock-guarded)."""
     try:
@@ -60,7 +68,7 @@ def upload_file(local_path: str | Path, key: str, _admin: bool = False) -> str:
                 "UPLOAD_FILE_FAILED",
                 context={"local_path": str(local_path), "key": key},
             )
-        write_object_bytes(key, src.read_bytes())
+        write_object_bytes(key, src.read_bytes(), public_read=_should_upload_public(key))
         if _is_real_s3_enabled():
             return _normalize_key(key)
         return str(_mock_path(key))
