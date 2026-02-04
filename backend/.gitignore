@@ -65,5 +65,7 @@ data/staged/*
 s3-mock/*
 !s3-mock/.gitkeep
 
+.deploy/*
+
 # Node (if frontend assets are built here)
 node_modules/
