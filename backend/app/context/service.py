@@ -8,7 +8,7 @@ from app.core.settings import get_settings
 from app.core.logging import log_item
 from app.core.paths import downloaded_path, published_path, staged_path
 from app.storage.local import move_file, read_json, write_json
-from app.storage.s3 import download_file, s3_file_exists, upload_file
+from app.storage.s3 import admin_lock_acquired, download_file, s3_file_exists, upload_file
 
 _original_context: AppContext | None = None
 _copy_context: AppContext | None = None
@@ -34,7 +34,7 @@ def load_context_state() -> None:
         raise err
 
 
-def publish_context_state() -> None:
+def publish_context_state(*, admin: bool = False) -> None:
     """Persist the current context copy and mark it as published locally and in S3."""
     global _original_context, _copy_context, _loaded
     try:
@@ -42,7 +42,7 @@ def publish_context_state() -> None:
             _original_context = _copy_context.model_copy(deep=True)
             local_staged_path = staged_path(CONTEXT_KEY)
             write_json(local_staged_path, _original_context.model_dump())
-            upload_file(local_staged_path, CONTEXT_KEY)
+            upload_file(local_staged_path, CONTEXT_KEY, _admin=admin)
             move_file(local_staged_path, published_path(CONTEXT_KEY))
             detach_context()
     except Exception as e:
@@ -115,12 +115,22 @@ def _ensure_context_loaded() -> None:
     if _copy_context is None or _original_context is None:
         raise AppError("Context is not loaded", "CONTEXT_NOT_LOADED")
     
-def clear_queue() -> None:
+def get_context_snapshot() -> dict[str, object]:
+    """Return current in-memory context snapshot."""
+    _ensure_context_loaded()
+    return _copy_context.model_dump() if _copy_context is not None else AppContext().model_dump()
+
+
+def clear_queue(*, admin: bool = False) -> None:
     """Clear the request queue in the context."""
     try:
         global _copy_context
         _ensure_context_loaded()
-        _ensure_not_suspended()
+        if admin:
+            if not admin_lock_acquired():
+                raise AppError("Admin privileges required to clear queue", "ADMIN_PRIVILEGES_REQUIRED")
+        else:
+            _ensure_not_suspended()
         _copy_context.clear_queue()
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to clear request queue", "QUEUE_CLEAR_FAILED", cause=e)
@@ -153,11 +163,16 @@ def suspend_processing() -> None:
         err = e if isinstance(e, AppError) else AppError("Failed to suspend context", "CONTEXT_SUSPEND_FAILED", cause=e)
         raise err
     
-def reset_failure_count() -> None:
+def reset_failure_count(*, admin: bool = False) -> None:
     """Reset the error count in the context to zero."""
     try:
         global _copy_context
         _ensure_context_loaded()
+        if admin:
+            if not admin_lock_acquired():
+                raise AppError("Admin privileges required to reset error count", "ADMIN_PRIVILEGES_REQUIRED")
+        else:
+            _ensure_not_suspended()
         _copy_context.reset_failures()
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError("Failed to reset error count", "ERROR_COUNT_RESET_FAILED", cause=e)

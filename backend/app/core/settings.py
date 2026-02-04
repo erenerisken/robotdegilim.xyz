@@ -6,7 +6,7 @@ import uuid
 from typing import Any
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def _default_headers_factory() -> dict[str, str]:
@@ -25,14 +25,22 @@ def _default_headers_factory() -> dict[str, str]:
 class Settings(BaseSettings):
     """Typed settings model loaded from environment variables."""
 
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
     # Application settings
     APP_NAME: str = "https://robotdegilim.xyz backend"
     APP_DESCRIPTION: str = "Backend API for https://robotdegilim.xyz"
     ADMIN_EMAIL: str = "info.robotdegilim@gmail.com"
+    ADMIN_SECRET: str = ""
     APP_VERSION: str = "1.0.0"
     # S3 Settings
     S3_LOCK_OWNER_ID: str = Field(default_factory=lambda: str(uuid.uuid4()))
     S3_LOCK_TIMEOUT_SECONDS: int = 3 * 60 * 60  # 3 hours
+    ADMIN_LOCK_TIMEOUT_SECONDS: int = 3 * 60 * 60  # 3 hours
     # HTTP settings
     HTTP_TIMEOUT: int = 15
     GLOBAL_RETRIES: int = 5

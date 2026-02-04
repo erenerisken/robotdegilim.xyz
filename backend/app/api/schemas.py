@@ -2,9 +2,9 @@
 
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-from app.core.constants import RequestType
+from app.core.constants import AdminAction, RequestType
 from app.core.settings import get_settings
 
 
@@ -29,6 +29,10 @@ def _build_root_payload() -> dict:
                 "path": "/run-musts",
                 "description": "Endpoint to trigger the musts processing workflow",
             },
+            "admin": {
+                "path": "/admin",
+                "description": "Admin control endpoint for lock/context/settings actions",
+            },
         },
     }
 
@@ -46,3 +50,29 @@ class ResponseModel(BaseModel):
     status: str
     message: str
     extra: dict[str, Any] | None = None
+
+# Admin endpoint schemas
+
+class AdminRequest(BaseModel):
+    """Request model for admin endpoint action dispatch."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    action: AdminAction
+    payload: dict[str, Any] | None = None
+
+
+class AdminKeyResult(BaseModel):
+    """Per-key result model for settings_set updates."""
+
+    ok: bool
+    message: str
+
+
+class AdminResponse(BaseModel):
+    """Unified response envelope for /admin actions."""
+
+    action: AdminAction
+    status: str
+    message: str
+    data: dict[str, Any] | None = None

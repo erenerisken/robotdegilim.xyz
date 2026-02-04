@@ -106,10 +106,9 @@ def upload_file(local_path: str | Path, key: str, _admin: bool = False) -> str:
         raise err
 
 
-def download_file(key: str, local_path: str | Path, _admin: bool = False) -> str:
+def download_file(key: str, local_path: str | Path) -> str:
     """Download mock S3 key to local path."""
     try:
-        _ensure_locks(_admin, "downloading file from s3", local_path=local_path, key=key)
         src = _mock_dir() / key
         if not src.exists():
             raise AppError("Failed to download the file from s3", "DOWNLOAD_FILE_FAILED", context={"local_path": local_path, "key": key, "reason": "key does not exist"})
@@ -124,7 +123,6 @@ def download_file(key: str, local_path: str | Path, _admin: bool = False) -> str
 
 def s3_file_exists(key: str) -> bool:
     """Check whether a key exists in mock S3."""
-    _ensure_lock("checking file existence in s3", key=key)
     return (_mock_dir() / key).exists()
 
 
@@ -173,7 +171,7 @@ def admin_acquire_lock() -> bool:
             lock_file_path = _lock_path(_admin=True)
             current_time = time.time()
             settings = get_settings()
-            timeout = float(settings.S3_LOCK_TIMEOUT_SECONDS)
+            timeout = float(settings.ADMIN_LOCK_TIMEOUT_SECONDS)
 
             if not lock_file_path.exists():
                 lock = {"owner": settings.S3_LOCK_OWNER_ID, "acquired_at": current_time, "expires_at": current_time + timeout}
@@ -222,3 +220,26 @@ def admin_release_lock() -> bool:
 def admin_lock_exists() -> bool:
     """Check if the admin lock is currently acquired by any instance."""
     return (_mock_dir() / S3_ADMIN_LOCK_FILE).exists()
+
+
+def admin_lock_acquired() -> bool:
+    """Check whether admin lock is held by this instance."""
+    return _admin_lock_acquired
+
+
+def admin_lock_status() -> dict[str, Any]:
+    """Return admin lock status metadata."""
+    lock_file = _lock_path(_admin=True)
+    if not lock_file.exists():
+        return {"active": False, "owned": _admin_lock_acquired}
+    try:
+        data: dict[str, Any] = json.loads(lock_file.read_text(encoding="utf-8"))
+    except Exception:
+        data = {}
+    return {
+        "active": True,
+        "owned": _admin_lock_acquired,
+        "owner": data.get("owner"),
+        "acquired_at": data.get("acquired_at"),
+        "expires_at": data.get("expires_at"),
+    }

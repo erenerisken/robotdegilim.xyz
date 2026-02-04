@@ -11,6 +11,20 @@ class RequestType(str, Enum):
     MUSTS = "musts"
 
 
+class AdminAction(str, Enum):
+    """Supported actions for the single /admin endpoint."""
+
+    ADMIN_LOCK_ACQUIRE = "admin_lock_acquire"
+    ADMIN_LOCK_RELEASE = "admin_lock_release"
+    ADMIN_LOCK_STATUS = "admin_lock_status"
+    CONTEXT_GET = "context_get"
+    CONTEXT_CLEAR_QUEUE = "context_clear_queue"
+    CONTEXT_RESET_FAILURES = "context_reset_failures"
+    CONTEXT_UNSUSPEND = "context_unsuspend"
+    SETTINGS_GET = "settings_get"
+    SETTINGS_SET = "settings_set"
+
+
 # Scrape process constants
 OIBS64_URL: str = "https://oibs2.metu.edu.tr/View_Program_Course_Details_64/main.php"
 COURSE_CATALOG_URL: str = "https://catalog.metu.edu.tr/course.php?prog={dept_code}&course_code={course_code}"
