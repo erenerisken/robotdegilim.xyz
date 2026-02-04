@@ -16,6 +16,7 @@ ENV/
 
 # Env files
 .env
+.admin_lock_token
 
 # Editors/OS
 .vscode/
