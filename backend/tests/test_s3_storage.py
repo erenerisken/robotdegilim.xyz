@@ -47,6 +47,11 @@ class S3StorageTests(unittest.TestCase):
         self.assertTrue(s3.release_lock())
         self.assertFalse(s3.run_lock_exists())
 
+    def test_run_lock_second_acquire_fails_while_held(self) -> None:
+        """Same instance should not re-acquire lock while run lock is already held."""
+        self.assertTrue(s3.acquire_lock())
+        self.assertFalse(s3.acquire_lock())
+
     def test_run_lock_blocked_while_admin_lock_active(self) -> None:
         acquired = s3.admin_acquire_lock()
         self.assertTrue(acquired.get("acquired"))

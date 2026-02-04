@@ -71,7 +71,7 @@ def acquire_lock() -> bool:
         if admin_lock_exists():
             return False
         if is_run_lock_held():
-            return True
+            return False
 
         now = time.time()
         settings = get_settings()
