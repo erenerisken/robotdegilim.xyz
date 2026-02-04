@@ -1,48 +1,86 @@
-<div align="center">
+# Robotdegilim Frontend
 
-# Robot Değilim Frontend
+React frontend for building METU schedules from backend-produced JSON snapshots.
 
-React UI for exploring METU course schedules, must courses, and NTE availability using JSON snapshots produced by the backend.
+## Requirements
 
-</div>
+- Node.js 18+ (recommended)
+- npm
 
-## Getting Started
-```pwsh
+## Setup
+
+From `frontend/`:
+
+```powershell
 npm ci
+```
+
+## Run (development)
+
+```powershell
 npm start
 ```
-The CRA dev server typically runs at http://localhost:3000. Configure the backend or static data path in `src/Client.js` (see `docs/frontend-guide.md`).
 
-## Available Scripts
-- `npm start` – Run development server with hot reload.
-- `npm test` – Launch Jest watch mode.
-- `npm run build` – Produce production bundle in `build/`.
-- `npm run lint` *(optional)* – If you add custom lint scripts to `package.json`.
+App runs on `http://localhost:3000` by default.
 
-## Folder Highlights
-- `src/App.js` – App shell and data bootstrapping.
-- `src/Controls.js` – Filter and settings panel.
-- `src/WeeklyProgram.js` – Timetable renderer.
-- `src/slices/` – Redux-style state management.
-- `public/data/` – Optional local JSON copies for offline development.
+## Build (production)
 
-Detailed structure and integration guidance live in `../docs/frontend-guide.md`.
+```powershell
+npm run build
+```
+
+Build output is written to `frontend/build/`.
+
+## Tests
+
+```powershell
+npm test
+```
 
 ## Environment Variables
-Define CRA vars prefixed with `REACT_APP_` to swap endpoints across environments:
 
-- `REACT_APP_S3_BASE_URL` (default: `https://s3.amazonaws.com/cdn.robotdegilim.xyz`)
-- `REACT_APP_BACKEND_BASE_URL` (default: `https://robotdegilim-xyz.fly.dev`)
-- `REACT_APP_API_TIMEOUT_MS` (default: `15000`)
+Create `frontend/.env` (or `.env.development` / `.env.production`) with:
 
-Create `.env.development` or `.env.production` files as needed.
+```env
+REACT_APP_S3_BASE_URL=https://s3.amazonaws.com/cdn.robotdegilim.xyz
+REACT_APP_BACKEND_BASE_URL=https://robotdegilim-xyz.fly.dev
+REACT_APP_API_TIMEOUT_MS=15000
+```
 
-## Deployment
-1. `npm run build`
-2. Upload `build/` contents to static hosting (Netlify, Vercel, S3/CloudFront, etc.).
-3. Ensure data fetch URLs reference the published backend artifacts.
+Notes:
 
-## Contributing
-- Update documentation when adding screens or environment knobs.
-- Add tests under `src/` alongside components or slices.
-- Coordinate with backend team on JSON schema changes.
+- `REACT_APP_S3_BASE_URL` is used to read:
+  - `data.json`
+  - `lastUpdated.json`
+  - `musts.json`
+  - `departments.json`
+  - `nteAvailable.json`
+  - `status.json`
+- `REACT_APP_BACKEND_BASE_URL` is used for `GET /run-scrape`.
+- Frontend checks `status.json` first and only triggers scrape when `status === "idle"`.
+
+## Backend Integration Contract
+
+The frontend expects:
+
+- Publicly readable S3 JSON files listed above.
+- `status.json` shape:
+
+```json
+{
+  "status": "idle",
+  "updated_at": "2026-02-04T12:34:56Z"
+}
+```
+
+`status` values used by frontend logic:
+
+- `idle`: scrape trigger allowed
+- any other value: scrape trigger skipped
+
+## Useful Files
+
+- `src/Client.js`: all backend/S3 interaction logic
+- `src/Controls.js`: triggers data load and scrape update request
+- `src/data/Course.js`: data adapters and NTE filtering helpers
+
