@@ -1,21 +1,20 @@
-"""Mock S3 storage adapter with local lock ownership enforcement."""
+"""Mock S3 adapter with run/admin lock coordination."""
 
-import json
+from __future__ import annotations
+
 import shutil
 import time
+import uuid
 from pathlib import Path
 from typing import Any
 
-from app.core.constants import S3_ADMIN_LOCK_FILE, S3_LOCK_FILE, S3_MOCK_DIR_NAME
+from app.core.constants import S3_ADMIN_LOCK_FILE, S3_ADMIN_OP_LOCK_FILE, S3_LOCK_FILE, S3_MOCK_DIR_NAME
 from app.core.errors import AppError
 from app.core.settings import get_settings
+from app.storage.local import read_json as read_local_json, write_json as write_local_json
 
-_lock_acquired = False
+_run_lock_held = False
 
-def _lock_path(_admin:bool=False) -> Path:
-    """Return lock file path in mock S3 directory."""
-    base = _mock_dir()
-    return base / (S3_ADMIN_LOCK_FILE if _admin else S3_LOCK_FILE)
 
 def _mock_dir() -> Path:
     """Return local directory that emulates S3 storage."""
@@ -24,222 +23,349 @@ def _mock_dir() -> Path:
     return base
 
 
-def _ensure_lock(operation: str, **context: Any) -> None:
-    """Raise when lock is not currently held by this instance."""
-    if not _lock_acquired:
+def _resolve_key_path(key: str) -> Path:
+    """Resolve and validate S3 key path under mock storage root."""
+    key_path = Path(key)
+    if key_path.is_absolute() or ".." in key_path.parts:
+        raise AppError("Invalid key path.", "S3_INVALID_KEY", context={"key": key})
+    return _mock_dir() / key_path
+
+
+def _lock_path(*, admin: bool = False, admin_op: bool = False) -> Path:
+    """Return lock file path under mock S3 directory."""
+    if admin_op:
+        return _mock_dir() / S3_ADMIN_OP_LOCK_FILE
+    return _mock_dir() / (S3_ADMIN_LOCK_FILE if admin else S3_LOCK_FILE)
+
+
+def _read_json_payload(path: Path) -> dict[str, Any] | None:
+    """Read JSON payload from file and normalize invalid payloads as None."""
+    if not path.exists():
+        return None
+    try:
+        payload = read_local_json(path)
+        if not isinstance(payload, dict) or len(payload) == 0:
+            return None
+        return payload
+    except Exception:
+        return None
+
+
+def _write_json_payload(path: Path, payload: dict[str, Any]) -> None:
+    """Write JSON payload atomically (best effort) to avoid partial lock files."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    write_local_json(tmp_path, payload)
+    tmp_path.replace(path)
+
+
+def _is_expired(payload: dict[str, Any] | None, *, now: float | None = None) -> bool:
+    """Return True when payload is missing or its expires_at is in the past."""
+    if not payload:
+        return True
+    current = time.time() if now is None else now
+    try:
+        return float(payload.get("expires_at", 0.0)) <= current
+    except Exception:
+        return True
+
+
+def _active_admin_lock_data() -> dict[str, Any] | None:
+    """Return active admin lock payload and cleanup stale lock file."""
+    path = _lock_path(admin=True)
+    payload = _read_json_payload(path)
+    if _is_expired(payload):
+        path.unlink(missing_ok=True)
+        return None
+    return payload
+
+
+def _active_admin_op_lock_data() -> dict[str, Any] | None:
+    """Return active admin op-lock payload if it matches active admin lock token."""
+    op_path = _lock_path(admin_op=True)
+    op_payload = _read_json_payload(op_path)
+    if _is_expired(op_payload):
+        op_path.unlink(missing_ok=True)
+        return None
+
+    admin_payload = _active_admin_lock_data()
+    if not admin_payload:
+        op_path.unlink(missing_ok=True)
+        return None
+
+    if op_payload.get("holder_token") != admin_payload.get("token"):
+        op_path.unlink(missing_ok=True)
+        return None
+    return op_payload
+
+
+def _ensure_run_mutation_allowed(operation: str, **context: Any) -> None:
+    """Raise when run-side S3 mutation is not currently allowed."""
+    if not _run_lock_held:
+        raise AppError(f"Run lock not acquired before {operation}.", "LOCK_NOT_ACQUIRED", context=context)
+    if admin_lock_exists():
         raise AppError(
-            f"Lock not acquired before {operation}",
-            "LOCK_NOT_ACQUIRED",
+            "Run-side mutation blocked because admin lock is active.",
+            "OPERATION_BLOCKED_ADMIN_LOCK",
             context=context,
         )
 
+
+def _ensure_admin_mutation_allowed(operation: str, **context: Any) -> None:
+    """Raise when admin-side S3 mutation is not currently allowed."""
+    if not admin_lock_exists():
+        raise AppError(
+            f"Admin lock not acquired before {operation}.",
+            "ADMIN_LOCK_NOT_ACQUIRED",
+            context=context,
+        )
+    if not admin_op_lock_exists():
+        raise AppError(
+            f"Admin operation lock not acquired before {operation}.",
+            "ADMIN_OP_LOCK_NOT_ACQUIRED",
+            context=context,
+        )
+
+
+def _ensure_mutation_allowed(*, admin: bool, operation: str, **context: Any) -> None:
+    """Validate lock guards for mutating operations."""
+    if admin:
+        _ensure_admin_mutation_allowed(operation, **context)
+    else:
+        _ensure_run_mutation_allowed(operation, **context)
+
+
 def acquire_lock() -> bool:
-    """Acquire lock for this instance if available or expired."""
+    """Acquire run lock for this instance if available and admin lock is not active."""
+    global _run_lock_held
     try:
         if admin_lock_exists():
             return False
-        global _lock_acquired
-        if not _lock_acquired:
-            lock_file_path = _lock_path()
-            current_time = time.time()
-            settings = get_settings()
-            timeout = float(settings.S3_LOCK_TIMEOUT_SECONDS)
+        if _run_lock_held:
+            return True
 
-            if not lock_file_path.exists():
-                lock = {"owner": settings.S3_LOCK_OWNER_ID, "acquired_at": current_time, "expires_at": current_time + timeout}
-                lock_file_path.write_text(json.dumps(lock), encoding="utf-8")
-                _lock_acquired = True
-                return True
-
-            lock_data: dict[str, Any] = json.loads(lock_file_path.read_text(encoding="utf-8"))
-
-            if float(lock_data.get("expires_at", 0)) < current_time:
-                lock = {"owner": settings.S3_LOCK_OWNER_ID, "acquired_at": current_time, "expires_at": current_time + timeout}
-                lock_file_path.write_text(json.dumps(lock), encoding="utf-8")
-                _lock_acquired = True
-                return True
-
+        lock_path = _lock_path()
+        now = time.time()
+        settings = get_settings()
+        current_payload = _read_json_payload(lock_path)
+        if current_payload and not _is_expired(current_payload, now=now):
             return False
+
+        payload = {
+            "owner": settings.S3_LOCK_OWNER_ID,
+            "acquired_at": now,
+            "expires_at": now + float(settings.S3_LOCK_TIMEOUT_SECONDS),
+        }
+        _write_json_payload(lock_path, payload)
+        _run_lock_held = True
         return True
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to acquire lock", "LOCK_ACQUIRE_FAILED", cause=e)
-        raise err
+        raise e if isinstance(e, AppError) else AppError("Failed to acquire run lock.", "LOCK_ACQUIRE_FAILED", cause=e)
+
 
 def release_lock() -> bool:
-    """Release lock if owned by this instance."""
+    """Release run lock when current lock owner matches this instance."""
+    global _run_lock_held
     try:
-        global _lock_acquired
-        if _lock_acquired:
-            lock_file_path = _lock_path()
-            settings = get_settings()
-            if not lock_file_path.exists():
-                _lock_acquired = False
-                return False
-        
-            lock_data = json.loads(lock_file_path.read_text(encoding="utf-8"))
+        if not _run_lock_held:
+            return True
 
-            if lock_data.get("owner") == settings.S3_LOCK_OWNER_ID:
-                lock_file_path.unlink(missing_ok=True)
-                _lock_acquired = False
-                return True
-            _lock_acquired = False
+        lock_path = _lock_path()
+        payload = _read_json_payload(lock_path)
+        owner_id = get_settings().S3_LOCK_OWNER_ID
+
+        if not payload:
+            _run_lock_held = False
             return False
+
+        if payload.get("owner") != owner_id:
+            _run_lock_held = False
+            return False
+
+        lock_path.unlink(missing_ok=True)
+        _run_lock_held = False
         return True
     except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to release lock", "LOCK_RELEASE_FAILED", cause=e)
-        raise err
+        raise e if isinstance(e, AppError) else AppError("Failed to release run lock.", "LOCK_RELEASE_FAILED", cause=e)
 
 
 def upload_file(local_path: str | Path, key: str, _admin: bool = False) -> str:
-    """Upload local file to mock S3 key path."""
+    """Upload a local file to mock S3 key path (mutating; lock-guarded)."""
     try:
-        _ensure_locks(_admin, "uploading file to s3", local_path=local_path, key=key)
+        _ensure_mutation_allowed(admin=_admin, operation="upload_file", local_path=str(local_path), key=key)
         src = Path(local_path)
         if not src.exists():
-            raise AppError("Failed to upload the file to s3", "UPLOAD_FILE_FAILED", context={"local_path": local_path, "key": key, "reason": "path does not exist"})
-        dst = _mock_dir() / key
+            raise AppError(
+                "Upload source path does not exist.",
+                "UPLOAD_FILE_FAILED",
+                context={"local_path": str(local_path), "key": key},
+            )
+        dst = _resolve_key_path(key)
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src, dst)
         return str(dst)
     except Exception as e:
-        err = e if isinstance(e, AppError) else AppError("Failed to upload the file to s3", "UPLOAD_FILE_FAILED", context={"local_path": local_path, "key": key}, cause=e)
-        raise err
+        raise e if isinstance(e, AppError) else AppError(
+            "Failed to upload file to S3 mock.",
+            "UPLOAD_FILE_FAILED",
+            context={"local_path": str(local_path), "key": key},
+            cause=e,
+        )
 
 
 def download_file(key: str, local_path: str | Path) -> str:
-    """Download mock S3 key to local path."""
+    """Download a mock S3 key to local path (read-only; allowed during admin preemption)."""
     try:
-        src = _mock_dir() / key
+        src = _resolve_key_path(key)
         if not src.exists():
-            raise AppError("Failed to download the file from s3", "DOWNLOAD_FILE_FAILED", context={"local_path": local_path, "key": key, "reason": "key does not exist"})
+            raise AppError(
+                "S3 key does not exist.",
+                "DOWNLOAD_FILE_FAILED",
+                context={"key": key, "local_path": str(local_path)},
+            )
         dst = Path(local_path)
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src, dst)
         return str(dst)
     except Exception as e:
-        err = e if isinstance(e, AppError) else AppError("Failed to download the file from s3", "DOWNLOAD_FILE_FAILED", context={"local_path": local_path, "key": key}, cause=e)
-        raise err
+        raise e if isinstance(e, AppError) else AppError(
+            "Failed to download file from S3 mock.",
+            "DOWNLOAD_FILE_FAILED",
+            context={"key": key, "local_path": str(local_path)},
+            cause=e,
+        )
 
 
 def s3_file_exists(key: str) -> bool:
-    """Check whether a key exists in mock S3."""
-    return (_mock_dir() / key).exists()
+    """Check whether key exists in mock S3 (read-only)."""
+    try:
+        return _resolve_key_path(key).exists()
+    except AppError:
+        return False
 
 
-def delete_file(key: str, _admin:bool=False) -> bool:
-    """Delete a key from mock S3 if present."""
-    _ensure_locks(_admin, "deleting file from s3", key=key)
-    path = _mock_dir() / key
-    if path.exists():
-        path.unlink()
-        return True
-    return False
-
-# Admin lock functions
-
-_admin_lock_acquired = False
-
-def _ensure_admin_lock(operation: str, **context: Any) -> None:
-    """Raise when admin lock is not currently held by this instance."""
-    if not _admin_lock_acquired:
-        raise AppError(
-            f"Admin lock not acquired before {operation}",
-            "ADMIN_LOCK_NOT_ACQUIRED",
-            context=context,
+def delete_file(key: str, _admin: bool = False) -> bool:
+    """Delete key from mock S3 (mutating; lock-guarded)."""
+    try:
+        _ensure_mutation_allowed(admin=_admin, operation="delete_file", key=key)
+        path = _resolve_key_path(key)
+        if path.exists():
+            path.unlink()
+            return True
+        return False
+    except Exception as e:
+        raise e if isinstance(e, AppError) else AppError(
+            "Failed to delete file from S3 mock.",
+            "DELETE_FILE_FAILED",
+            context={"key": key},
+            cause=e,
         )
 
-def _ensure_no_admin_lock() -> None:
-    if admin_lock_exists():
-        raise AppError(
-            "Operation blocked due to existing admin lock",
-            "OPERATION_BLOCKED_ADMIN_LOCK",
-        )
-    
-def _ensure_locks(_admin: bool, operation: str, **context: Any) -> None:
-    """Raise when required lock conditions are not met."""
-    if _admin:
-        _ensure_admin_lock(operation, **context)
-    else:
-        _ensure_lock(operation, **context)
-        _ensure_no_admin_lock()
-
-def admin_acquire_lock() -> bool:
-    """Acquire admin lock for this instance if available or expired."""
-    try:
-        global _admin_lock_acquired
-        if not _admin_lock_acquired:
-            lock_file_path = _lock_path(_admin=True)
-            current_time = time.time()
-            settings = get_settings()
-            timeout = float(settings.ADMIN_LOCK_TIMEOUT_SECONDS)
-
-            if not lock_file_path.exists():
-                lock = {"owner": settings.S3_LOCK_OWNER_ID, "acquired_at": current_time, "expires_at": current_time + timeout}
-                lock_file_path.write_text(json.dumps(lock), encoding="utf-8")
-                _admin_lock_acquired = True
-                return True
-
-            lock_data: dict[str, Any] = json.loads(lock_file_path.read_text(encoding="utf-8"))
-
-            if float(lock_data.get("expires_at", 0)) < current_time:
-                lock = {"owner": settings.S3_LOCK_OWNER_ID, "acquired_at": current_time, "expires_at": current_time + timeout}
-                lock_file_path.write_text(json.dumps(lock), encoding="utf-8")
-                _admin_lock_acquired = True
-                return True
-
-            return False
-        return True
-    except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to acquire admin lock", "ADMIN_LOCK_ACQUIRE_FAILED", cause=e)
-        raise err
-
-def admin_release_lock() -> bool:
-    """Release admin lock if owned by this instance."""
-    try:
-        global _admin_lock_acquired
-        if _admin_lock_acquired:
-            lock_file_path = _lock_path(_admin=True)
-            settings = get_settings()
-            if not lock_file_path.exists():
-                _admin_lock_acquired = False
-                return False
-        
-            lock_data = json.loads(lock_file_path.read_text(encoding="utf-8"))
-
-            if lock_data.get("owner") == settings.S3_LOCK_OWNER_ID:
-                lock_file_path.unlink(missing_ok=True)
-                _admin_lock_acquired = False
-                return True
-            _admin_lock_acquired = False
-            return False
-        return True
-    except Exception as e:
-        err=e if isinstance(e, AppError) else AppError("Failed to release admin lock", "ADMIN_LOCK_RELEASE_FAILED", cause=e)
-        raise err
 
 def admin_lock_exists() -> bool:
-    """Check if the admin lock is currently acquired by any instance."""
-    return (_mock_dir() / S3_ADMIN_LOCK_FILE).exists()
+    """Return whether admin lock is currently active."""
+    return _active_admin_lock_data() is not None
 
 
-def admin_lock_acquired() -> bool:
-    """Check whether admin lock is held by this instance."""
-    return _admin_lock_acquired
+def admin_op_lock_exists() -> bool:
+    """Return whether admin operation lock is currently active and valid."""
+    return _active_admin_op_lock_data() is not None
+
+
+def admin_acquire_lock() -> dict[str, Any]:
+    """Acquire admin lock and return acquisition status with lock metadata."""
+    try:
+        now = time.time()
+        path = _lock_path(admin=True)
+        current_payload = _read_json_payload(path)
+        if current_payload and not _is_expired(current_payload, now=now):
+            return {"acquired": False, "status": admin_lock_status()}
+
+        token = str(uuid.uuid4())
+        settings = get_settings()
+        payload = {
+            "owner": settings.S3_LOCK_OWNER_ID,
+            "token": token,
+            "acquired_at": now,
+            "expires_at": now + float(settings.ADMIN_LOCK_TIMEOUT_SECONDS),
+        }
+        _write_json_payload(path, payload)
+        return {"acquired": True, "token": token, "status": admin_lock_status()}
+    except Exception as e:
+        raise e if isinstance(e, AppError) else AppError(
+            "Failed to acquire admin lock.",
+            "ADMIN_LOCK_ACQUIRE_FAILED",
+            cause=e,
+        )
+
+
+def admin_validate_lock_token(token: str | None) -> bool:
+    """Return True when token matches active admin lock token."""
+    if not token:
+        return False
+    lock_payload = _active_admin_lock_data()
+    if not lock_payload:
+        return False
+    return lock_payload.get("token") == token
+
+
+def admin_release_lock(token: str | None) -> bool:
+    """Release admin lock when token is valid and no admin operation is running."""
+    try:
+        if not admin_validate_lock_token(token):
+            return False
+        if admin_op_lock_exists():
+            return False
+
+        _lock_path(admin=True).unlink(missing_ok=True)
+        _lock_path(admin_op=True).unlink(missing_ok=True)
+        return True
+    except Exception as e:
+        raise e if isinstance(e, AppError) else AppError(
+            "Failed to release admin lock.",
+            "ADMIN_LOCK_RELEASE_FAILED",
+            cause=e,
+        )
 
 
 def admin_lock_status() -> dict[str, Any]:
-    """Return admin lock status metadata."""
-    lock_file = _lock_path(_admin=True)
-    if not lock_file.exists():
-        return {"active": False, "owned": _admin_lock_acquired}
-    try:
-        data: dict[str, Any] = json.loads(lock_file.read_text(encoding="utf-8"))
-    except Exception:
-        data = {}
+    """Return admin lock status metadata without exposing lock token."""
+    lock_payload = _active_admin_lock_data()
+    if not lock_payload:
+        return {"active": False}
     return {
         "active": True,
-        "owned": _admin_lock_acquired,
-        "owner": data.get("owner"),
-        "acquired_at": data.get("acquired_at"),
-        "expires_at": data.get("expires_at"),
+        "owner": lock_payload.get("owner"),
+        "acquired_at": lock_payload.get("acquired_at"),
+        "expires_at": lock_payload.get("expires_at"),
     }
+
+
+def admin_acquire_op_lock(token: str | None) -> bool:
+    """Acquire admin operation lock for validated admin token."""
+    if not admin_validate_lock_token(token):
+        return False
+    if admin_op_lock_exists():
+        return False
+
+    now = time.time()
+    expires_in = float(get_settings().ADMIN_LOCK_TIMEOUT_SECONDS)
+    payload = {
+        "holder_token": token,
+        "acquired_at": now,
+        "expires_at": now + expires_in,
+    }
+    _write_json_payload(_lock_path(admin_op=True), payload)
+    return True
+
+
+def admin_release_op_lock(token: str | None) -> bool:
+    """Release admin operation lock when holder token matches."""
+    path = _lock_path(admin_op=True)
+    payload = _read_json_payload(path)
+    if not payload:
+        return True
+    if payload.get("holder_token") != token:
+        return False
+    path.unlink(missing_ok=True)
+    return True

@@ -20,27 +20,28 @@ router = APIRouter()
 def root() -> Response:
     """Return basic service metadata and available endpoints."""
     model, status_code = handle_request(RequestType.ROOT)
-    return JSONResponse(content=model.model_dump(), status_code=status_code)
+    return JSONResponse(content=model.model_dump(mode="json"), status_code=status_code)
 
 
 @router.get("/run-scrape")
 def run_scrape() -> Response:
     """Trigger the scrape workflow and return execution status."""
     model, status_code = handle_request(RequestType.SCRAPE)
-    return JSONResponse(content=model.model_dump(), status_code=status_code)
+    return JSONResponse(content=model.model_dump(mode="json"), status_code=status_code)
 
 
 @router.get("/run-musts")
 def run_musts() -> Response:
     """Trigger the musts processing workflow and return execution status."""
     model, status_code = handle_request(RequestType.MUSTS)
-    return JSONResponse(content=model.model_dump(), status_code=status_code)
+    return JSONResponse(content=model.model_dump(mode="json"), status_code=status_code)
 
 
 @router.post("/admin")
 def run_admin_action(
     body: AdminRequest,
     x_admin_secret: Annotated[str | None, Header(alias="X-Admin-Secret")] = None,
+    x_admin_lock_token: Annotated[str | None, Header(alias="X-Admin-Lock-Token")] = None,
 ) -> Response:
     """Execute admin actions (lock/context/settings) behind admin-secret auth."""
     try:
@@ -66,5 +67,5 @@ def run_admin_action(
             status_code=401,
         )
 
-    model, status_code = handle_admin_action(body.action, body.payload)
-    return JSONResponse(content=model.model_dump(), status_code=status_code)
+    model, status_code = handle_admin_action(body.action, body.payload, x_admin_lock_token)
+    return JSONResponse(content=model.model_dump(mode="json"), status_code=status_code)
