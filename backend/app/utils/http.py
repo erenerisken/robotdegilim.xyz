@@ -4,6 +4,7 @@ from collections.abc import Iterable
 import random
 import time
 from typing import Any
+from contextlib import suppress
 
 import requests
 from requests import Response, Session
@@ -31,6 +32,9 @@ def get_session() -> Session:
 def reset_session() -> None:
     """Reset the shared HTTP session."""
     global _SESSION
+    if _SESSION is not None:
+        with suppress(Exception):
+            _SESSION.close()
     _SESSION = None
 
 
@@ -77,6 +81,12 @@ def request(
                 json=json_body,
                 timeout=timeout,
             )
+        except requests.exceptions.RequestException as e:
+            last_error = e
+            if _is_retryable_transport_error(e):
+                reset_session()
+            _sleep_with_jitter(base_delay, jitter, attempt)
+            continue
         except Exception as e:
             last_error = e
             _sleep_with_jitter(base_delay, jitter, attempt)
@@ -130,6 +140,19 @@ def _sleep_with_jitter(base_delay: float, jitter: float, attempt: int) -> None:
     """Sleep with linear backoff and random jitter."""
     delay = (base_delay * attempt) + random.uniform(0, jitter)
     time.sleep(max(0.0, delay))
+
+
+def _is_retryable_transport_error(error: requests.exceptions.RequestException) -> bool:
+    """Return True when the underlying transport is likely stale/broken."""
+    return isinstance(
+        error,
+        (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout,
+            requests.exceptions.ChunkedEncodingError,
+            requests.exceptions.SSLError,
+        ),
+    )
 
 
 def _maybe_throttle() -> None:
