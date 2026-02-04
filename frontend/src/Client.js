@@ -1,29 +1,59 @@
 import axios from "axios";
+
+const DEFAULT_S3_BASE_URL = "https://s3.amazonaws.com/cdn.robotdegilim.xyz";
+const DEFAULT_BACKEND_BASE_URL = "https://robotdegilim-xyz.fly.dev";
+
+const S3_FILE_KEYS = Object.freeze({
+  courses: "data.json",
+  lastUpdated: "lastUpdated.json",
+  musts: "musts.json",
+  departments: "departments.json",
+  status: "status.json",
+  nteAvailable: "nteAvailable.json",
+});
+
+function _normalizeBaseUrl(url, fallback) {
+  const raw = (url || fallback || "").trim();
+  return raw.replace(/\/+$/, "");
+}
+
+function _joinUrl(base, key) {
+  return `${base}/${key}`;
+}
+
 export class Client {
   constructor() {
-    // S3 urls
-    this.coursesUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/data.json";
-    this.lastUpdatedUrl =
-      "https://s3.amazonaws.com/cdn.robotdegilim.xyz/lastUpdated.json";
-    this.mustUrl = "https://s3.amazonaws.com/cdn.robotdegilim.xyz/musts.json";
-    this.departmentsUrl =
-      "https://s3.amazonaws.com/cdn.robotdegilim.xyz/departments.json";
-    this.statusUrl =
-      "https://s3.amazonaws.com/cdn.robotdegilim.xyz/status.json";
-    this.scrapeUrl = "https://robotdegilim-xyz.fly.dev/run-scrape";
-    this.nteUrl =
-      "https://s3.amazonaws.com/cdn.robotdegilim.xyz/nteAvailable.json";
+    const s3BaseUrl = _normalizeBaseUrl(
+      process.env.REACT_APP_S3_BASE_URL,
+      DEFAULT_S3_BASE_URL
+    );
+    const backendBaseUrl = _normalizeBaseUrl(
+      process.env.REACT_APP_BACKEND_BASE_URL,
+      DEFAULT_BACKEND_BASE_URL
+    );
+
+    this.coursesUrl = _joinUrl(s3BaseUrl, S3_FILE_KEYS.courses);
+    this.lastUpdatedUrl = _joinUrl(s3BaseUrl, S3_FILE_KEYS.lastUpdated);
+    this.mustUrl = _joinUrl(s3BaseUrl, S3_FILE_KEYS.musts);
+    this.departmentsUrl = _joinUrl(s3BaseUrl, S3_FILE_KEYS.departments);
+    this.statusUrl = _joinUrl(s3BaseUrl, S3_FILE_KEYS.status);
+    this.scrapeUrl = _joinUrl(backendBaseUrl, "run-scrape");
+    this.nteUrl = _joinUrl(s3BaseUrl, S3_FILE_KEYS.nteAvailable);
+
+    this.http = axios.create({
+      timeout: Number(process.env.REACT_APP_API_TIMEOUT_MS || 15000),
+    });
   }
   async getLastUpdated() {
-    const data = (await axios.get(this.lastUpdatedUrl)).data;
+    const data = (await this.http.get(this.lastUpdatedUrl)).data;
     return data;
   }
   async getMusts(dept, semester) {
-    const data = (await axios.get(this.mustUrl)).data;
+    const data = (await this.http.get(this.mustUrl)).data;
     return data[dept][semester.toString()];
   }
   async getCourses() {
-    const data = (await axios.get(this.coursesUrl)).data;
+    const data = (await this.http.get(this.coursesUrl)).data;
     const courses = Array(0);
     // eslint-disable-next-line
     Object.keys(data).map((code) => {
@@ -77,20 +107,21 @@ export class Client {
     return courses;
   }
   async getNTEs() {
-    const data = (await axios.get(this.nteUrl)).data;
+    const data = (await this.http.get(this.nteUrl)).data;
     return data;
   }
 
   async sendUpdateRequest() {
     try {
       // Fetch the status from S3
-      const statusResponse = await axios.get(this.statusUrl);
+      const statusResponse = await this.http.get(this.statusUrl);
       const statusData = statusResponse.data;
+      const status = String(statusData?.status || "").toLowerCase();
 
       // Check if the status is 'idle'
-      if (statusData.status === "idle") {
+      if (status === "idle") {
         // Send request to the backend to start the scraping
-        const updateResponse = await axios.get(this.scrapeUrl);
+        const updateResponse = await this.http.get(this.scrapeUrl);
         const updateData = updateResponse.data; // No need for .json() with axios
         console.log("Response of Update request:", updateData);
         // Handle response data or update component state if needed

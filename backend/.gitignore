@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+*.pdb
+*.egg-info/
+*.egg
+*.whl
+
+# Virtualenv
+.venv/
+venv/
+ENV/
+
+# Env files
+.env
+.admin_lock_token
+
+# Editors/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test/coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tmp/
+
+# Build artifacts
+build/
+dist/
+
+# Runtime data (keep folder structure only)
+data/*
+!data/.gitkeep
+!data/cache/
+!data/downloaded/
+!data/logs/
+!data/published/
+!data/raw/
+!data/staged/
+data/cache/*
+!data/cache/.gitkeep
+data/downloaded/*
+!data/downloaded/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+data/published/*
+!data/published/.gitkeep
+data/raw/*
+!data/raw/.gitkeep
+data/staged/*
+!data/staged/.gitkeep
+
+s3-mock/*
+!s3-mock/.gitkeep
+
+.deploy/*
+
+# Node (if frontend assets are built here)
+node_modules/
