@@ -39,9 +39,30 @@ htmlcov/
 build/
 dist/
 
-# Runtime data
-data/
-s3-mock/
+# Runtime data (keep folder structure only)
+data/*
+!data/.gitkeep
+!data/cache/
+!data/downloaded/
+!data/logs/
+!data/published/
+!data/raw/
+!data/staged/
+data/cache/*
+!data/cache/.gitkeep
+data/downloaded/*
+!data/downloaded/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+data/published/*
+!data/published/.gitkeep
+data/raw/*
+!data/raw/.gitkeep
+data/staged/*
+!data/staged/.gitkeep
+
+s3-mock/*
+!s3-mock/.gitkeep
 
 # Node (if frontend assets are built here)
 node_modules/
