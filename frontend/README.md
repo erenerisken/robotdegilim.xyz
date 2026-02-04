@@ -29,7 +29,13 @@ The CRA dev server typically runs at http://localhost:3000. Configure the backen
 Detailed structure and integration guidance live in `../docs/frontend-guide.md`.
 
 ## Environment Variables
-Define CRA vars prefixed with `REACT_APP_` (e.g., `REACT_APP_DATA_BASE_URL`) to swap data endpoints across environments. Create `.env.development` or `.env.production` files as needed.
+Define CRA vars prefixed with `REACT_APP_` to swap endpoints across environments:
+
+- `REACT_APP_S3_BASE_URL` (default: `https://s3.amazonaws.com/cdn.robotdegilim.xyz`)
+- `REACT_APP_BACKEND_BASE_URL` (default: `https://robotdegilim-xyz.fly.dev`)
+- `REACT_APP_API_TIMEOUT_MS` (default: `15000`)
+
+Create `.env.development` or `.env.production` files as needed.
 
 ## Deployment
 1. `npm run build`
