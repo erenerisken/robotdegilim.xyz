@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog,
-    DialogTitle,
     DialogContent,
     DialogActions,
     Button,
-    List,
-    ListItem,
-    ListItemText,
-    IconButton,
     Typography,
     Chip,
     Box,
@@ -16,12 +11,10 @@ import {
     CircularProgress,
     Card,
     CardContent,
-    ButtonGroup,
     Grid
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import AddIcon from '@material-ui/icons/Add';
-import CloseIcon from '@material-ui/icons/Close';
 import SchoolIcon from '@material-ui/icons/School';
 import LibraryAddIcon from '@material-ui/icons/LibraryAdd';
 import { withStyles } from '@material-ui/core/styles';

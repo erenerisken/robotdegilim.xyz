@@ -21,7 +21,6 @@ import {
 } from "@material-ui/icons";
 import { withStyles } from "@material-ui/core/styles";
 
-import { Colorset } from "./Colorset";
 import { SectionInfo } from "./SectionInfo";
 import { CourseAdvancedSettings } from "./CourseAdvancedSettings";
 
