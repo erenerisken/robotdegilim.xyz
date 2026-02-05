@@ -106,19 +106,19 @@ export const Controls = (props) => {
       rSettings !== null
         ? rSettings
         : {
-            checkSurname: true,
-            checkDepartment: true,
-            checkCollision: true,
-            disableCourse: false,
-          }
+          checkSurname: true,
+          checkDepartment: true,
+          checkCollision: true,
+          disableCourse: false,
+        }
     );
     setRestoredInfo(
       rInfo !== null
         ? {
-            surname: rInfo.surname,
-            department: rInfo.department,
-            semester: rInfo.semester,
-          }
+          surname: rInfo.surname,
+          department: rInfo.department,
+          semester: rInfo.semester,
+        }
         : { surname: "", department: "", semester: 0 }
     );
     setRestoreAvailable(rSettings !== null);
@@ -132,14 +132,14 @@ export const Controls = (props) => {
       setSurname(restoredInfo.surname);
       setSemester(restoredInfo.semester);
       setDepartment(restoredInfo.department);
-      
+
       // Then apply manual classrooms safely
       restoredCourses.forEach((course, courseIndex) => {
         if (course && course.manualClassrooms) {
           Object.keys(course.manualClassrooms).forEach(key => {
             const [sectionIndex, lectureTimeIndex] = key.split('-').map(Number);
             const newClassroom = course.manualClassrooms[key];
-            
+
             // Use setTimeout to avoid immediate state conflicts
             setTimeout(() => {
               handleClassroomUpdate(courseIndex, sectionIndex, lectureTimeIndex, newClassroom);
@@ -278,27 +278,27 @@ export const Controls = (props) => {
     try {
       const newSelected = [...selectedCourses];
       const courseCode = newSelected[courseIndex].code;
-      
+
       // Initialize manual classrooms if not exists
       if (!newSelected[courseIndex].manualClassrooms) {
         newSelected[courseIndex].manualClassrooms = {};
       }
-      
+
       // Store the manual classroom override
       const key = `${sectionIndex}-${lectureTimeIndex}`;
       newSelected[courseIndex].manualClassrooms[key] = newClassroom;
-      
+
       setSelectedCourses(newSelected);
-      
+
       // Also update the scenario data if schedule is already computed
       if (scenariosState.result && scenariosState.result.length > 0) {
         const updatedScenarios = scenariosState.result.map(scenario => {
           return scenario.map(courseInScenario => {
-            if (courseInScenario.section && 
-                courseInScenario.section.lectureTimes && 
-                courseInScenario.section.lectureTimes[lectureTimeIndex] &&
-                getCourseByCode(courseCode)?.abbreviation === courseInScenario.abbreviation &&
-                courseInScenario.section.sectionNumber === getCourseByCode(courseCode)?.sections[sectionIndex]?.sectionNumber) {
+            if (courseInScenario.section &&
+              courseInScenario.section.lectureTimes &&
+              courseInScenario.section.lectureTimes[lectureTimeIndex] &&
+              getCourseByCode(courseCode)?.abbreviation === courseInScenario.abbreviation &&
+              courseInScenario.section.sectionNumber === getCourseByCode(courseCode)?.sections[sectionIndex]?.sectionNumber) {
               const updatedCourse = { ...courseInScenario };
               updatedCourse.section = { ...updatedCourse.section };
               updatedCourse.section.lectureTimes = [...updatedCourse.section.lectureTimes];
@@ -313,7 +313,7 @@ export const Controls = (props) => {
         });
         dispatch(setScenarios(updatedScenarios));
       }
-      
+
       // Update the actual course data in allCourses safely
       setAllCourses(prevCourses => {
         try {
@@ -560,7 +560,7 @@ export const Controls = (props) => {
     // NTE dersleri için özel handler
     const newSelected = [...selectedCourses];
     let sectionsArray;
-    
+
     if (selectedSectionIndex === -1) {
       // Tüm section'ları aktif et
       sectionsArray = new Array(nteCourse.sections.length).fill(true);
@@ -569,7 +569,7 @@ export const Controls = (props) => {
       sectionsArray = new Array(nteCourse.sections.length).fill(false);
       sectionsArray[selectedSectionIndex] = true;
     }
-    
+
     newSelected.push({
       code: nteCourse.code,
       sections: sectionsArray,
@@ -587,7 +587,10 @@ export const Controls = (props) => {
   };
 
   return (
-    <Paper style={isMobile ? styles.mobile : styles.desktop}>
+    <Paper
+      className="controls-container"
+      style={isMobile ? styles.mobile : styles.desktop}
+    >
       <Snackbar
         open={alertMsg !== ""}
         autoHideDuration={5000}
@@ -653,7 +656,7 @@ export const Controls = (props) => {
             size="small"
             className="form-control pretty-select"
           >
-            <InputLabel style={{ background: "white" }}>Semester</InputLabel>
+            <InputLabel>Semester</InputLabel>
             <Select
               error={errorSemester}
               value={semester}
@@ -847,13 +850,13 @@ export const Controls = (props) => {
 
 const styles = {
   mobile: {
-    background: "white",
+    background: "transparent",
     margin: 12,
     width: "100%",
     paddingBottom: 12,
   },
   desktop: {
-    background: "white",
+    background: "transparent",
     margin: 12,
     flex: "1 1 0",
     height: "fit-content",

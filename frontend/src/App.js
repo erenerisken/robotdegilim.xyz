@@ -8,16 +8,7 @@ import { Banner } from "./Banner";
 import "./App.css";
 import { useSelector } from "react-redux";
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#1976d2",
-    },
-    secondary: {
-      main: "#71F154",
-    },
-  },
-});
+import { CssBaseline } from "@material-ui/core";
 
 const App = () => {
   const [loaded, setLoaded] = useState(false);
@@ -26,14 +17,32 @@ const App = () => {
     setLoaded(true);
   };
   const dontFillsState = useSelector((state) => state.dontFillsState);
+  const themeMode = useSelector((state) => state.themeState.mode);
+
+  const theme = createMuiTheme({
+    palette: {
+      type: themeMode,
+      primary: {
+        main: "#1976d2",
+      },
+      secondary: {
+        main: "#71F154",
+      },
+      background: {
+        default: themeMode === "dark" ? "#121212" : "#ffffff",
+        paper: themeMode === "dark" ? "#1e1e1e" : "#ffffff",
+      },
+    },
+  });
 
   return (
     <MuiThemeProvider theme={theme}>
-      <div className="App">
+      <CssBaseline />
+      <div className="App" data-theme={themeMode}>
         <Banner />
         {loaded && <WelcomeDialog />}
         <div className={isMobile ? "column" : "row"}>
-          <WeeklyProgram 
+          <WeeklyProgram
             currentScenario={currentScenario}
             setCurrentScenario={setCurrentScenario}
           />

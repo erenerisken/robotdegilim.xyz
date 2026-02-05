@@ -2,7 +2,7 @@
 .dayscale-row {
   display: flex;
   flex-direction: row;
-  background: #f8fafc;
+  background: var(--bg-secondary);
   border-radius: 16px 16px 0 0;
   padding: 8px 0;
 }
@@ -69,7 +69,7 @@
   width: 100%;
   padding: 3px 6px;
   border-radius: 6px 6px 0 0;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--bg-overlay-2);
   backdrop-filter: blur(2px);
   min-height: 32px;
   box-sizing: border-box;
@@ -82,7 +82,7 @@
   width: 100%;
   padding: 3px 6px;
   border-radius: 0 0 6px 6px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--bg-overlay-1);
   backdrop-filter: blur(1px);
   min-height: 24px;
   box-sizing: border-box;
@@ -96,7 +96,7 @@
   width: 100%;
   padding: 4px 6px;
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--bg-overlay-2);
   backdrop-filter: blur(2px);
   min-height: 24px;
   box-sizing: border-box;
@@ -115,7 +115,7 @@
   height: 28px !important;
   padding: 6px !important;
   border-radius: 6px !important;
-  background: rgba(0, 0, 0, 0.3) !important;
+  background: var(--bg-overlay-3) !important;
   backdrop-filter: blur(4px);
   transition: all 0.2s ease;
   border: none !important;
@@ -221,7 +221,7 @@
   transition: all 0.2s ease;
   padding: 6px 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--bg-overlay-3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -442,7 +442,7 @@
   justify-content: center;
   gap: 8px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--glass-bg);
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -499,11 +499,11 @@
     flex-wrap: wrap;
     padding: 12px;
   }
-  
+
   .program-textfield-wrapper {
     width: 50px;
   }
-  
+
   .program-vertical {
     padding: 8px;
   }

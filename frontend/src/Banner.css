@@ -15,6 +15,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -31,5 +32,105 @@
 @media (max-width: 480px) {
   .banner-wrapper {
     padding: 12px 0;
+  }
+}
+
+/* Neumorphic Toggle Styles */
+.theme-switch-container {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+
+.theme-switch-track {
+  width: 110px;
+  height: 40px;
+  background: var(--bg-primary);
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  /* Neumorphic Inset Shadow */
+  box-shadow: inset 4px 4px 8px var(--shadow-color),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+  transition: all 0.4s ease;
+}
+
+[data-theme='light'] .theme-switch-track {
+  box-shadow: inset 4px 4px 8px #d1d9e6,
+    inset -4px -4px 8px #ffffff;
+}
+
+.theme-switch-thumb {
+  width: 32px;
+  height: 32px;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  position: absolute;
+  left: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Neumorphic Raised Shadow */
+  box-shadow: 4px 4px 8px var(--shadow-color),
+    -4px -4px 8px rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+}
+
+[data-theme='light'] .theme-switch-thumb {
+  box-shadow: 2px 2px 5px #d1d9e6,
+    -2px -2px 5px #ffffff;
+}
+
+.theme-switch-track.active .theme-switch-thumb {
+  left: calc(100% - 36px);
+}
+
+.theme-switch-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  user-select: none;
+  transition: all 0.3s ease;
+  padding-left: 28px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.theme-switch-track.active .theme-switch-text {
+  padding-left: 0;
+  padding-right: 28px;
+}
+
+.theme-icon {
+  font-size: 16px !important;
+  transition: all 0.4s ease;
+}
+
+/* Color specific icons */
+.theme-switch-track .theme-icon {
+  color: #fbbf24;
+  /* Sun color */
+}
+
+.theme-switch-track.active .theme-icon {
+  color: #94a3b8;
+  /* Moon color */
+}
+
+@media (max-width: 768px) {
+  .theme-switch-container {
+    position: static;
+    transform: none;
+    margin-top: 10px;
   }
 }
