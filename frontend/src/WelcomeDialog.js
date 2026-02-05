@@ -155,11 +155,8 @@ export const WelcomeDialog = () => {
       </ModernDialogTitle>
       
       <WelcomeContent>
-        <Typography variant="h6" className="colorAnimation" style={{ fontSize: 18 }}>
-          RobotDegilim team is looking for new maintainers!
-        </Typography>
-        <Typography variant="h6" style={{ color: '#6b7280', marginBottom: 24, fontSize: 18 }}>
-            We'd love to hear from you!
+        <Typography variant="h6" style={{ color: '#6b7280', marginBottom: 6, fontSize: 18 }}>
+          You can reach us via:
         </Typography>
 
         <Tooltip 
