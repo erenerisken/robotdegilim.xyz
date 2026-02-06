@@ -38,7 +38,7 @@
 /* Neumorphic Toggle Styles */
 .theme-switch-container {
   position: absolute;
-  right: 12px;
+  right: 24px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 100;

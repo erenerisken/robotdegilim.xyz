@@ -126,28 +126,28 @@ export const Banner = () => {
               }}
             />
           </TitleContainer>
-
-          <div className="theme-switch-container">
-            <Tooltip title={themeMode === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}>
-              <div
-                className={`theme-switch-track ${themeMode === 'dark' ? 'active' : ''}`}
-                onClick={() => dispatch(toggleTheme())}
-              >
-                <div className="theme-switch-thumb">
-                  {themeMode === 'dark' ? (
-                    <Brightness4Icon className="theme-icon" />
-                  ) : (
-                    <Brightness7Icon className="theme-icon" />
-                  )}
-                </div>
-                <div className="theme-switch-text">
-                  {themeMode === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                </div>
-              </div>
-            </Tooltip>
-          </div>
         </BannerContent>
       </Container>
+
+      <div className="theme-switch-container">
+        <Tooltip title={themeMode === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+          <div
+            className={`theme-switch-track ${themeMode === 'dark' ? 'active' : ''}`}
+            onClick={() => dispatch(toggleTheme())}
+          >
+            <div className="theme-switch-thumb">
+              {themeMode === 'dark' ? (
+                <Brightness4Icon className="theme-icon" />
+              ) : (
+                <Brightness7Icon className="theme-icon" />
+              )}
+            </div>
+            <div className="theme-switch-text">
+              {themeMode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+            </div>
+          </div>
+        </Tooltip>
+      </div>
     </StyledBanner>
   );
 };
