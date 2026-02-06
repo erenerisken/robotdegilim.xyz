@@ -1,5 +1,35 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-input: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --border-color: #e5e7eb;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --bg-overlay-1: rgba(0, 0, 0, 0.05);
+  --bg-overlay-2: rgba(0, 0, 0, 0.1);
+  --bg-overlay-3: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-input: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: #374151;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --glass-bg: rgba(31, 41, 55, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --bg-overlay-1: rgba(255, 255, 255, 0.05);
+  --bg-overlay-2: rgba(255, 255, 255, 0.1);
+  --bg-overlay-3: rgba(255, 255, 255, 0.15);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -14,9 +44,7 @@ body {
   min-height: 100vh;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html {}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
@@ -52,6 +80,7 @@ code {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -107,11 +136,11 @@ code {
   font-weight: 500 !important;
   letter-spacing: 0.1px !important;
   padding: 8px 12px !important;
-  background: #ffffff !important;
-  color: #111827 !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-  transition: background-color 0.15s ease, border-color 0.15s ease !important;
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 1px 2px var(--shadow-color) !important;
+  transition: all 0.15s ease !important;
 }
 
 .pretty-button .MuiButton-startIcon {
@@ -119,8 +148,8 @@ code {
 }
 
 .pretty-button:hover {
-  background: #f9fafb !important;
-  border-color: #d1d5db !important;
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
 }
 
 /* Flat, subtle colors */
@@ -135,7 +164,8 @@ code {
 }
 
 .pretty-secondary {
-  background: #16a34a !important; /* green-600 */
+  background: #16a34a !important;
+  /* green-600 */
   color: #ffffff !important;
   border-color: transparent !important;
 }
@@ -145,7 +175,8 @@ code {
 }
 
 .pretty-ternary {
-  background: #6a1b9a !important; /* green-600 */
+  background: #6a1b9a !important;
+  /* green-600 */
   color: #ffffff !important;
   border-color: transparent !important;
 }
@@ -190,13 +221,12 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  ring: 2px solid #3b82f6;
-  ring-offset: 2px;
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px #3b82f6;
 }
 
 /* Loading skeleton */
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--bg-overlay-1) 25%, var(--bg-overlay-2) 50%, var(--bg-overlay-1) 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
 }
@@ -205,6 +235,7 @@ select:focus {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

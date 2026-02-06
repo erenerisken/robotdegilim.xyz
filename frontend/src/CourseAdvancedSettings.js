@@ -47,15 +47,15 @@ export const CourseAdvancedSettings = ({
   };
   return (
     <div className="course-settings-wrapper">
-      <Accordion style={{ background: color.secondary }}>
+      <Accordion style={{ background: 'var(--bg-overlay-1)', border: '1px solid var(--border-color)', boxShadow: 'none' }}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1a-content"
         >
           <div className="course-settings-row">
-            <TuneIcon color="primary" fontSize="large" />
+            <TuneIcon style={{ color: color.main }} fontSize="large" />
             <div className="settings-typo">
-              <Typography>Advanced Settings</Typography>
+              <Typography style={{ color: 'var(--text-primary)' }}>Advanced Settings</Typography>
             </div>
           </div>
         </AccordionSummary>
@@ -111,10 +111,11 @@ export const CourseAdvancedSettings = ({
               <IconButton
                 style={{
                   marginTop: "5px",
-                  backgroundColor: "#1976d2",
+                  backgroundColor: "var(--bg-secondary)",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
+                  border: "1px solid var(--border-color)",
+                  boxShadow: "0px 2px 4px var(--shadow-color)",
                 }}
                 id="palette-button"
                 aria-controls={open ? "palette-menu" : undefined}
@@ -122,8 +123,8 @@ export const CourseAdvancedSettings = ({
                 aria-expanded={open ? "true" : undefined}
                 onClick={handleOpenColorPalette}
               >
-                <PaletteIcon fontSize="20" style={{ color: "white" }} />
-                <Typography style={{ color: "white" }}>Change Color</Typography>
+                <PaletteIcon fontSize="20" style={{ color: "var(--text-primary)" }} />
+                <Typography style={{ color: "var(--text-primary)", marginLeft: 8 }}>Change Color</Typography>
               </IconButton>
               <Menu
                 id="palette-menu"
@@ -144,7 +145,9 @@ export const CourseAdvancedSettings = ({
                 }}
                 PaperProps={{
                   style: {
-                    backgroundColor: "black",
+                    backgroundColor: "var(--bg-primary)",
+                    border: "1px solid var(--border-color)",
+                    boxShadow: "0 10px 15px -3px var(--shadow-color)",
                   },
                 }}
               >
@@ -153,10 +156,8 @@ export const CourseAdvancedSettings = ({
                     display: "grid",
                     gridTemplateColumns: "repeat(3, 1fr)",
                     gap: "5px",
-                    padding: "5px",
-                    paddingTop: "0px",
-                    paddingBottom: "0px",
-                    backgroundColor: "black",
+                    padding: "10px",
+                    backgroundColor: "transparent",
                   }}
                 >
                   {colors.map((color) => (

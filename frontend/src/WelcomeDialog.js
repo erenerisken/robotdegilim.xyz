@@ -24,7 +24,7 @@ const ModernDialog = withStyles((theme) => ({
     borderRadius: '20px',
     background: theme.palette.background.paper,
     backdropFilter: 'blur(20px)',
-    border: theme.palette.type === 'dark' 
+    border: theme.palette.type === 'dark'
       ? '1px solid rgba(255, 255, 255, 0.1)'
       : '1px solid rgba(0, 0, 0, 0.1)',
     boxShadow: theme.palette.type === 'dark'
@@ -138,8 +138,7 @@ export const WelcomeDialog = () => {
       aria-describedby="welcome-dialog-description"
       maxWidth="sm"
       fullWidth
-      scroll="body"
-      disableScrollLock
+      scroll="paper"
     >
       <ModernDialogTitle id="welcome-dialog-title">
         <Box style={{ display: 'flex', alignItems: 'center', gap: 8, zIndex: 1 }}>
@@ -153,14 +152,14 @@ export const WelcomeDialog = () => {
           <CloseIcon />
         </IconButton>
       </ModernDialogTitle>
-      
+
       <WelcomeContent>
         <Typography variant="h6" style={{ color: '#6b7280', marginBottom: 6, fontSize: 18 }}>
           You can reach us via:
         </Typography>
 
-        <Tooltip 
-          title={copied ? "Email copied!" : "Click to copy email"} 
+        <Tooltip
+          title={copied ? "Email copied!" : "Click to copy email"}
           arrow
           placement="top"
         >

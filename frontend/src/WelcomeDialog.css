@@ -1,7 +1,3 @@
-.dialog-wrapper {
-
-}
-
 .welcome-dialog {
   border-radius: 16px !important;
   overflow: hidden;
@@ -12,17 +8,30 @@
 }
 
 @keyframes colorChange {
-  0%   { color: #be0000; } /* pink */
-  50%  { color: #1100ff; } /* indigo */
-  100% { color: #00b406; } /* green */
-}
+  0% {
+    color: #be0000;
+  }
 
+  /* pink */
+  50% {
+    color: #1100ff;
+  }
+
+  /* indigo */
+  100% {
+    color: #00b406;
+  }
+
+  /* green */
+}
 
 .welcome-title {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(90deg, #e0f2ff, #f5faff);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .welcome-hero {

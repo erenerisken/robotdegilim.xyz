@@ -29,7 +29,8 @@ import "./CourseCard.css";
 const ModernCard = withStyles((theme) => ({
   root: {
     borderRadius: '16px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    boxShadow: '0 4px 6px -1px var(--shadow-color)',
+    background: 'var(--glass-bg)',
     backdropFilter: 'blur(10px)',
     transition: 'all 0.3s ease',
     '&:hover': {
@@ -120,12 +121,12 @@ const ModernAccordionDetails = withStyles((theme) => ({
 
 const SectionSelector = withStyles((theme) => ({
   root: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--bg-overlay-1)',
     borderRadius: '10px',
     padding: theme.spacing(2),
     marginTop: theme.spacing(2),
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+    border: '1px solid var(--border-color)',
+    boxShadow: 'none',
   },
 }))(Box);
 
@@ -270,12 +271,12 @@ export const CourseCard = ({
 
   const handleCardClick = (event) => {
     // Eğer delete butonu veya diğer interactive elementlere tıklanmışsa, card click'i çalıştırma
-    if (event.target.closest('.MuiIconButton-root') || 
-        event.target.closest('.MuiAccordionSummary-root') ||
-        event.target.closest('.MuiAccordion-root') ||
-        event.target.closest('.MuiButton-root') ||
-        event.target.closest('.MuiCheckbox-root') ||
-        event.target.closest('.MuiFormControlLabel-root')) {
+    if (event.target.closest('.MuiIconButton-root') ||
+      event.target.closest('.MuiAccordionSummary-root') ||
+      event.target.closest('.MuiAccordion-root') ||
+      event.target.closest('.MuiButton-root') ||
+      event.target.closest('.MuiCheckbox-root') ||
+      event.target.closest('.MuiFormControlLabel-root')) {
       return;
     }
     setExpanded(!expanded);

@@ -1,20 +1,24 @@
 .add-course-wrapper {
-    border-style: groove;
-    margin: 6pt;
-    padding: 6pt;
-    text-align: left;
-    background: aliceblue;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin: 6pt;
+  padding: 6pt;
+  text-align: left;
 }
+
 .add-course-row {
-    display: inline-flex;
-    width: 100%;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 8px;
+  display: inline-flex;
+  width: 100%;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
 }
+
 .add-course-name {
-    background: #FFFFFF;
-    flex: 1 1 auto;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  flex: 1 1 auto;
 }
 
 /* Pretty autocomplete refinements */
@@ -23,11 +27,11 @@
 }
 
 .pretty-autocomplete .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0,0,0,0.15);
+  border-color: var(--border-color);
 }
 
 .pretty-autocomplete:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0,0,0,0.25);
+  border-color: var(--text-secondary);
 }
 
 .pretty-autocomplete .MuiInputBase-input::placeholder {

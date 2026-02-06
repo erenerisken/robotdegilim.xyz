@@ -35,13 +35,13 @@ export const AddCourseWidget = ({ courses, onCourseAdd }) => {
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Course name"
+              placeholder="Course name"
               variant="outlined"
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
                   <>
-                    <SearchIcon style={{ marginRight: 6, color: "#6b7280" }} />
+                    <SearchIcon style={{ marginRight: 6, color: "var(--text-secondary)" }} />
                     {params.InputProps.startAdornment}
                   </>
                 ),
@@ -63,11 +63,12 @@ export const AddCourseWidget = ({ courses, onCourseAdd }) => {
 
 const styles = {
   paper: {
-    backgroundColor: "white",
+    backgroundColor: "transparent",
     margin: 15,
-    padding: 9,
+    padding: 0,
+    boxShadow: "none",
   },
-  whiteBackground: {
-    backgroundColor: "white",
+  transparentBackground: {
+    backgroundColor: "transparent",
   },
 };

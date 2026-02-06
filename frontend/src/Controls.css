@@ -2,7 +2,8 @@
 .control-row {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;  /* Changed to flex-start to align from top */
+  align-items: flex-start;
+  /* Changed to flex-start to align from top */
   flex-wrap: nowrap;
   gap: 12px;
   justify-content: center;
@@ -17,12 +18,14 @@
   width: 260px;
   display: flex;
   align-items: center;
-  height: 40px; /* Fixed height to match other inputs */
+  height: 40px;
+  /* Fixed height to match other inputs */
 }
 
 .textfield-wrapper:last-child {
   margin-right: 0;
-  height: auto; /* Allow last wrapper (semester) to be taller for helper text */
+  height: auto;
+  /* Allow last wrapper (semester) to be taller for helper text */
 }
 
 .form-control {
@@ -34,18 +37,18 @@
 .pretty-textfield .MuiOutlinedInput-root,
 .pretty-select .MuiOutlinedInput-root {
   border-radius: 10px !important;
-  background: #ffffff;
+  background: var(--bg-input);
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .pretty-textfield .MuiOutlinedInput-notchedOutline,
 .pretty-select .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0,0,0,0.15);
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 .pretty-textfield:hover .MuiOutlinedInput-notchedOutline,
 .pretty-select:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0,0,0,0.25);
+  border-color: rgba(0, 0, 0, 0.25);
 }
 
 .pretty-textfield.Mui-focused .MuiOutlinedInput-root,
@@ -55,13 +58,14 @@
 
 .pretty-textfield .MuiInputAdornment-positionStart,
 .pretty-select .MuiInputAdornment-positionStart {
-  color: rgba(0,0,0,0.5);
+  color: rgba(0, 0, 0, 0.5);
 }
 
 /* Make the inputs more compact and aligned */
 .MuiOutlinedInput-root {
   margin: 0 !important;
-  height: 40px !important; /* Fixed height for all inputs */
+  height: 40px !important;
+  /* Fixed height for all inputs */
 }
 
 .MuiFormControl-root {
@@ -79,7 +83,7 @@
 
 /* Better label look on white backgrounds */
 .pretty-select .MuiInputLabel-outlined {
-  background: white;
+  background: var(--bg-input);
   padding: 0 4px;
 }
 
@@ -100,12 +104,13 @@
 
 /* Modern utility classes for controls */
 .controls-container {
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 24px;
   margin: 16px;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--glass-border);
 }
 
 .controls-section {
@@ -115,7 +120,7 @@
 .controls-section-header {
   font-weight: 600;
   margin-bottom: 16px;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 
 .controls-button-group {
@@ -152,7 +157,7 @@
   text-align: center;
   margin: 24px 0;
   padding: 16px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--text-secondary);
 }
 
 /* Divider spacing */
@@ -165,7 +170,7 @@
   text-align: center;
   padding: 16px 0;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--text-primary);
 }
 
 .controls-form-grid {
@@ -181,12 +186,12 @@
     margin: 8px;
     padding: 16px;
   }
-  
+
   .controls-button-group {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .controls-form-grid {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -199,7 +204,8 @@
     min-width: 0;
     max-width: 100%;
     width: 100%;
-    height: auto; /* allow taller container if helper text wraps */
+    height: auto;
+    /* allow taller container if helper text wraps */
   }
 
   .control-row {
@@ -224,6 +230,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

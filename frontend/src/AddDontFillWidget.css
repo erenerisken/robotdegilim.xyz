@@ -1,104 +1,107 @@
 .df-widget-wrapper {
-    margin: 6pt;
-    padding: 0;
-    text-align: left;
+  margin: 6pt;
+  padding: 0;
+  text-align: left;
+}
+
+.df-widget-container {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .df-header {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin: 0 0 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 6px 0;
 }
 
 .df-title {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .add-df-row {
-    display: flex;
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 8px;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .add-df-row:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-    transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
 }
 
 .df-widget-select {
-    flex: 0 0 auto;
-    min-width: 80px;
+  flex: 0 0 auto;
+  min-width: 80px;
 }
 
 .df-widget-select .MuiOutlinedInput-root {
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
+  border-radius: 12px;
+  background: var(--bg-input);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
 .df-widget-select .MuiOutlinedInput-root:hover {
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .df-typo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 10px;
-    font-weight: 600;
-    color: #374151;
-    background: rgba(59, 130, 246, 0.1);
-    border-radius: 8px;
-    font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-overlay-1);
+  border-radius: 8px;
+  font-size: 1.1rem;
 }
 
 .df-textfield {
-    flex: 1 1 auto;
-    min-width: 100px;
-    max-width: 140px;
-    background: #ffffff;
+  flex: 1 1 auto;
+  min-width: 100px;
+  max-width: 140px;
 }
 
 .df-textfield .MuiOutlinedInput-root {
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
+  border-radius: 12px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px var(--shadow-color);
+  transition: all 0.2s ease;
 }
 
 .df-textfield .MuiOutlinedInput-root:hover {
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .df-add-button {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-    border-radius: 10px !important;
-    padding: 8px !important;
-    width: 40px !important;
-    height: 40px !important;
-    min-width: 40px !important;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
-    transition: all 0.3s ease !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  border-radius: 10px !important;
+  padding: 8px !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+  transition: all 0.3s ease !important;
 }
 
 .df-add-button:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
 }
 
 .df-add-button .MuiSvgIcon-root {
-    font-size: 1.2rem !important;
+  font-size: 1.2rem !important;
 }
 
 /* Tablet responsive adjustments */
@@ -108,16 +111,16 @@
     gap: 6px;
     padding: 10px;
   }
-  
+
   .df-widget-select {
     min-width: 70px;
   }
-  
+
   .df-textfield {
     min-width: 90px;
     max-width: 120px;
   }
-  
+
   .df-typo {
     padding: 2px 6px;
     font-size: 0.9rem;
@@ -132,19 +135,19 @@
     padding: 14px;
     justify-content: center;
   }
-  
+
   .df-widget-select {
     flex: 0 0 auto;
     min-width: 70px;
     max-width: 85px;
   }
-  
+
   .df-textfield {
     flex: 1 1 auto;
     min-width: 90px;
     max-width: 120px;
   }
-  
+
   .df-typo {
     flex: 0 0 auto;
     padding: 4px 6px;
@@ -152,7 +155,7 @@
     font-weight: 600;
     margin: 0 2px;
   }
-  
+
   .df-add-button {
     margin-left: 8px !important;
     width: 36px !important;
@@ -169,7 +172,7 @@
     gap: 12px;
     padding: 12px;
   }
-  
+
   .df-time-row {
     display: flex;
     flex-wrap: wrap;
@@ -178,7 +181,7 @@
     align-items: center;
     width: 100%;
   }
-  
+
   .df-action-row {
     display: flex;
     gap: 8px;
@@ -186,24 +189,24 @@
     align-items: center;
     width: 100%;
   }
-  
+
   .df-widget-select {
     min-width: 55px;
     max-width: 75px;
   }
-  
+
   .df-textfield {
     flex: 1 1 auto;
     min-width: 80px;
     max-width: none;
   }
-  
+
   .df-typo {
     font-size: 0.8rem;
     padding: 2px 4px;
     margin: 0 1px;
   }
-  
+
   .df-add-button {
     width: 34px !important;
     height: 34px !important;
@@ -218,28 +221,28 @@
     padding: 8px;
     gap: 8px;
   }
-  
+
   .df-row-top,
   .df-row-bottom {
     gap: 4px;
     justify-content: space-around;
   }
-  
+
   .df-widget-select {
     min-width: 45px;
     max-width: 70px;
   }
-  
+
   .df-textfield {
     min-width: 60px;
     flex: 3 1 auto;
   }
-  
+
   .df-typo {
     font-size: 0.75rem;
     padding: 1px 2px;
   }
-  
+
   .df-header .df-title {
     font-size: 0.9rem;
   }
@@ -253,15 +256,15 @@
     max-width: 800px;
     margin: 0 auto;
   }
-  
+
   .df-widget-select {
     min-width: 100px;
   }
-  
+
   .df-textfield {
     max-width: 160px;
   }
-  
+
   .df-typo {
     padding: 6px 12px;
     font-size: 1rem;
