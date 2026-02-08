@@ -11,6 +11,7 @@ import {
   MenuItem,
   IconButton,
 } from "@material-ui/core";
+import { useTheme } from "@material-ui/core/styles";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PaletteIcon from "@material-ui/icons/Palette";
 import TuneIcon from "@material-ui/icons/Tune";
@@ -30,10 +31,13 @@ export const CourseAdvancedSettings = ({
       [field]: !settings[field],
     });
   };
+  const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const colorset = new Colorset();
   const colors = colorset.colors;
   const open = Boolean(anchorEl);
+  const isDark = theme.palette.type === "dark";
+  const accordionBg = isDark ? undefined : color?.secondary;
 
   const handleOpenColorPalette = (event) => {
     setAnchorEl(event.currentTarget);
@@ -46,8 +50,8 @@ export const CourseAdvancedSettings = ({
     setAnchorEl(null);
   };
   return (
-    <div className="course-settings-wrapper">
-      <Accordion style={{ background: color.secondary }}>
+    <div className="course-settings-wrapper course-adv-settings">
+      <Accordion className="course-adv-accordion" style={accordionBg ? { background: accordionBg } : undefined}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1a-content"

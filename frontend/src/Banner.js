@@ -4,6 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 
 import logo from "./img/logo.png";
 import title from "./img/title.gif";
+import { DarkModeToggle } from "./DarkModeToggle";
 import "./Banner.css";
 
 const StyledBanner = withStyles((theme) => ({
@@ -114,6 +115,9 @@ export const Banner = () => {
               }}
             />
           </TitleContainer>
+          <Box className="fade-in" style={{ display: 'flex', alignItems: 'center' }}>
+            <DarkModeToggle />
+          </Box>
         </BannerContent>
       </Container>
     </StyledBanner>

@@ -587,7 +587,7 @@ export const Controls = (props) => {
   };
 
   return (
-    <Paper style={isMobile ? styles.mobile : styles.desktop}>
+    <Paper className="controls-paper" style={isMobile ? styles.mobile : styles.desktop}>
       <Snackbar
         open={alertMsg !== ""}
         autoHideDuration={5000}
@@ -653,7 +653,7 @@ export const Controls = (props) => {
             size="small"
             className="form-control pretty-select"
           >
-            <InputLabel style={{ background: "white" }}>Semester</InputLabel>
+            <InputLabel className="controls-select-label">Semester</InputLabel>
             <Select
               error={errorSemester}
               value={semester}
@@ -847,13 +847,11 @@ export const Controls = (props) => {
 
 const styles = {
   mobile: {
-    background: "white",
     margin: 12,
     width: "100%",
     paddingBottom: 12,
   },
   desktop: {
-    background: "white",
     margin: 12,
     flex: "1 1 0",
     height: "fit-content",

@@ -1,9 +1,17 @@
+/* Course name / Add course panel - dark mode */
+.add-course-paper {
+  background: var(--bg-card) !important;
+  transition: background 0.3s ease;
+}
+
 .add-course-wrapper {
     border-style: groove;
     margin: 6pt;
     padding: 6pt;
     text-align: left;
-    background: aliceblue;
+    background: var(--bg-page);
+    border-color: var(--border);
+    transition: background 0.3s ease;
 }
 .add-course-row {
     display: inline-flex;
@@ -13,25 +21,30 @@
     gap: 8px;
 }
 .add-course-name {
-    background: #FFFFFF;
+    background: var(--input-bg);
     flex: 1 1 auto;
 }
 
 /* Pretty autocomplete refinements */
 .pretty-autocomplete .MuiOutlinedInput-root {
   border-radius: 10px;
+  background: var(--input-bg);
 }
 
 .pretty-autocomplete .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0,0,0,0.15);
+  border-color: var(--border);
 }
 
 .pretty-autocomplete:hover .MuiOutlinedInput-notchedOutline {
   border-color: rgba(0,0,0,0.25);
 }
 
+html[data-theme="dark"] .pretty-autocomplete:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255,255,255,0.35);
+}
+
 .pretty-autocomplete .MuiInputBase-input::placeholder {
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 /* Mobile responsive adjustments */

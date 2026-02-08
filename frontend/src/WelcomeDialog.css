@@ -23,6 +23,11 @@
   align-items: center;
   gap: 12px;
   background: linear-gradient(90deg, #e0f2ff, #f5faff);
+  transition: background 0.3s ease;
+}
+
+html[data-theme="dark"] .welcome-title {
+  background: linear-gradient(90deg, #1e3a5f, #1e293b);
 }
 
 .welcome-hero {
@@ -33,11 +38,12 @@
 .welcome-heading {
   font-weight: 700;
   font-size: 18px;
+  color: var(--text-primary);
 }
 
 .welcome-sub {
   font-size: 13px;
-  color: #556;
+  color: var(--text-secondary);
 }
 
 .welcome-content {
