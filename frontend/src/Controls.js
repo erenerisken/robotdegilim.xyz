@@ -40,6 +40,7 @@ import NTEDialog from "./NTEDialog";
 import SchoolIcon from "@material-ui/icons/School";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import BusinessIcon from "@material-ui/icons/Business";
+import CalendarToday from "@material-ui/icons/CalendarToday";
 
 export const Controls = (props) => {
     const { currentScenario } = props;
@@ -691,36 +692,42 @@ export const Controls = (props) => {
                         }
                     />
                 </Grid>
-                <Grid item xs={12} md={12} lg={4}>
-                    <FormControl
+                <Grid item xs={12} md={4}>
+                    <TextField
                         fullWidth
+                        select
+                        required
+                        error={errorSemester}
+                        label="Semester"
+                        value={semester || ""}
                         variant="outlined"
                         size="small"
-                        className="form-control pretty-select"
-                        required
+                        className="pretty-textfield"
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <CalendarToday fontSize="small" />
+                                </InputAdornment>
+                            ),
+                        }}
+                        onChange={(e) =>
+                            setSemester(parseInt(e.target.value || "0", 10))
+                        }
+                        SelectProps={{
+                            displayEmpty: true,
+                        }}
                     >
-                        <InputLabel className="controls-select-label">
-                            Semester
-                        </InputLabel>
-                        <Select
-                            value={semester || ""}
-                            onChange={(e) =>
-                                setSemester(parseInt(e.target.value || "0", 10))
-                            }
-                            label="Semester"
-                            error={errorSemester}
-                            displayEmpty
-                        >
-                            <MenuItem value="" disabled>
-                                ---
+                        <MenuItem value="" disabled left>
+                            <Typography variant="body2" color="textSecondary">
+                                e.g. 2nd year Spring -&gt; 4th
+                            </Typography>
+                        </MenuItem>
+                        {[...Array(8)].map((_, idx) => (
+                            <MenuItem key={idx + 1} value={idx + 1}>
+                                {idx + 1}
                             </MenuItem>
-                            {[...Array(8)].map((_, idx) => (
-                                <MenuItem key={idx + 1} value={idx + 1}>
-                                    {idx + 1}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                        ))}
+                    </TextField>
                 </Grid>
             </Grid>
             <Grid container spacing={2} className="button-grid">
