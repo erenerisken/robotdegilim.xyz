@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { isMobile } from "react-device-detect";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import { WeeklyProgram } from "./WeeklyProgram";
@@ -7,19 +7,22 @@ import { WelcomeDialog } from "./WelcomeDialog";
 import { Banner } from "./Banner";
 import "./App.css";
 import { useSelector } from "react-redux";
-
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#1976d2",
-    },
-    secondary: {
-      main: "#71F154",
-    },
-  },
-});
+import { useTheme } from "./contexts/ThemeContext";
 
 const App = () => {
+  const { darkMode } = useTheme();
+  const theme = useMemo(
+    () =>
+      createMuiTheme({
+        palette: {
+          type: darkMode ? "dark" : "light",
+          primary: { main: "#1976d2" },
+          secondary: { main: "#71F154" },
+        },
+      }),
+    [darkMode]
+  );
+
   const [loaded, setLoaded] = useState(false);
   const [currentScenario, setCurrentScenario] = useState(0);
   const handleLoadingCompleted = () => {

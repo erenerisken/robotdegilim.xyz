@@ -1,3 +1,15 @@
+/* Don't Fill widget panel - dark mode */
+.df-widget-paper {
+  background: var(--bg-card) !important;
+  transition: background 0.3s ease;
+}
+
+/* Override inline white on Select/TextField inputs */
+.df-widget-paper .MuiOutlinedInput-root,
+.df-widget-select-input {
+  background: var(--input-bg) !important;
+}
+
 .df-widget-wrapper {
     margin: 6pt;
     padding: 0;
@@ -20,14 +32,18 @@
     width: 100%;
     flex-wrap: wrap;
     gap: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 4px 12px var(--shadow);
+    background: var(--bg-card);
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+}
+
+html[data-theme="light"] .add-df-row {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .add-df-row:hover {
@@ -42,8 +58,8 @@
 
 .df-widget-select .MuiOutlinedInput-root {
     border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background: var(--input-bg);
+    box-shadow: 0 2px 4px var(--shadow);
     transition: all 0.2s ease;
 }
 
@@ -57,8 +73,8 @@
     justify-content: center;
     padding: 6px 10px;
     font-weight: 600;
-    color: #374151;
-    background: rgba(59, 130, 246, 0.1);
+    color: var(--text-primary);
+    background: rgba(59, 130, 246, 0.15);
     border-radius: 8px;
     font-size: 1.1rem;
 }
@@ -67,13 +83,13 @@
     flex: 1 1 auto;
     min-width: 100px;
     max-width: 140px;
-    background: #ffffff;
+    background: var(--input-bg);
 }
 
 .df-textfield .MuiOutlinedInput-root {
     border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background: var(--input-bg);
+    box-shadow: 0 2px 4px var(--shadow);
     transition: all 0.2s ease;
 }
 

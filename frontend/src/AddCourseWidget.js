@@ -22,7 +22,7 @@ export const AddCourseWidget = ({ courses, onCourseAdd }) => {
   };
 
   return (
-    <Paper style={styles.paper}>
+    <Paper className="add-course-paper" style={styles.paper}>
       <div className="add-course-row">
         <Autocomplete
           className="add-course-name pretty-autocomplete"
@@ -63,11 +63,7 @@ export const AddCourseWidget = ({ courses, onCourseAdd }) => {
 
 const styles = {
   paper: {
-    backgroundColor: "white",
     margin: 15,
     padding: 9,
-  },
-  whiteBackground: {
-    backgroundColor: "white",
   },
 };

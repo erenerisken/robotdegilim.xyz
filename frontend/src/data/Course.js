@@ -170,11 +170,25 @@ function convertNTETimeToSlot(nteTime) {
         return null;
     }
     
+    const normalizedDay = (nteTime.day || "").trim().toLowerCase();
     const dayMap = {
-        "Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6
-    };
-    
-    const day = dayMap[nteTime.day];
+            mon: 0,
+            monday: 0,
+            tue: 1,
+            tuesday: 1,
+            wed: 2,
+            wednesday: 2,
+            thu: 3,
+            thursday: 3,
+            fri: 4,
+            friday: 4,
+            sat: 5,
+            saturday: 5,
+            sun: 6,
+            sunday: 6,
+        };
+
+    const day = dayMap[normalizedDay];
     if (day === undefined) return null;
     
     const startTime = parseTimeString(nteTime.start);

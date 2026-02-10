@@ -32,7 +32,7 @@ export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
         <Select
           value={val}
           onChange={(e) => onChange(e.target.value)}
-          style={{ background: "#FFFFFF" }}
+          className="df-widget-select-input"
         >
           {[
             "Monday",
@@ -58,7 +58,7 @@ export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
         <Select
           value={val}
           onChange={(e) => onChange(e.target.value)}
-          style={{ background: "#FFFFFF" }}
+          className="df-widget-select-input"
         >
           {Array.from(
             { length: endHour - startHour + 1 },
@@ -79,7 +79,7 @@ export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
         <Select
           value={val}
           onChange={(e) => onChange(e.target.value)}
-          style={{ background: "#FFFFFF" }}
+          className="df-widget-select-input"
         >
           {Array.from({ length: 6 }, (_, i) => i * 10).map((i) => (
             <MenuItem key={i} value={i}>
@@ -116,7 +116,7 @@ export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
     );
 
   return (
-    <Paper style={styles.paper}>
+    <Paper className="df-widget-paper" style={styles.paper}>
       <div className="df-header">
         <Typography variant="subtitle2" className="df-title">Don't Fill Blocks</Typography>
         <Typography variant="caption" color="textSecondary">
@@ -208,7 +208,6 @@ export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
 
 const styles = {
   paper: {
-    backgroundColor: "white",
     margin: 15,
     padding: 9,
   },

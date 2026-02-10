@@ -1,3 +1,14 @@
+/* Controls panel - respects dark mode */
+.controls-paper {
+  background: var(--bg-card) !important;
+  transition: background 0.3s ease;
+}
+
+.controls-select-label {
+  background: var(--input-bg) !important;
+  padding: 0 4px;
+}
+
 /* Modern controls styles */
 .control-row {
   display: flex;
@@ -6,7 +17,7 @@
   flex-wrap: nowrap;
   gap: 12px;
   justify-content: center;
-  padding: 6px 0;
+  padding: 6px;
 }
 
 .textfield-wrapper {
@@ -34,18 +45,18 @@
 .pretty-textfield .MuiOutlinedInput-root,
 .pretty-select .MuiOutlinedInput-root {
   border-radius: 10px !important;
-  background: #ffffff;
+  background: var(--input-bg);
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .pretty-textfield .MuiOutlinedInput-notchedOutline,
 .pretty-select .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0,0,0,0.15);
+  border-color: var(--border);
 }
 
 .pretty-textfield:hover .MuiOutlinedInput-notchedOutline,
 .pretty-select:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0,0,0,0.25);
+  border-color: rgba(255,255,255,0.25);
 }
 
 .pretty-textfield.Mui-focused .MuiOutlinedInput-root,
@@ -55,7 +66,12 @@
 
 .pretty-textfield .MuiInputAdornment-positionStart,
 .pretty-select .MuiInputAdornment-positionStart {
-  color: rgba(0,0,0,0.5);
+  color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .pretty-textfield:hover .MuiOutlinedInput-notchedOutline,
+html[data-theme="dark"] .pretty-select:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255,255,255,0.35);
 }
 
 /* Make the inputs more compact and aligned */
@@ -79,11 +95,16 @@
 
 /* Better label look on white backgrounds */
 .pretty-select .MuiInputLabel-outlined {
-  background: white;
+  background: var(--input-bg);
   padding: 0 4px;
 }
 
 /* Use default Material-UI label transforms to avoid layout jumps on small screens */
+
+.centered-row {
+  color: var(--text-primary);
+  font-weight: 600;
+}
 
 .control-button {
   margin: 8px 4px;
@@ -96,6 +117,7 @@
 
 .control-row .pretty-button {
   height: 44px !important;
+  font-weight: 600 !important;
 }
 
 /* Modern utility classes for controls */
@@ -104,8 +126,10 @@
   border-radius: 16px;
   padding: 24px;
   margin: 16px;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 var(--shadow);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .controls-section {
@@ -115,7 +139,7 @@
 .controls-section-header {
   font-weight: 600;
   margin-bottom: 16px;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 
 .controls-button-group {
@@ -152,7 +176,7 @@
   text-align: center;
   margin: 24px 0;
   padding: 16px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--text-secondary);
 }
 
 /* Divider spacing */
@@ -165,7 +189,7 @@
   text-align: center;
   padding: 16px 0;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--text-primary);
 }
 
 .controls-form-grid {

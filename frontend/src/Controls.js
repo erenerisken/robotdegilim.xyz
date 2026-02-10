@@ -12,6 +12,7 @@ import {
   Snackbar,
   Typography,
   Divider,
+  ButtonGroup,
 } from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import MuiAlert from "@material-ui/lab/Alert";
@@ -587,7 +588,7 @@ export const Controls = (props) => {
   };
 
   return (
-    <Paper style={isMobile ? styles.mobile : styles.desktop}>
+    <Paper className="controls-paper" style={isMobile ? styles.mobile : styles.desktop}>
       <Snackbar
         open={alertMsg !== ""}
         autoHideDuration={5000}
@@ -653,7 +654,7 @@ export const Controls = (props) => {
             size="small"
             className="form-control pretty-select"
           >
-            <InputLabel style={{ background: "white" }}>Semester</InputLabel>
+            <InputLabel className="controls-select-label">Semester</InputLabel>
             <Select
               error={errorSemester}
               value={semester}
@@ -680,8 +681,7 @@ export const Controls = (props) => {
           </FormControl>
         </div>
       </div>
-      <div className="control-row">
-        <div className="control-button">
+      <ButtonGroup className="control-row" variant="contained" color="primary">
           <Button
             variant="contained"
             color="secondary"
@@ -691,8 +691,6 @@ export const Controls = (props) => {
           >
             Add Must Courses
           </Button>
-        </div>
-        <div className="control-button">
           <Button
             variant="contained"
             color="primary"
@@ -702,8 +700,6 @@ export const Controls = (props) => {
           >
             Schedule
           </Button>
-        </div>
-        <div className="control-button">
           <Button
             variant="contained"
             className="pretty-button pretty-warning"
@@ -713,10 +709,6 @@ export const Controls = (props) => {
           >
             Get Available NTE
           </Button>
-        </div>
-      </div>
-      <div className="control-row">
-        <div className="control-button">
           <Button
             variant="contained"
             className="pretty-button pretty-ternary"
@@ -725,8 +717,6 @@ export const Controls = (props) => {
           >
             NTE Catalog
           </Button>
-        </div>
-        <div className="control-button">
           <Button
             variant="contained"
             className="pretty-button pretty-danger"
@@ -736,8 +726,7 @@ export const Controls = (props) => {
           >
             Clear
           </Button>
-        </div>
-      </div>
+      </ButtonGroup>
       <AdvancedSettings
         settings={settings}
         onSettingsChange={handleChangeSettings}
@@ -847,13 +836,11 @@ export const Controls = (props) => {
 
 const styles = {
   mobile: {
-    background: "white",
     margin: 12,
     width: "100%",
     paddingBottom: 12,
   },
   desktop: {
-    background: "white",
     margin: 12,
     flex: "1 1 0",
     height: "fit-content",
