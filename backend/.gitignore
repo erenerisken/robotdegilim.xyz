@@ -13,7 +13,7 @@ __pycache__/
 .venv/
 venv/
 ENV/
-
+free/
 # Env files
 .env
 .admin_lock_token
