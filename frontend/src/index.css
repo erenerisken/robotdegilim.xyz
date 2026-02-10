@@ -1,5 +1,32 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
+/* Light theme (default) */
+:root {
+  --bg-page: #f1f5f9;
+  --bg-card: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: rgba(0, 0, 0, 0.6);
+  --border: rgba(0, 0, 0, 0.1);
+  --shadow: rgba(0, 0, 0, 0.1);
+  --input-bg: #ffffff;
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+}
+
+html[data-theme="dark"] {
+  --bg-page: #0f172a;
+  --text-primary: #f1f5f9;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --border: rgba(255, 255, 255, 0.1);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --bg-card: #1e293b;
+  --input-bg: #334155;
+  --scrollbar-track: #1e293b;
+  --scrollbar-thumb: #475569;
+  --scrollbar-thumb-hover: #64748b;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -12,6 +39,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html {
@@ -29,17 +59,17 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--scrollbar-track);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--scrollbar-thumb);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Animation utilities */
@@ -107,10 +137,10 @@ code {
   font-weight: 500 !important;
   letter-spacing: 0.1px !important;
   padding: 8px 12px !important;
-  background: #ffffff !important;
-  color: #111827 !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 1px 2px var(--shadow) !important;
   transition: background-color 0.15s ease, border-color 0.15s ease !important;
 }
 
@@ -119,8 +149,12 @@ code {
 }
 
 .pretty-button:hover {
-  background: #f9fafb !important;
-  border-color: #d1d5db !important;
+  background: var(--bg-page) !important;
+  border-color: var(--scrollbar-thumb) !important;
+}
+
+html[data-theme="dark"] .pretty-button:hover {
+  background: #334155 !important;
 }
 
 /* Flat, subtle colors */
@@ -196,7 +230,7 @@ select:focus {
 
 /* Loading skeleton */
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--scrollbar-track) 25%, var(--scrollbar-thumb) 50%, var(--scrollbar-track) 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
 }

@@ -6,6 +6,7 @@ import * as serviceWorker from "./serviceWorker";
 import { configureStore } from "@reduxjs/toolkit";
 import { appReducer } from "./slices/reducers/appReducers";
 import { Provider } from "react-redux";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const store = configureStore({
   reducer: appReducer,
@@ -13,9 +14,11 @@ const store = configureStore({
 
 ReactDOM.render(
   <Provider store={store}>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <ThemeProvider>
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    </ThemeProvider>
   </Provider>,
   document.getElementById("root") // Correct rendering for React 16
 );

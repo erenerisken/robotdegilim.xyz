@@ -19,7 +19,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   School as SchoolIcon,
 } from "@material-ui/icons";
-import { withStyles } from "@material-ui/core/styles";
+import { withStyles, useTheme } from "@material-ui/core/styles";
 
 import { SectionInfo } from "./SectionInfo";
 import { CourseAdvancedSettings } from "./CourseAdvancedSettings";
@@ -120,12 +120,12 @@ const ModernAccordionDetails = withStyles((theme) => ({
 
 const SectionSelector = withStyles((theme) => ({
   root: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.palette.background.paper,
     borderRadius: '10px',
     padding: theme.spacing(2),
     marginTop: theme.spacing(2),
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+    border: `1px solid ${theme.palette.divider}`,
+    boxShadow: theme.palette.type === 'dark' ? '0 1px 2px rgba(0,0,0,0.3)' : '0 1px 2px rgba(0,0,0,0.04)',
   },
 }))(Box);
 
@@ -185,6 +185,7 @@ export const CourseCard = ({
   onClassroomUpdate,
   settings,
 }) => {
+  const theme = useTheme();
   const [selectedSections, setSelectedSections] = useState(sections.slice(0));
   const [expanded, setExpanded] = useState(false);
 
@@ -260,7 +261,9 @@ export const CourseCard = ({
 
   const cardStyle = {
     border: `2px solid ${color.main}`,
-    background: `linear-gradient(135deg, ${color.main}10, ${color.main}05)`,
+    background: theme.palette.type === 'dark'
+      ? theme.palette.background.paper
+      : `linear-gradient(135deg, ${color.main}10, ${color.main}05)`,
     cursor: 'pointer',
   };
 

@@ -2,9 +2,10 @@
 .dayscale-row {
   display: flex;
   flex-direction: row;
-  background: #f8fafc;
+  background: var(--bg-page);
   border-radius: 16px 16px 0 0;
   padding: 8px 0;
+  transition: background 0.3s ease;
 }
 
 .dayscale-label {
@@ -383,9 +384,13 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   padding: 8px;
-  background: #1f2937;
+  background: var(--bg-card);
   border-radius: 8px;
   min-width: 120px;
+}
+
+html[data-theme="dark"] .df-color-palette {
+  background: #334155;
 }
 
 .df-color-option {
@@ -442,9 +447,10 @@
   justify-content: center;
   gap: 8px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg-card);
   border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px var(--shadow);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .program-typo-wrapper {

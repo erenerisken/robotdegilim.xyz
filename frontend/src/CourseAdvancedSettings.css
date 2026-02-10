@@ -1,6 +1,19 @@
 .course-settings-wrapper {
     margin: 6pt;
 }
+
+/* Dark mode: course card inner accordion (Advanced Settings + checkboxes + Change Color) */
+html[data-theme="dark"] .course-adv-settings .MuiAccordion-root,
+html[data-theme="dark"] .course-adv-settings .MuiAccordionSummary-root,
+html[data-theme="dark"] .course-adv-settings .MuiAccordionDetails-root {
+  background: var(--bg-card) !important;
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .course-adv-settings .MuiAccordionSummary-expandIcon {
+  color: var(--text-primary);
+}
+
 .course-settings-row {
     display: inline-flex;
     width: 100%;

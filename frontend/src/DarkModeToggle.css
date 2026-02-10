@@ -1,0 +1,108 @@
+/* Dark mode toggle - track + sliding thumb with sun/moon */
+.dark-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.dark-toggle-track {
+  position: relative;
+  width: 56px;
+  height: 28px;
+  border-radius: 14px;
+  background: #e5e7eb;
+  transition: background-color 0.35s ease, box-shadow 0.35s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+
+html[data-theme="dark"] .dark-toggle-track {
+  background: #111827;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.dark-toggle-thumb {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.35s ease, box-shadow 0.35s ease;
+  z-index: 2;
+}
+
+html[data-theme="dark"] .dark-toggle-thumb {
+  transform: translateX(28px);
+  background: #374151;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* Icon slots (visible on the track when thumb is on the other side) */
+.dark-toggle-sun-slot,
+.dark-toggle-moon-slot {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.dark-toggle-sun-slot .dark-toggle-icon {
+  width: 14px;
+  height: 14px;
+  color: #6b7280;
+}
+
+.dark-toggle-moon-slot .dark-toggle-icon {
+  width: 14px;
+  height: 14px;
+  color: #9ca3af;
+}
+
+html[data-theme="dark"] .dark-toggle-sun-slot {
+  opacity: 0.4;
+}
+
+html[data-theme="dark"] .dark-toggle-sun-slot .dark-toggle-icon {
+  color: #6b7280;
+}
+
+html[data-theme="dark"] .dark-toggle-moon-slot {
+  opacity: 0.9;
+}
+
+html[data-theme="dark"] .dark-toggle-moon-slot .dark-toggle-icon {
+  color: #e5e7eb;
+}
+
+.dark-mode-toggle:hover .dark-toggle-track {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.dark-mode-toggle:focus .dark-toggle-track {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.dark-mode-toggle .dark-toggle-thumb {
+  pointer-events: none;
+}
+
+.dark-mode-toggle .dark-toggle-icon {
+  pointer-events: none;
+}
