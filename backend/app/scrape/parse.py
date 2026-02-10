@@ -118,16 +118,16 @@ def extract_sections(cache: Any, soup: BeautifulSoup, sections: dict[str, dict[s
                 if len(time_cells) < 4:
                     continue
                 if (
-                    not time_cells[0].get_text()
-                    or time_cells[0].get_text() not in DAYS_MAP
+                    not time_cells[0].get_text().strip()
+                    or time_cells[0].get_text().strip() not in DAYS_MAP
                 ):
                     continue
                 section_times.append(
                     {
-                        "p": time_cells[3].find("font").get_text(),
-                        "s": time_cells[1].find("font").get_text(),
-                        "e": time_cells[2].find("font").get_text(),
-                        "d": DAYS_MAP[time_cells[0].get_text()],
+                        "p": time_cells[3].find("font").get_text().strip(),
+                        "s": time_cells[1].find("font").get_text().strip(),
+                        "e": time_cells[2].find("font").get_text().strip(),
+                        "d": DAYS_MAP[time_cells[0].get_text().strip()],
                     }
                 )
 
@@ -135,7 +135,7 @@ def extract_sections(cache: Any, soup: BeautifulSoup, sections: dict[str, dict[s
             section_code = section_input.get("value") if section_input else None
             if not section_code:
                 continue
-            section_instructors = [info_cells[1].get_text(), info_cells[2].get_text()]
+            section_instructors = [info_cells[1].get_text().strip(), info_cells[2].get_text().strip()]
             cache_key, html_hash, response = get_section_page(section_code)
             parsed = cache.get(cache_key, html_hash)
 
@@ -173,9 +173,9 @@ def extract_constraints(soup: BeautifulSoup, constraints: list[dict[str, str]]) 
             cons_cells = cons_row.find_all("td")
             constraints.append(
                 {
-                    "d": cons_cells[0].get_text(),
-                    "s": cons_cells[1].get_text(),
-                    "e": cons_cells[2].get_text(),
+                    "d": cons_cells[0].get_text().strip(),
+                    "s": cons_cells[1].get_text().strip(),
+                    "e": cons_cells[2].get_text().strip(),
                 }
             )
     except Exception as e:
