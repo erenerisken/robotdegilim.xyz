@@ -21,24 +21,16 @@
 }
 
 .textfield-wrapper {
-  flex: 0 0 260px;
-  min-width: 220px;
-  max-width: 260px;
-  margin-right: 0;
-  width: 260px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
-  height: 40px; /* Fixed height to match other inputs */
-}
-
-.textfield-wrapper:last-child {
-  margin-right: 0;
-  height: auto; /* Allow last wrapper (semester) to be taller for helper text */
+  height: auto;
 }
 
 .form-control {
   width: 100%;
-  min-width: 220px;
 }
 
 /* Pretty inputs */
@@ -113,11 +105,17 @@ html[data-theme="dark"] .pretty-select:hover .MuiOutlinedInput-notchedOutline {
 /* Standardize pretty button sizes to align evenly */
 .pretty-button {
   min-width: 180px;
+  font-weight: 700 !important; /* Strong label weight for new styling */
 }
 
-.control-row .pretty-button {
+.control-row .pretty-button,
+.button-grid .pretty-button {
   height: 44px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
+}
+
+.button-grid {
+  padding: 6px;
 }
 
 /* Modern utility classes for controls */
