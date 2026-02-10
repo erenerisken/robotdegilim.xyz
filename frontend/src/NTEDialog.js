@@ -22,59 +22,59 @@ import { getNTECourses, filterAvailableNTEs } from './data/Course';
 
 // Styled Components
 const StyledDialog = withStyles((theme) => ({
-  paper: {
-    borderRadius: '16px',
-    maxHeight: '90vh',
-  },
+    paper: {
+        borderRadius: '16px',
+        maxHeight: '90vh',
+    },
 }))(Dialog);
 
 const CourseCard = withStyles((theme) => ({
-  root: {
-    borderRadius: '12px',
-    marginBottom: theme.spacing(2),
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-      transform: 'translateY(-1px)',
+    root: {
+        borderRadius: '12px',
+        marginBottom: theme.spacing(2),
+        border: '1px solid var(--border)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+            boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+            transform: 'translateY(-1px)',
+        },
     },
-  },
 }))(Card);
 
 const SectionChip = withStyles((theme) => ({
-  root: {
-    margin: theme.spacing(0.5, 0.5, 0.5, 0),
-    borderRadius: '6px',
-  },
+    root: {
+        margin: theme.spacing(0.5, 0.5, 0.5, 0),
+        borderRadius: '6px',
+    },
 }))(Chip);
 
 const ModernButton = withStyles((theme) => ({
-  root: {
-    borderRadius: '8px',
-    fontWeight: 600,
-    textTransform: 'none',
-    padding: theme.spacing(1, 2),
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    '&:hover': {
-      transform: 'translateY(-1px)',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+    root: {
+        borderRadius: '8px',
+        fontWeight: 600,
+        textTransform: 'none',
+        padding: theme.spacing(1, 2),
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        '&:hover': {
+            transform: 'translateY(-1px)',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+        },
+        transition: 'all 0.2s ease',
+        margin: theme.spacing(0.5),
     },
-    transition: 'all 0.2s ease',
-    margin: theme.spacing(0.5),
-  },
 }))(Button);
 
 const HeaderBox = withStyles((theme) => ({
-  root: {
-    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-    color: 'white',
-    padding: theme.spacing(2, 3, 3, 3), // top, right, bottom, left
-    borderRadius: '16px 16px 0 0',
-    margin: '-24px 0 24px 0',
-    width: '100%',
-    boxSizing: 'border-box',
-  },
+    root: {
+        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+        color: 'white',
+        padding: theme.spacing(2, 3, 3, 3), // top, right, bottom, left
+        borderRadius: '16px 16px 0 0',
+        margin: '-24px 0 24px 0',
+        width: '100%',
+        boxSizing: 'border-box',
+    },
 }))(Box);
 
 const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
@@ -102,7 +102,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
         try {
             const data = await getNTECourses();
             setNteData(data);
-                                } catch (err) {
+        } catch (err) {
             setError('Error loading NTE courses.');
             console.error('Error loading NTE data:', err);
         } finally {
@@ -173,7 +173,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
     const formatDay = (day) => {
         const dayNames = {
             "Mon": "Monday",
-            "Tue": "Tuesday", 
+            "Tue": "Tuesday",
             "Wed": "Wednesday",
             "Thu": "Thursday",
             "Fri": "Friday",
@@ -214,10 +214,10 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
                             <Typography variant="body1" color="textSecondary" gutterBottom style={{ marginBottom: 24 }}>
                                 Found <strong>{availableNTEs.length}</strong> NTE courses that fit your current schedule.
                             </Typography>
-                            
+
                             {availableNTEs.length === 0 ? (
                                 <Alert severity="info" style={{ borderRadius: '12px' }}>
-                                    No NTE courses available for your current schedule. 
+                                    No NTE courses available for your current schedule.
                                     Create free time slots in your program or modify existing courses.
                                 </Alert>
                             ) : (
@@ -234,9 +234,9 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
                                                             <Typography variant="body1" color="textSecondary" style={{ marginBottom: 8 }}>
                                                                 {course.name.split(' - ')[1] || course.name}
                                                             </Typography>
-                                                            <SectionChip 
-                                                                label={`${course.credits} Credits`} 
-                                                                size="small" 
+                                                            <SectionChip
+                                                                label={`${course.credits} Credits`}
+                                                                size="small"
                                                                 color="primary"
                                                                 variant="outlined"
                                                             />
@@ -252,21 +252,23 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
                                                             </ModernButton>
                                                         </Box>
                                                     </Box>
-                                                    
+
                                                     <Divider style={{ margin: '16px 0' }} />
-                                                    
+
                                                     <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: 12 }}>
                                                         Available Sections:
                                                     </Typography>
-                                                    
+
                                                     <Grid container spacing={2}>
                                                         {course.sections.map((section, sectionIndex) => (
                                                             <Grid item xs={12} sm={6} md={4} key={sectionIndex}>
-                                                                <Box 
-                                                                    p={2} 
-                                                                    border="1px solid #e5e7eb" 
+                                                                <Box
+                                                                    p={2}
                                                                     borderRadius="8px"
-                                                                    bgcolor="#f9fafb"
+                                                                    style={{
+                                                                        backgroundColor: 'var(--bg-page)',
+                                                                        border: '1px solid var(--border)'
+                                                                    }}
                                                                 >
                                                                     <Typography variant="body2" style={{ fontWeight: 600, marginBottom: 4 }}>
                                                                         Section {section.section_id}
@@ -274,7 +276,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
                                                                     <Typography variant="caption" color="textSecondary" display="block" style={{ marginBottom: 8 }}>
                                                                         {section.instructors.join(', ') || 'Instructor TBA'}
                                                                     </Typography>
-                                                                    
+
                                                                     {section.times.map((time, timeIndex) => (
                                                                         time.day !== "No Timestamp Added Yet" && (
                                                                             <Typography key={timeIndex} variant="caption" display="block" style={{ marginBottom: 2 }}>
@@ -284,7 +286,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
                                                                             </Typography>
                                                                         )
                                                                     ))}
-                                                                    
+
                                                                     <ModernButton
                                                                         size="small"
                                                                         variant="outlined"
@@ -309,7 +311,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse }) => {
                     )}
                 </Box>
             </DialogContent>
-            
+
             <DialogActions style={{ padding: '16px 24px' }}>
                 <ModernButton onClick={onClose} variant="outlined" color="primary">
                     Close

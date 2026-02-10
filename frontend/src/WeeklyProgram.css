@@ -7,6 +7,12 @@
   transition: background 0.3s ease;
 }
 
+/* Top-left empty corner cell – match the day header row */
+[class*="DayScaleEmptyCell-emptyCell"] {
+  background: var(--bg-page) !important;
+  transition: background 0.3s ease;
+}
+
 .dayscale-label {
   width: 20%;
   text-align: center;
@@ -504,11 +510,11 @@ html[data-theme="dark"] .df-color-palette {
     flex-wrap: wrap;
     padding: 12px;
   }
-  
+
   .program-textfield-wrapper {
     width: 50px;
   }
-  
+
   .program-vertical {
     padding: 8px;
   }
