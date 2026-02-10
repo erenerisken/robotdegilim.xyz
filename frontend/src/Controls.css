@@ -17,7 +17,7 @@
   flex-wrap: nowrap;
   gap: 12px;
   justify-content: center;
-  padding: 6px 0;
+  padding: 6px;
 }
 
 .textfield-wrapper {
@@ -117,6 +117,7 @@ html[data-theme="dark"] .pretty-select:hover .MuiOutlinedInput-notchedOutline {
 
 .control-row .pretty-button {
   height: 44px !important;
+  font-weight: 600 !important;
 }
 
 /* Modern utility classes for controls */

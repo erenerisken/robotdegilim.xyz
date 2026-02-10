@@ -12,6 +12,7 @@ import {
   Snackbar,
   Typography,
   Divider,
+  ButtonGroup,
 } from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import MuiAlert from "@material-ui/lab/Alert";
@@ -680,8 +681,7 @@ export const Controls = (props) => {
           </FormControl>
         </div>
       </div>
-      <div className="control-row">
-        <div className="control-button">
+      <ButtonGroup className="control-row" variant="contained" color="primary">
           <Button
             variant="contained"
             color="secondary"
@@ -691,8 +691,6 @@ export const Controls = (props) => {
           >
             Add Must Courses
           </Button>
-        </div>
-        <div className="control-button">
           <Button
             variant="contained"
             color="primary"
@@ -702,8 +700,6 @@ export const Controls = (props) => {
           >
             Schedule
           </Button>
-        </div>
-        <div className="control-button">
           <Button
             variant="contained"
             className="pretty-button pretty-warning"
@@ -713,10 +709,6 @@ export const Controls = (props) => {
           >
             Get Available NTE
           </Button>
-        </div>
-      </div>
-      <div className="control-row">
-        <div className="control-button">
           <Button
             variant="contained"
             className="pretty-button pretty-ternary"
@@ -725,8 +717,6 @@ export const Controls = (props) => {
           >
             NTE Catalog
           </Button>
-        </div>
-        <div className="control-button">
           <Button
             variant="contained"
             className="pretty-button pretty-danger"
@@ -736,8 +726,7 @@ export const Controls = (props) => {
           >
             Clear
           </Button>
-        </div>
-      </div>
+      </ButtonGroup>
       <AdvancedSettings
         settings={settings}
         onSettingsChange={handleChangeSettings}
