@@ -88,6 +88,11 @@ def extract_courses(
 def extract_sections(cache: Any, soup: BeautifulSoup, sections: dict[str, dict[str, Any]]) -> None:
     """Extract sections, constraints, and time slots from a course detail page."""
     try:
+        b=soup.find("b", string=lambda text: text and "Course Code:" in text)
+        td = b.find_parent("td") if b else None
+        course_code = td.get_text().split("Course Code:")[-1].strip() if td else None
+        if not course_code:
+            raise AppError("Failed to extract course code for sections", "EXTRACT_SECTIONS_FAILED")
         form = soup.find("form")
         if not form:
             return
@@ -136,7 +141,7 @@ def extract_sections(cache: Any, soup: BeautifulSoup, sections: dict[str, dict[s
             if not section_code:
                 continue
             section_instructors = [info_cells[1].get_text().strip(), info_cells[2].get_text().strip()]
-            cache_key, html_hash, response = get_section_page(section_code)
+            cache_key, html_hash, response = get_section_page(section_code, course_code)
             parsed = cache.get(cache_key, html_hash)
 
             section_constraints = []

@@ -69,20 +69,24 @@ def get_course_page(course_code: str) -> tuple[str, str, Response]:
         raise err
 
 
-def get_section_page(section_code: str) -> tuple[str, str, Response]:
+def get_section_page(section_code: str, course_code: str) -> tuple[str, str, Response]:
     """Fetch detail page for a single section code."""
     data = {"submit_section": section_code, "hidden_redir": "Course_Info"}
     try:
         response = post(OIBS64_URL, data=data, name="get_section_page")
         response.encoding = "utf-8"
-        cache_key = make_key("POST", OIBS64_URL, data=data)
+        key_data = {
+            **data,
+            "_course_code": str(course_code),  # cache-only context
+        }
+        cache_key = make_key("POST", OIBS64_URL, data=key_data)
         html_hash = hash_content(response.text)
         return cache_key, html_hash, response
     except Exception as e:
         err = e if isinstance(e, AppError) else AppError(
             message="Failed to get section page",
             code="GET_SECTION_PAGE_FAILED",
-            context={"section_code": section_code},
+            context={"section_code": section_code, "course_code": course_code},
             cause=e,
         )
         raise err
