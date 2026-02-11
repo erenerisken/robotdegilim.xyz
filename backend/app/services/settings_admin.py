@@ -10,15 +10,23 @@ from app.core.settings import Settings, get_settings
 
 _BLOCKED_SETTING_KEYS: set[str] = {
     "ADMIN_SECRET",
-    "MAIL_PASSWORD",
-    "MAIL_USERNAME",
+    "S3_ACCESS_KEY_ID",
+    "S3_SECRET_ACCESS_KEY",
     "S3_LOCK_OWNER_ID",
+    "MAIL_USERNAME",
+    "MAIL_PASSWORD",
+    "MAIL_SENDER",
+    "MAIL_RECIPIENT",
 }
 _MASKED_SETTING_KEYS: set[str] = {
     "ADMIN_SECRET",
-    "MAIL_PASSWORD",
-    "MAIL_USERNAME",
+    "S3_ACCESS_KEY_ID",
+    "S3_SECRET_ACCESS_KEY",
     "S3_LOCK_OWNER_ID",
+    "MAIL_USERNAME",
+    "MAIL_PASSWORD",
+    "MAIL_SENDER",
+    "MAIL_RECIPIENT",
 }
 _ENV_KEY_PATTERN = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$")
 
