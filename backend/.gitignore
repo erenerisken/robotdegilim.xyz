@@ -60,6 +60,7 @@ data/published/*
 !data/published/.gitkeep
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/departmentsOverrides.json
 data/staged/*
 !data/staged/.gitkeep
 
