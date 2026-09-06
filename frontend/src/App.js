@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { isMobile } from "react-device-detect";
-import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
+import { ThemeProvider as MuiThemeProvider, adaptV4Theme, createTheme } from "@mui/material/styles";
 import { WeeklyProgram } from "./WeeklyProgram";
 import { Controls } from "./Controls";
 import { WelcomeDialog } from "./WelcomeDialog";
@@ -13,13 +13,13 @@ const App = () => {
   const { darkMode } = useTheme();
   const theme = useMemo(
     () =>
-      createMuiTheme({
+      createTheme(adaptV4Theme({
         palette: {
           type: darkMode ? "dark" : "light",
           primary: { main: "#1976d2" },
           secondary: { main: "#71F154" },
         },
-      }),
+      })),
     [darkMode]
   );
 

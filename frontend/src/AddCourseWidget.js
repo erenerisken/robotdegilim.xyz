@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import {
   TextField,
   Paper,
-} from "@material-ui/core";
-import { Autocomplete } from "@material-ui/lab";
-import SearchIcon from "@material-ui/icons/Search";
+} from "@mui/material";
+import { Autocomplete } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import { filterCourses } from "./data/Course";
 import "./AddCourseWidget.css";
 

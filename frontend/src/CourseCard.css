@@ -1,6 +1,6 @@
-/* Modern course card styles are handled by styled components */
+/* Keep all card content comfortably inside the colored border. */
 .course-card {
-  /* Legacy styles removed - now handled by ModernCard component */
+  padding: 8px;
 }
 
 .course-row {
@@ -188,6 +188,10 @@
 }
 
 @media (max-width: 480px) {
+  .course-card {
+    padding: 6px;
+  }
+
   .course-card-header {
     flex-direction: column;
     align-items: flex-start;

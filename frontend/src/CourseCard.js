@@ -13,13 +13,14 @@ import {
   Box,
   Card,
   Chip,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   Delete as DeleteIcon,
   ExpandMore as ExpandMoreIcon,
   School as SchoolIcon,
-} from "@material-ui/icons";
-import { withStyles, useTheme } from "@material-ui/core/styles";
+} from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import { withStyles } from "@mui/styles";
 
 import { SectionInfo } from "./SectionInfo";
 import { CourseAdvancedSettings } from "./CourseAdvancedSettings";
@@ -125,7 +126,7 @@ const SectionSelector = withStyles((theme) => ({
     padding: theme.spacing(2),
     marginTop: theme.spacing(2),
     border: `1px solid ${theme.palette.divider}`,
-    boxShadow: theme.palette.type === 'dark' ? '0 1px 2px rgba(0,0,0,0.3)' : '0 1px 2px rgba(0,0,0,0.04)',
+    boxShadow: theme.palette.mode === 'dark' ? '0 1px 2px rgba(0,0,0,0.3)' : '0 1px 2px rgba(0,0,0,0.04)',
   },
 }))(Box);
 
@@ -147,13 +148,13 @@ const ModernButton = withStyles((theme) => ({
 
 const ModernIconButton = withStyles((theme) => ({
   root: {
-    backgroundColor: theme.palette.type === 'dark'
+    backgroundColor: theme.palette.mode === 'dark'
       ? 'rgba(255, 255, 255, 0.1)'
       : 'rgba(255, 255, 255, 0.8)',
     borderRadius: '8px',
     padding: theme.spacing(0.5),
     '&:hover': {
-      backgroundColor: theme.palette.type === 'dark'
+      backgroundColor: theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.2)'
         : 'rgba(255, 255, 255, 0.95)',
       transform: 'scale(1.05)',
@@ -261,7 +262,7 @@ export const CourseCard = ({
 
   const cardStyle = {
     border: `2px solid ${color.main}`,
-    background: theme.palette.type === 'dark'
+    background: theme.palette.mode === 'dark'
       ? theme.palette.background.paper
       : `linear-gradient(135deg, ${color.main}10, ${color.main}05)`,
     cursor: 'pointer',
@@ -285,7 +286,7 @@ export const CourseCard = ({
   };
 
   return (
-    <ModernCard style={cardStyle} className="fade-in" onClick={handleCardClick}>
+    <ModernCard style={cardStyle} className="course-card fade-in" onClick={handleCardClick}>
       <div style={beforeStyle} className="course-card-top-border" />
       <CardHeader>
         <Box style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { IconButton, TextField, Menu, MenuItem } from "@material-ui/core";
-import CloseIcon from "@material-ui/icons/Close";
-import PaletteIcon from "@material-ui/icons/Palette";
+import { IconButton, TextField, Menu, MenuItem } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import PaletteIcon from "@mui/icons-material/Palette";
 import { Colorset } from "./Colorset";
 import "./WeeklyProgram.css";
 import {

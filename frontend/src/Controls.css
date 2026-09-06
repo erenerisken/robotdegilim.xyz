@@ -2,6 +2,7 @@
 .controls-paper {
   background: var(--bg-card) !important;
   transition: background 0.3s ease;
+  padding: 16px;
 }
 
 .controls-select-label {
@@ -199,6 +200,10 @@ html[data-theme="dark"] .pretty-select:hover .MuiOutlinedInput-notchedOutline {
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
+  .controls-paper {
+    padding: 12px;
+  }
+
   .controls-container {
     margin: 8px;
     padding: 16px;

@@ -1,4 +1,24 @@
 /* Modern scheduler styles */
+.weekly-program {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.scheduler-card {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.responsive-day-cell {
+  height: 44px !important;
+  padding: 8px 4px !important;
+  color: var(--text-primary) !important;
+  background: var(--bg-page) !important;
+  font-weight: 600 !important;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
 .dayscale-row {
   display: flex;
   flex-direction: row;
@@ -506,6 +526,24 @@ html[data-theme="dark"] .df-color-palette {
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
+  .responsive-day-cell {
+    height: 36px !important;
+    padding: 5px 2px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .scheduler-card {
+    border-radius: 8px;
+  }
+
+  .program-title {
+    font-size: 0.68rem;
+  }
+
+  .program-title-bottom {
+    font-size: 0.6rem;
+  }
+
   .program-row {
     flex-wrap: wrap;
     padding: 12px;

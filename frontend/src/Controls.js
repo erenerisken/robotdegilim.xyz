@@ -12,18 +12,18 @@ import {
     FormControl,
     InputLabel,
     MenuItem,
-} from "@material-ui/core";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import MuiAlert from "@material-ui/lab/Alert";
-import AddIcon from "@material-ui/icons/Add";
-import EventAvailableIcon from "@material-ui/icons/EventAvailable";
-import ImportContactsIcon from "@material-ui/icons/ImportContacts";
-import DeleteIcon from "@material-ui/icons/Delete";
-import SaveIcon from "@material-ui/icons/Save";
-import SaveAltIcon from "@material-ui/icons/SaveAlt";
-import AssignmentIcon from "@material-ui/icons/Assignment";
+} from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
+import MuiAlert from "@mui/material/Alert";
+import AddIcon from "@mui/icons-material/Add";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import ImportContactsIcon from "@mui/icons-material/ImportContacts";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
+import SaveAltIcon from "@mui/icons-material/SaveAlt";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 import { isMobile } from "react-device-detect";
-import ls from "local-storage";
+import ls from "./utils/storage";
 import { resetScenarios, setScenarios } from "./slices/scenariosSlice";
 import { getAllCourses, getMusts } from "./data/Course";
 import { compute_schedule } from "./schedule";
@@ -37,10 +37,10 @@ import { LoadingDialog } from "./LoadingDialog/LoadingDialog";
 import "./Controls.css";
 import { resetDontFills } from "./slices/dontFillsSlice";
 import NTEDialog from "./NTEDialog";
-import SchoolIcon from "@material-ui/icons/School";
-import AccountCircle from "@material-ui/icons/AccountCircle";
-import BusinessIcon from "@material-ui/icons/Business";
-import CalendarToday from "@material-ui/icons/CalendarToday";
+import SchoolIcon from "@mui/icons-material/School";
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import BusinessIcon from "@mui/icons-material/Business";
+import CalendarToday from "@mui/icons-material/CalendarToday";
 
 export const Controls = (props) => {
     const { currentScenario } = props;
@@ -919,12 +919,14 @@ export const Controls = (props) => {
 const styles = {
     mobile: {
         margin: 12,
-        width: "100%",
+        width: "calc(100% - 24px)",
+        minWidth: 0,
         paddingBottom: 12,
     },
     desktop: {
         margin: 12,
-        flex: "1 1 0",
+        flex: "1 1 480px",
+        minWidth: 0,
         height: "fit-content",
         paddingBottom: 12,
     },

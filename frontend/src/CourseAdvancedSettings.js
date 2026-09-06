@@ -10,11 +10,11 @@ import {
   Menu,
   MenuItem,
   IconButton,
-} from "@material-ui/core";
-import { useTheme } from "@material-ui/core/styles";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import PaletteIcon from "@material-ui/icons/Palette";
-import TuneIcon from "@material-ui/icons/Tune";
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PaletteIcon from "@mui/icons-material/Palette";
+import TuneIcon from "@mui/icons-material/Tune";
 import { Colorset } from "./Colorset";
 
 import "./CourseAdvancedSettings.css";
@@ -36,7 +36,7 @@ export const CourseAdvancedSettings = ({
   const colorset = new Colorset();
   const colors = colorset.colors;
   const open = Boolean(anchorEl);
-  const isDark = theme.palette.type === "dark";
+  const isDark = theme.palette.mode === "dark";
   const accordionBg = isDark ? undefined : color?.secondary;
 
   const handleOpenColorPalette = (event) => {

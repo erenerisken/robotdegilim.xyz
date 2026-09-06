@@ -9,14 +9,14 @@ import {
   Box,
   Typography,
   IconButton,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   FileCopy as ContentCopyIcon,
   Close as CloseIcon,
   Email as EmailIcon,
   EmojiEvents as CelebrationIcon,
-} from "@material-ui/icons";
-import { withStyles } from "@material-ui/core/styles";
+} from "@mui/icons-material";
+import { withStyles } from "@mui/styles";
 import "./WelcomeDialog.css";
 
 const ModernDialog = withStyles((theme) => ({
@@ -24,10 +24,10 @@ const ModernDialog = withStyles((theme) => ({
     borderRadius: '20px',
     background: theme.palette.background.paper,
     backdropFilter: 'blur(20px)',
-    border: theme.palette.type === 'dark' 
+    border: theme.palette.mode === 'dark'
       ? '1px solid rgba(255, 255, 255, 0.1)'
       : '1px solid rgba(0, 0, 0, 0.1)',
-    boxShadow: theme.palette.type === 'dark'
+    boxShadow: theme.palette.mode === 'dark'
       ? '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
       : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
     padding: theme.spacing(2),
@@ -40,7 +40,7 @@ const ModernDialog = withStyles((theme) => ({
 
 const ModernDialogTitle = withStyles((theme) => ({
   root: {
-    background: theme.palette.type === 'dark'
+    background: theme.palette.mode === 'dark'
       ? 'linear-gradient(135deg, #374151 0%, #1f2937 100%)'
       : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
     color: theme.palette.text.primary,
@@ -60,7 +60,7 @@ const ModernDialogTitle = withStyles((theme) => ({
       left: 0,
       right: 0,
       bottom: 0,
-      background: theme.palette.type === 'dark'
+      background: theme.palette.mode === 'dark'
         ? 'radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 70%)'
         : 'radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 70%)',
       borderRadius: '12px 12px 0 0',
@@ -153,14 +153,14 @@ export const WelcomeDialog = () => {
           <CloseIcon />
         </IconButton>
       </ModernDialogTitle>
-      
+
       <WelcomeContent>
         <Typography variant="h6" style={{ color: '#6b7280', marginBottom: 6, fontSize: 18 }}>
           You can reach us via:
         </Typography>
 
-        <Tooltip 
-          title={copied ? "Email copied!" : "Click to copy email"} 
+        <Tooltip
+          title={copied ? "Email copied!" : "Click to copy email"}
           arrow
           placement="top"
         >

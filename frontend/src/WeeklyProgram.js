@@ -6,12 +6,12 @@ import {
   Typography,
   TextField,
   Button,
-} from "@material-ui/core";
-import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
-import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
-import FastRewindIcon from "@material-ui/icons/FastRewind";
-import PhotoCameraIcon from "@material-ui/icons/PhotoCamera";
-import FastForwardIcon from "@material-ui/icons/FastForward";
+} from "@mui/material";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import FastRewindIcon from "@mui/icons-material/FastRewind";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import FastForwardIcon from "@mui/icons-material/FastForward";
 import { ViewState } from "@devexpress/dx-react-scheduler";
 import { convertTime } from "./helpers/convertTime";
 import {
@@ -135,15 +135,16 @@ export const WeeklyProgram = ({ currentScenario, setCurrentScenario }) => {
   );
 
   return (
-    <div style={isMobile ? styles.mobile : styles.desktop}>
-      <Paper id="screenshot">
-        <Scheduler id="scheduler" data={data}>
+    <div className="weekly-program" style={isMobile ? styles.mobile : styles.desktop}>
+      <Paper id="screenshot" className="scheduler-card">
+        <Scheduler id="scheduler" data={data} height="auto">
           <ViewState currentDate={currentDate} />
           <WeekView
             startDayHour={7.667}
             endDayHour={17.5}
             cellDuration={60}
-            dayScaleRowComponent={DayScaleRow}
+            excludedDays={[0, 6]}
+            dayScaleCellComponent={DayScaleCell}
             appointmentLayerComponent={CustomAppointment}
             timeTableCellComponent={timeTableCellComponent}
           />
@@ -205,14 +206,12 @@ export const WeeklyProgram = ({ currentScenario, setCurrentScenario }) => {
   );
 };
 
-const DayScaleRow = memo(() => (
-  <div className="dayscale-row">
-    {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day) => (
-      <div key={day} className="dayscale-label">
-        {day}
-      </div>
-    ))}
-  </div>
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const DayScaleCell = memo(({ startDate, colSpan }) => (
+  <th colSpan={colSpan} className="responsive-day-cell" scope="col">
+    {DAY_LABELS[startDate.getDay()]}
+  </th>
 ));
 
 const CustomAppointment = memo((props) => (
@@ -249,10 +248,6 @@ const AppointmentContent = memo(({ data, ...restProps }) => {
 const TimeTableCell = memo(({ startDate, endDate, ...restProps }) => {
   const dispatch = useDispatch();
 
-  if (startDate.getDay() > 4) {
-    return <WeekView.TimeTableCell {...restProps} style={{ width: "0" }} />;
-  }
-
   return (
     <WeekView.TimeTableCell
       {...restProps}
@@ -273,10 +268,12 @@ const TimeTableCell = memo(({ startDate, endDate, ...restProps }) => {
 const styles = {
   mobile: {
     margin: 12,
-    width: "100%",
+    width: "calc(100% - 24px)",
+    minWidth: 0,
   },
   desktop: {
     margin: 12,
-    flex: "1 1 0",
+    flex: "1 1 480px",
+    minWidth: 0,
   },
 };

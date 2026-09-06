@@ -4,7 +4,7 @@ import {
     CircularProgress,
     Dialog,
     DialogContent,
-} from "@material-ui/core";
+} from "@mui/material";
 
 import "./LoadingDialog.css"
 

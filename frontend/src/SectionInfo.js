@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Divider, TextField, IconButton, Tooltip } from "@material-ui/core";
-import { Edit as EditIcon, Save as SaveIcon, Cancel as CancelIcon } from "@material-ui/icons";
+import { Divider, TextField, IconButton, Tooltip } from "@mui/material";
+import { Edit as EditIcon, Save as SaveIcon, Cancel as CancelIcon } from "@mui/icons-material";
 import "./SectionInfo.css";
 
 export const SectionInfo = ({ sectionDetails, color, onClassroomUpdate }) => {

@@ -7,9 +7,9 @@ import {
   FormControlLabel,
   Checkbox,
   Divider,
-} from "@material-ui/core";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import TuneIcon from "@material-ui/icons/Tune";
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import TuneIcon from "@mui/icons-material/Tune";
 import "./AdvancedSettings.css";
 
 export const AdvancedSettings = ({ settings, onSettingsChange }) => {

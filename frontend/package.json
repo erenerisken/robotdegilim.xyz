@@ -1,60 +1,38 @@
 {
-  "name": "doldur-frontend",
-  "version": "0.1.0",
+  "name": "robotdegilim-frontend",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "engines": { "node": ">=20.19.0" },
+  "scripts": { "dev": "vite", "start": "vite", "build": "vite build", "preview": "vite preview", "test": "vitest run" },
   "dependencies": {
-    "@devexpress/dx-react-core": "^2.7.1",
-    "@devexpress/dx-react-scheduler": "^2.7.1",
-    "@devexpress/dx-react-scheduler-material-ui": "^2.7.1",
-    "@material-ui/core": "^4.11.0",
-    "@material-ui/data-grid": "^4.0.0-alpha.6",
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.56",
-    "@reduxjs/toolkit": "^1.9.7",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "axios": "^0.20.0",
-    "gapi-script": "^1.0.2",
-    "googleapis": "^60.0.1",
-    "html-to-image": "^1.11.11",
-    "local-storage": "^2.0.0",
-    "react": "^16.13.1",
-    "react-device-detect": "^1.13.1",
-    "react-dom": "^16.13.1",
-    "react-redux": "^7.2.9",
-    "react-scripts": "3.4.3"
-  },
-  "scripts": {
-    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
-    "start-legacy": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
-    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
-    "build-legacy": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "@devexpress/dx-react-core": "^4.0.11",
+    "@devexpress/dx-react-scheduler": "^4.0.11",
+    "@devexpress/dx-react-scheduler-material-ui": "^4.0.11",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^5.18.0",
+    "@mui/lab": "5.0.0-alpha.177",
+    "@mui/material": "^5.18.0",
+    "@mui/styles": "^5.18.0",
+    "@mui/x-date-pickers": "5.0.20",
+    "@reduxjs/toolkit": "^2.12.0",
+    "axios": "^1.20.0",
+    "html-to-image": "^1.11.13",
+    "moment": "^2.30.1",
+    "react": "^18.3.1",
+    "react-device-detect": "^2.2.3",
+    "react-dom": "^18.3.1",
+    "react-redux": "^9.3.0",
+    "redux": "^5.0.1"
   },
   "devDependencies": {
-    "cross-env": "^10.0.0"
-  },
-  "overrides": {
-    "@material-ui/data-grid": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    }
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@vitejs/plugin-react": "^5.1.4",
+    "jsdom": "^30.0.1",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.11"
   }
 }

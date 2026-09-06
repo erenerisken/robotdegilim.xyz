@@ -9,8 +9,8 @@ import {
   TextField,
   useMediaQuery,
   useTheme,
-} from "@material-ui/core";
-import AddBoxIcon from "@material-ui/icons/AddBox";
+} from "@mui/material";
+import AddBoxIcon from "@mui/icons-material/AddBox";
 import "./AddDontFillWidget.css";
 import { handleDontFillAdd } from "./slices/dontFillsSlice";
 import { useDispatch } from "react-redux";
