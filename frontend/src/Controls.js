@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
     TextField,
@@ -27,7 +27,7 @@ import ls from "./utils/storage";
 import { resetScenarios, setScenarios } from "./slices/scenariosSlice";
 import { getAllCourses, getMusts } from "./data/Course";
 import { compute_schedule } from "./schedule";
-import { Client } from "./Client";
+import { client } from "./Client";
 import { CourseCard } from "./CourseCard";
 import { AddCourseWidget } from "./AddCourseWidget";
 import { AddDontFillWidget } from "./AddDontFillWidget";
@@ -87,8 +87,6 @@ export const Controls = (props) => {
     const dispatch = useDispatch();
     const scenariosState = useSelector((state) => state.scenariosState);
 
-    const clientRef = useRef(new Client());
-
     const loadCourses = () => {
         setLoadFailed(false);
         setLoading(true);
@@ -108,10 +106,10 @@ export const Controls = (props) => {
     };
 
     useEffect(() => {
-        clientRef.current.sendUpdateRequest();
+        client.sendUpdateRequest();
         document.title = "Robot Değilim *-*";
         loadCourses();
-        clientRef.current
+        client
             .getLastUpdated()
             .then((lu) => setLastUpdated(lu))
             .catch((error) =>

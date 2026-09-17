@@ -119,7 +119,70 @@ function clientWithCurriculum(courses) {
 
 const must = (code) => ({ code, is_elective: false });
 
+function countingClient(onGet) {
+  const client = new Client();
+  const calls = [];
+  vi.spyOn(client.http, "get").mockImplementation(async (url) => {
+    const key = url.slice(client.s3BaseUrl.length + 1);
+    calls.push(key);
+    return onGet(key);
+  });
+  return { client, calls };
+}
+
+const CATALOGUE = {
+  "data/scrape_courses/latest.json": { latest: "20261.json" },
+  "data/scrape_courses/20261.json": {
+    metadata: { semester_name: "2026-2027 Fall", updated_at: "2026-09-06T16:45:12+03:00" },
+    programs: { "571": { short_name: "CENG", courses: {} } },
+  },
+  "data/scrape_programs/programs.json": { programs: {} },
+};
+
 afterEach(() => vi.restoreAllMocks());
+
+describe("Client request sharing", () => {
+  it("downloads the catalogue once however many callers ask", async () => {
+    const { client, calls } = countingClient(async (key) => ({ data: CATALOGUE[key] }));
+
+    await Promise.all([client.getCourses(), client.getLastUpdated()]);
+    await client.getCourses();
+
+    expect(calls.filter((k) => k.endsWith("20261.json"))).toHaveLength(1);
+    expect(calls.filter((k) => k.endsWith("latest.json"))).toHaveLength(1);
+  });
+
+  it("shares one request between callers that ask while it is in flight", async () => {
+    let release;
+    const gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    const { client, calls } = countingClient(async (key) => {
+      await gate;
+      return { data: CATALOGUE[key] };
+    });
+
+    const both = Promise.all([client.getCourses(), client.getCourses()]);
+    release();
+    await both;
+
+    expect(calls.filter((k) => k.endsWith("20261.json"))).toHaveLength(1);
+  });
+
+  it("lets a retry start over after a failure", async () => {
+    let failing = true;
+    const { client, calls } = countingClient(async (key) => {
+      if (failing) throw new Error("offline");
+      return { data: CATALOGUE[key] };
+    });
+
+    await expect(client.getCourses()).rejects.toThrow("offline");
+    failing = false;
+    await expect(client.getCourses()).resolves.toEqual([]);
+
+    expect(calls.filter((k) => k.endsWith("latest.json"))).toHaveLength(2);
+  });
+});
 
 describe("Client.getMusts", () => {
   it("keeps courses taught by departments that award no degree", async () => {
