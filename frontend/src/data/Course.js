@@ -126,6 +126,12 @@ export async function getMusts(dept, semester){
     return client.getMusts(dept, semester);
 }
 
+// Returns the METU catalogue page for a department's undergraduate curriculum,
+// or null when the catalogue has no such page for it.
+export async function getCurriculumUrl(dept){
+    return client.getCurriculumUrl(dept);
+}
+
 // Elective fonksiyonları
 export async function getElectives(dept){
     return await client.getElectives(dept);

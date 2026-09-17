@@ -89,10 +89,25 @@ function clientWithCurriculum(courses) {
       programs: {
         "571|1|1|1": {
           short_name: "CENG",
+          program_code: "571",
           department_code: "571",
           program_type: "MAJOR",
           education_level: "Bachelor`s",
           curriculum: { 3: { semester_number: 3, courses } },
+        },
+        "57120|2|1|1": {
+          short_name: "CENG",
+          program_code: "57120",
+          department_code: "571",
+          program_type: "DOUBLE MAJOR",
+          education_level: "Bachelor`s",
+        },
+        "555|1|62|2": {
+          short_name: "MI",
+          program_code: "555",
+          department_code: "555",
+          program_type: "MAJOR",
+          education_level: "Master's (with thesis)",
         },
         "236|1|1|1": { short_name: "MATH", department_code: "236" },
       },
@@ -181,6 +196,26 @@ describe("Client request sharing", () => {
     await expect(client.getCourses()).resolves.toEqual([]);
 
     expect(calls.filter((k) => k.endsWith("latest.json"))).toHaveLength(2);
+  });
+});
+
+describe("Client.getCurriculumUrl", () => {
+  it("points at the catalog page for the department's undergraduate major", async () => {
+    const client = clientWithCurriculum([must("CENG 223")]);
+
+    expect(await client.getCurriculumUrl("CENG")).toBe(
+      "https://catalog.metu.edu.tr/program.php?fac_prog=571&submenuheader=2"
+    );
+  });
+
+  it("has no page for a department that awards no bachelor's degree", async () => {
+    const client = clientWithCurriculum([must("CENG 223")]);
+
+    // MI is a graduate-only programme, TURK teaches without awarding a degree
+    // and ZZZ is a typo.
+    expect(await client.getCurriculumUrl("MI")).toBeNull();
+    expect(await client.getCurriculumUrl("TURK")).toBeNull();
+    expect(await client.getCurriculumUrl("ZZZ")).toBeNull();
   });
 });
 
