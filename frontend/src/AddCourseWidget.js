@@ -2,16 +2,28 @@ import React, { useState } from "react";
 import {
   TextField,
   Paper,
+  createFilterOptions,
 } from "@mui/material";
 import { Autocomplete } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { filterCourses } from "./data/Course";
+import { courseNumber } from "./helpers/courseCode";
 import "./AddCourseWidget.css";
+
+const courseLabel = (course) =>
+  `${course.abbreviation} ${courseNumber(course.code)}: ${course.name}`;
+
+// Match however the course is typed: "CENG 213", "CENG213", "5710213" or a
+// piece of the name. Only a handful of the ~5000 courses can be read at once,
+// so cap what the popup renders.
+const filterCourses = createFilterOptions({
+  limit: 50,
+  stringify: (course) =>
+    `${courseLabel(course)} ${course.abbreviation}${courseNumber(course.code)} ${course.code}`,
+});
 
 export const AddCourseWidget = ({ courses, onCourseAdd }) => {
   const [course, setCourse] = useState(null);
   const [inputValue, setInputValue] = useState("");
-  const [category] = useState(-1);
 
   const handleCourseAdd = (selectedCourse) => {
     if (selectedCourse) {
@@ -26,8 +38,17 @@ export const AddCourseWidget = ({ courses, onCourseAdd }) => {
       <div className="add-course-row">
         <Autocomplete
           className="add-course-name pretty-autocomplete"
-          options={filterCourses(courses, category)}
-          getOptionLabel={(option) => `${option.abbreviation}: ${option.name}`}
+          options={courses}
+          filterOptions={filterCourses}
+          getOptionLabel={courseLabel}
+          // Courses share names freely ("EE: ADVANCED STUDIES" covers 59 of
+          // them), so the label cannot stand in as the list key.
+          renderOption={(props, option) => (
+            <li {...props} key={option.code}>
+              {courseLabel(option)}
+            </li>
+          )}
+          isOptionEqualToValue={(option, selected) => option.code === selected.code}
           value={course}
           inputValue={inputValue}
           onInputChange={(e, newInputValue) => setInputValue(newInputValue)}
