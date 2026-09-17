@@ -128,28 +128,31 @@ export async function getMusts(dept, semester){
     return client.getMusts(dept, semester);
 }
 
-// NTE fonksiyonları
-export async function getNTECourses(){
+// Elective fonksiyonları
+export async function getElectives(dept){
     const client = new Client();
-    return await client.getNTEs();
+    return await client.getElectives(dept);
 }
 
-export function filterAvailableNTEs(nteData, occupiedSlots) {
-    return nteData.map(course => {
+export function filterAvailableElectives(electivesData, occupiedSlots) {
+    return electivesData.map(course => {
+        // Find full course data from allCourses if it exists
+        // Wait, electivesData just has {code, name, category, isOpen}. 
+        // We need the full course object with sections to check times.
+        // This will be handled in the Dialog or we just pass the full course here.
+        if (!course.sections) return course; // If we don't have sections, we can't filter by time
+        
         // Her ders için sadece uygun şubeleri filtrele
         const availableSections = course.sections.filter(section => {
             // "No Timestamp Added Yet" olan bölümleri atla
-            if (section.times.some(time => time.day === "No Timestamp Added Yet")) {
+            if (section.lectureTimes.length === 0) {
                 return false;
             }
             
             // Bu bölümün hiçbir zamanı mevcut derslerle çakışmıyor mu kontrol et
-            return section.times.every(time => {
-                const nteSlot = convertNTETimeToSlot(time);
-                if (!nteSlot) return false;
-                
+            return section.lectureTimes.every(time => {
                 return !occupiedSlots.some(occupied => 
-                    isTimeSlotConflict(nteSlot, occupied)
+                    isTimeSlotConflict(time, occupied)
                 );
             });
         });
@@ -163,60 +166,6 @@ export function filterAvailableNTEs(nteData, occupiedSlots) {
         }
         return null;
     }).filter(course => course !== null); // null olanları filtrele
-}
-
-function convertNTETimeToSlot(nteTime) {
-    if (nteTime.day === "No Timestamp Added Yet" || !nteTime.start || !nteTime.end) {
-        return null;
-    }
-    
-    const normalizedDay = (nteTime.day || "").trim().toLowerCase();
-    const dayMap = {
-            mon: 0,
-            monday: 0,
-            tue: 1,
-            tuesday: 1,
-            wed: 2,
-            wednesday: 2,
-            thu: 3,
-            thursday: 3,
-            fri: 4,
-            friday: 4,
-            sat: 5,
-            saturday: 5,
-            sun: 6,
-            sunday: 6,
-        };
-
-    const day = dayMap[normalizedDay];
-    if (day === undefined) return null;
-    
-    const startTime = parseTimeString(nteTime.start);
-    const endTime = parseTimeString(nteTime.end);
-    
-    if (!startTime || !endTime) return null;
-    
-    return {
-        day: day,
-        startHour: startTime.hour,
-        startMin: startTime.min,
-        endHour: endTime.hour,
-        endMin: endTime.min,
-        room: nteTime.room || "TBA"
-    };
-}
-
-function parseTimeString(timeStr) {
-    if (!timeStr) return null;
-    const parts = timeStr.split(':');
-    if (parts.length !== 2) return null;
-    
-    const hour = parseInt(parts[0]);
-    const min = parseInt(parts[1]);
-    
-    if (isNaN(hour) || isNaN(min)) return null;
-    
-    return { hour, min };
 }
 
 function isTimeSlotConflict(slot1, slot2) {

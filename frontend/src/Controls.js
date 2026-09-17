@@ -589,6 +589,11 @@ export const Controls = (props) => {
     };
 
     const handleGetAvailableNTE = () => {
+        if (!department || department.length < 2) {
+            setAlertMsg("Please enter your department first to see electives.");
+            setErrorDept(true);
+            return;
+        }
         setNteDialogOpen(true);
     };
 
@@ -776,7 +781,7 @@ export const Controls = (props) => {
                         startIcon={<SchoolIcon style={{ color: "white" }} />}
                         onClick={handleGetAvailableNTE}
                     >
-                        Get Available NTE
+                        Get Available Electives
                     </Button>
                 </Grid>
                 <Grid item xs={12} sm={12} md={12} lg={6}>
@@ -911,6 +916,8 @@ export const Controls = (props) => {
                 onClose={handleNTEDialogClose}
                 occupiedSlots={calculateOccupiedSlots()}
                 onAddCourse={handleAddNTECourse}
+                department={department}
+                allCourses={allCourses}
             />
         </Paper>
     );
