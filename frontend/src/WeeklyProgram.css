@@ -448,6 +448,12 @@ html[data-theme="dark"] .df-color-palette {
   font-size: 0.8rem;
   line-height: 1.2;
   text-align: center;
+  /* The scheduler sets nowrap, and a centred flex item sizes to its content,
+     so a course code spills out of the narrow day column. Bound it and let it
+     wrap instead. */
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .program-title-bottom {
@@ -455,6 +461,9 @@ html[data-theme="dark"] .df-color-palette {
   opacity: 0.9;
   line-height: 1.1;
   text-align: center;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* Scenario Navigation Styles */
@@ -536,12 +545,26 @@ html[data-theme="dark"] .df-color-palette {
     border-radius: 8px;
   }
 
+  /* The hour gutter takes 80px of a 390px phone and leaves each day 57px, which
+     is not enough for a course code. Hand most of that width to the days. */
+  [class*="MainLayout-leftPanel"],
+  [class*="Layout-timeScaleContainer"] {
+    width: 44px !important;
+    min-width: 44px !important;
+  }
+
+  [class*="Layout-timeScaleContainer"] [class*="Label-label"] {
+    width: auto !important;
+    font-size: 0.6rem !important;
+    padding-right: 2px !important;
+  }
+
   .program-title {
-    font-size: 0.68rem;
+    font-size: 0.6rem;
   }
 
   .program-title-bottom {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
   }
 
   .program-row {

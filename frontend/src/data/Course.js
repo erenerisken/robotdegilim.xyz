@@ -186,9 +186,3 @@ export function getCourseByCategory(category){
     }
     return getAllCourses().filter(c => c.category === category);
 }
-export function filterCourses(courses, category){
-    if (category < 0){
-        return courses;
-    }
-    return courses.filter(c => c.category === category);
-}

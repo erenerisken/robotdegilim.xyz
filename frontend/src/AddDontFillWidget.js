@@ -14,12 +14,24 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import "./AddDontFillWidget.css";
 import { handleDontFillAdd } from "./slices/dontFillsSlice";
 import { useDispatch } from "react-redux";
+import { convertTime } from "./helpers/convertTime";
+
+// Values follow Date.getDay(), the numbering lecture times use.
+const DAY_OPTIONS = [
+  { label: "Monday", value: 1 },
+  { label: "Tuesday", value: 2 },
+  { label: "Wednesday", value: 3 },
+  { label: "Thursday", value: 4 },
+  { label: "Friday", value: 5 },
+  { label: "Saturday", value: 6 },
+  { label: "Sunday", value: 0 },
+];
 
 export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [day, setDay] = useState(0);
+  const [day, setDay] = useState(DAY_OPTIONS[0].value);
   const [startH, setStartH] = useState(startHour);
   const [startM, setStartM] = useState(startMin);
   const [endH, setEndH] = useState(endHour);
@@ -34,17 +46,9 @@ export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
           onChange={(e) => onChange(e.target.value)}
           className="df-widget-select-input"
         >
-          {[
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday",
-          ].map((day, index) => (
-            <MenuItem key={index} value={index}>
-              {day}
+          {DAY_OPTIONS.map(({ label, value }) => (
+            <MenuItem key={value} value={value}>
+              {label}
             </MenuItem>
           ))}
         </Select>
@@ -100,20 +104,13 @@ export const AddDontFillWidget = ({ startHour, startMin, endHour, endMin }) => {
         color: "#FFFFFF",
       })
     );
-    setDay(0);
+    setDay(DAY_OPTIONS[0].value);
     setStartH(startHour);
     setStartM(startMin);
     setEndH(endHour);
     setEndM(endMin);
     setDescription("FULL");
   };
-
-  const convertTime = (day, hour, min) =>
-    new Date(
-      `2021-02-${14 + day}T${hour.toString().padStart(2, "0")}:${min
-        .toString()
-        .padStart(2, "0")}`
-    );
 
   return (
     <Paper className="df-widget-paper" style={styles.paper}>

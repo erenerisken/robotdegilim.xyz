@@ -7,14 +7,15 @@ export const SectionInfo = ({ sectionDetails, color, onClassroomUpdate }) => {
   const [editingIndex, setEditingIndex] = useState(-1);
   const [tempClassroom, setTempClassroom] = useState("");
   
+  // Indexed by Date.getDay(), the numbering lecture times use.
   const days = [
+    "Sunday",
     "Monday",
     "Tuesday",
     "Wednesday",
     "Thursday",
     "Friday",
     "Saturday",
-    "Sunday",
   ];
 
   const formatTime = (t) => {

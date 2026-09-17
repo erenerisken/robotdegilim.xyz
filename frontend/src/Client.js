@@ -1,4 +1,5 @@
 import axios from "axios";
+import { courseNumber } from "./helpers/courseCode";
 
 const DEFAULT_S3_BASE_URL = "https://s3.amazonaws.com/cdn.robotdegilim.xyz";
 const DEFAULT_BACKEND_BASE_URL = "https://robotdegilim-xyz-backend.fly.dev";
@@ -65,14 +66,16 @@ export class Client {
     const data = await this._getLatestCourseData();
     const courses = [];
     
+    // Date.getDay() numbering: the weekly program renders a lecture on
+    // 2021-02-14 + day, and 2021-02-14 is a Sunday.
     const dayMap = {
-      Monday: 0,
-      Tuesday: 1,
-      Wednesday: 2,
-      Thursday: 3,
-      Friday: 4,
-      Saturday: 5,
-      Sunday: 6
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6
     };
 
     // programs dict is { "642": { "short_name": "TURK", "name": "Turkish Language", "courses": { "6420101": { ... } } } }
@@ -82,7 +85,7 @@ export class Client {
       for (const [courseCode, courseData] of Object.entries(deptData.courses)) {
         const courseToPush = {
           code: parseInt(courseCode, 10), // e.g. 6420101
-          abbreviation: deptShortName,
+          abbreviation: `${deptShortName} ${courseNumber(courseCode)}`, // e.g. TURK 101
           name: courseData.name,
           category: 0, // Fallback, could map from courseData.type
           sections: [],
@@ -100,10 +103,11 @@ export class Client {
           
           if (sectionData.schedule) {
             sectionData.schedule.forEach((t) => {
-              if (t.day && t.start_hour && t.end_hour) {
+              const day = dayMap[t.day];
+              if (day !== undefined && t.start_hour && t.end_hour) {
                  sectionToPush.lectureTimes.push({
                    classroom: t.classroom || t.building || "TBA",
-                   day: dayMap[t.day] !== undefined ? dayMap[t.day] : 0,
+                   day,
                    startHour: parseInt(t.start_hour.split(":")[0], 10),
                    startMin: parseInt(t.start_hour.split(":")[1], 10),
                    endHour: parseInt(t.end_hour.split(":")[0], 10),
@@ -232,7 +236,7 @@ export class Client {
         const numericCode = String(sevenDigitCode ?? "");
         const abbreviation = departmentAbbreviations.get(numericCode.slice(0, 3));
         const stringCode = abbreviation
-          ? `${abbreviation}${numericCode.slice(3).replace(/^0/, "")}`
+          ? `${abbreviation} ${courseNumber(numericCode)}`
           : rawCode;
         
         return {
