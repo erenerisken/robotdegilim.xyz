@@ -55,7 +55,10 @@ export class Client {
 
   async getLastUpdated() {
     const data = await this._getLatestCourseData();
-    return data.metadata.updated_at;
+    return {
+      u: new Date(data.metadata.updated_at).toLocaleString(),
+      t: "Semester:" + data.metadata.semester_name
+    };
   }
 
   async getCourses() {
