@@ -213,10 +213,29 @@ export class Client {
 
   async sendUpdateRequest() {
     try {
-      // With the new queue worker, we just fire off the scrape courses endpoint
-      // We no longer strictly need to check 'status.json' for 'idle' as the worker deduplicates
-      const updateResponse = await this.http.post(this.scrapeUrl, {});
-      console.log("Response of Update request:", updateResponse.data);
+      const lockUrl = _joinUrl(this.s3BaseUrl, "locks/worker.lock");
+      let isLocked = false;
+
+      try {
+        await this.http.get(`${lockUrl}?t=${new Date().getTime()}`);
+        isLocked = true;
+      } catch (e) {
+        // S3 returns 404 (or 403 if listing is denied) when a file doesn't exist
+        if (e.response && (e.response.status === 404 || e.response.status === 403)) {
+          isLocked = false;
+        } else {
+          console.warn("Could not check worker lock status:", e.message);
+          isLocked = true; // Assume locked to be safe and save Fly.io traffic
+        }
+      }
+
+      if (!isLocked) {
+        console.log("Worker is idle. Pinging backend to check for stale data...");
+        const updateResponse = await this.http.post(this.scrapeUrl);
+        console.log("Response of update request:", updateResponse.data);
+      } else {
+        console.log("Worker is currently busy (lock file exists). Skipping ping to Fly.io to save traffic.");
+      }
     } catch (error) {
       console.error("Failed to send update request:", error);
     }
