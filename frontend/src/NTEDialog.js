@@ -15,6 +15,7 @@ import {
     FormControlLabel,
     FormGroup,
     Grid,
+    Switch,
     Alert
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -85,6 +86,18 @@ const filterBarSx = {
 // single one, others seven. Read them off the data rather than naming them.
 const categoryOf = (course) => course.category || 'General Electives';
 
+const conflictsWithSchedule = (section, occupiedSlots) =>
+    (section.lectureTimes || []).some((time) =>
+        occupiedSlots.some((occupied) => {
+            if (time.day !== occupied.day) return false;
+            const tStart = time.startHour * 60 + time.startMin;
+            const tEnd = time.endHour * 60 + time.endMin;
+            const oStart = occupied.startHour * 60 + occupied.startMin;
+            const oEnd = occupied.endHour * 60 + occupied.endMin;
+            return !(tEnd <= oStart || oEnd <= tStart);
+        })
+    );
+
 const HeaderBox = withStyles((theme) => ({
     root: {
         background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
@@ -100,6 +113,7 @@ const HeaderBox = withStyles((theme) => ({
 const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allCourses }) => {
     const [electivesData, setElectivesData] = useState([]);
     const [selectedCategories, setSelectedCategories] = useState([]);
+    const [showConflicts, setShowConflicts] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -158,9 +172,23 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [electivesData]);
 
+    // Sections keep the index they have on the course, because that is what
+    // gets handed back when one is added.
     const visibleElectives = useMemo(
-        () => electivesData.filter((course) => selectedCategories.includes(categoryOf(course))),
-        [electivesData, selectedCategories]
+        () =>
+            electivesData
+                .filter((course) => selectedCategories.includes(categoryOf(course)))
+                .map((course) => {
+                    const sections = (course.sections || []).map((section, index) => ({ section, index }));
+                    return {
+                        ...course,
+                        visibleSections: showConflicts
+                            ? sections
+                            : sections.filter(({ section }) => !conflictsWithSchedule(section, occupiedSlots)),
+                    };
+                })
+                .filter((course) => showConflicts || !course.isOpen || course.visibleSections.length > 0),
+        [electivesData, selectedCategories, showConflicts, occupiedSlots]
     );
 
     const toggleCategory = (category) => {
@@ -217,6 +245,22 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                         />
                     ))}
                 </FormGroup>
+                <Divider style={{ margin: '4px 0' }} />
+                <FormControlLabel
+                    control={
+                        <Switch
+                            size="small"
+                            color="primary"
+                            checked={showConflicts}
+                            onChange={() => setShowConflicts((shown) => !shown)}
+                        />
+                    }
+                    label={
+                        <Typography variant="body2">
+                            Show sections that clash with your schedule
+                        </Typography>
+                    }
+                />
             </Box>
         );
     };
@@ -234,7 +278,9 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
         if (visibleElectives.length === 0) {
             return (
                 <Alert severity="info" style={{ borderRadius: '12px' }}>
-                    Tick an elective type to see courses.
+                    {selectedCategories.length === 0
+                        ? 'Tick an elective type to see courses.'
+                        : 'Every elective of the ticked types clashes with your schedule.'}
                 </Alert>
             );
         }
@@ -290,28 +336,15 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                                 )}
                             </Box>
 
-                            {currentIsOpen && course.sections && (
+                            {currentIsOpen && course.visibleSections.length > 0 && (
                                 <>
                                     <Divider style={{ margin: '16px 0' }} />
                                     <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: 12 }}>
                                         Available Sections:
                                     </Typography>
                                     <Grid container spacing={2}>
-                                        {course.sections.map((section, sectionIndex) => {
-                                            // Check time conflict dynamically
-                                            let isConflict = false;
-                                            if (section.lectureTimes) {
-                                                isConflict = !section.lectureTimes.every(time => {
-                                                    return !occupiedSlots.some(occupied => {
-                                                        if (time.day !== occupied.day) return false;
-                                                        const tStart = time.startHour * 60 + time.startMin;
-                                                        const tEnd = time.endHour * 60 + time.endMin;
-                                                        const oStart = occupied.startHour * 60 + occupied.startMin;
-                                                        const oEnd = occupied.endHour * 60 + occupied.endMin;
-                                                        return !(tEnd <= oStart || oEnd <= tStart);
-                                                    });
-                                                });
-                                            }
+                                        {course.visibleSections.map(({ section, index: sectionIndex }) => {
+                                            const isConflict = conflictsWithSchedule(section, occupiedSlots);
 
                                             return (
                                                 <Grid item xs={12} sm={6} md={4} key={sectionIndex}>
