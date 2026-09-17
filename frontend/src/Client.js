@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const DEFAULT_S3_BASE_URL = "https://s3.amazonaws.com/cdn.robotdegilim.xyz";
-const DEFAULT_BACKEND_BASE_URL = "https://robotdegilim-xyz.fly.dev";
+const DEFAULT_BACKEND_BASE_URL = "https://robotdegilim-xyz-backend.fly.dev";
 
 function _normalizeBaseUrl(url, fallback) {
   const raw = (url || fallback || "").trim();
