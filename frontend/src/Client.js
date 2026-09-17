@@ -22,7 +22,9 @@ export class Client {
     this.scrapeUrl = _joinUrl(backendBaseUrl, "api/v1/jobs/scrape_courses"); 
 
     this.http = axios.create({
-      timeout: Number(env.VITE_API_TIMEOUT_MS || env.REACT_APP_API_TIMEOUT_MS || 15000),
+      // The course catalogue is several megabytes, which takes well over 15s on
+      // a phone connection.
+      timeout: Number(env.VITE_API_TIMEOUT_MS || env.REACT_APP_API_TIMEOUT_MS || 30000),
     });
 
     this._coursesDataCache = null;
