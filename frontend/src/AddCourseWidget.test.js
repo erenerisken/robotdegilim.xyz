@@ -16,11 +16,11 @@ const course = (code, abbreviation, name) => ({
 // "EE: ADVANCED STUDIES" alone covers 59 of the real courses, so the catalogue
 // is full of entries the old label could not tell apart.
 const catalogue = [
-  course(5670598, "EE", "ADVANCED STUDIES"),
-  course(5670698, "EE", "ADVANCED STUDIES"),
-  course(5710213, "CENG", "DATA STRUCTURES"),
-  course(5710223, "CENG", "DISCRETE COMPUTATIONAL STRUCTURES"),
-  course(2402205, "HIST", "HISTORY OF THE TURKISH REVOLUTION I"),
+  course(5670598, "EE 598", "ADVANCED STUDIES"),
+  course(5670698, "EE 698", "ADVANCED STUDIES"),
+  course(5710213, "CENG 213", "DATA STRUCTURES"),
+  course(5710223, "CENG 223", "DISCRETE COMPUTATIONAL STRUCTURES"),
+  course(2402205, "HIST 2205", "HISTORY OF THE TURKISH REVOLUTION I"),
 ];
 
 async function search(query) {

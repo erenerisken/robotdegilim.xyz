@@ -1,4 +1,5 @@
 import axios from "axios";
+import { courseNumber } from "./helpers/courseCode";
 
 const DEFAULT_S3_BASE_URL = "https://s3.amazonaws.com/cdn.robotdegilim.xyz";
 const DEFAULT_BACKEND_BASE_URL = "https://robotdegilim-xyz-backend.fly.dev";
@@ -84,7 +85,7 @@ export class Client {
       for (const [courseCode, courseData] of Object.entries(deptData.courses)) {
         const courseToPush = {
           code: parseInt(courseCode, 10), // e.g. 6420101
-          abbreviation: deptShortName,
+          abbreviation: `${deptShortName} ${courseNumber(courseCode)}`, // e.g. TURK 101
           name: courseData.name,
           category: 0, // Fallback, could map from courseData.type
           sections: [],
@@ -235,7 +236,7 @@ export class Client {
         const numericCode = String(sevenDigitCode ?? "");
         const abbreviation = departmentAbbreviations.get(numericCode.slice(0, 3));
         const stringCode = abbreviation
-          ? `${abbreviation}${numericCode.slice(3).replace(/^0/, "")}`
+          ? `${abbreviation} ${courseNumber(numericCode)}`
           : rawCode;
         
         return {

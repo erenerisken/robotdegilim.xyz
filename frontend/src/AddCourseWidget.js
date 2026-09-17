@@ -6,11 +6,9 @@ import {
 } from "@mui/material";
 import { Autocomplete } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { courseNumber } from "./helpers/courseCode";
 import "./AddCourseWidget.css";
 
-const courseLabel = (course) =>
-  `${course.abbreviation} ${courseNumber(course.code)}: ${course.name}`;
+const courseLabel = (course) => `${course.abbreviation}: ${course.name}`;
 
 // Match however the course is typed: "CENG 213", "CENG213", "5710213" or a
 // piece of the name. Only a handful of the ~5000 courses can be read at once,
@@ -18,7 +16,7 @@ const courseLabel = (course) =>
 const filterCourses = createFilterOptions({
   limit: 50,
   stringify: (course) =>
-    `${courseLabel(course)} ${course.abbreviation}${courseNumber(course.code)} ${course.code}`,
+    `${courseLabel(course)} ${course.abbreviation.replace(/\s+/g, "")} ${course.code}`,
 });
 
 export const AddCourseWidget = ({ courses, onCourseAdd }) => {

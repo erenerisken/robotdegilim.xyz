@@ -107,6 +107,12 @@ describe("Client.getCourses", () => {
     ).toBe(dayName);
   });
 
+  it("labels a course with its department and course number", async () => {
+    const [course] = await clientWithSchedule([slot("Monday")]).getCourses();
+
+    expect(course.abbreviation).toBe("CENG 213");
+  });
+
   it("parses the rest of the slot alongside the day", async () => {
     const [lectureTime] = await lectureTimesOf(clientWithSchedule([slot("Wednesday")]));
 
@@ -140,8 +146,8 @@ describe("Client.getElectives", () => {
     const client = clientWithElectives(electives);
 
     expect(await client.getElectives("CENG")).toEqual([
-      { ...electives[0], code: 1200211, stringCode: "ARCH211", isOpen: true },
-      { ...electives[1], code: 5710332, stringCode: "CENG332", isOpen: false },
+      { ...electives[0], code: 1200211, stringCode: "ARCH 211", isOpen: true },
+      { ...electives[1], code: 5710332, stringCode: "CENG 332", isOpen: false },
     ]);
   });
 
@@ -154,10 +160,10 @@ describe("Client.getElectives", () => {
     ]);
 
     expect(await client.getElectives("CENG")).toEqual([
-      expect.objectContaining({ code: 1200211, stringCode: "ARCH211", isOpen: true }),
-      expect.objectContaining({ code: 2402205, stringCode: "HIST2205", isOpen: true }),
-      expect.objectContaining({ code: 2402205, stringCode: "HIST2205", isOpen: true }),
-      expect.objectContaining({ code: 6420101, stringCode: "TURK101", isOpen: true }),
+      expect.objectContaining({ code: 1200211, stringCode: "ARCH 211", isOpen: true }),
+      expect.objectContaining({ code: 2402205, stringCode: "HIST 2205", isOpen: true }),
+      expect.objectContaining({ code: 2402205, stringCode: "HIST 2205", isOpen: true }),
+      expect.objectContaining({ code: 6420101, stringCode: "TURK 101", isOpen: true }),
     ]);
   });
 
