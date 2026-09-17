@@ -194,18 +194,31 @@ export class Client {
     
     // We need to cross reference with open courses
     const openCoursesData = await this._getLatestCourseData();
+    const departmentAbbreviations = new Map();
+    Object.values(programsData.programs).forEach(program => {
+      const departmentCode = String(program.department_code);
+      if (program.short_name && !departmentAbbreviations.has(departmentCode)) {
+        departmentAbbreviations.set(departmentCode, program.short_name);
+      }
+    });
     // Build a set of open course codes
     const openCourseCodes = new Set();
-    Object.values(openCoursesData.programs).forEach(prog => {
+    Object.entries(openCoursesData.programs).forEach(([departmentCode, prog]) => {
+       // The course catalog also includes departments without a degree program (e.g. TURK).
+       if (prog.short_name) departmentAbbreviations.set(departmentCode, prog.short_name);
        Object.keys(prog.courses).forEach(cCode => {
           openCourseCodes.add(parseInt(cCode, 10));
        });
     });
     
     const electivesProcessed = targetProgram.electives.map(e => {
-        const parts = e.code.split(" ");
+        const rawCode = String(e.code ?? "").trim();
+        const parts = rawCode.split(/\s+/);
         let sevenDigitCode = null;
-        if (parts.length >= 2) {
+        // S3 electives already use seven-digit IDs; retain support for codes like "HIST 2205".
+        if (/^\d{7}$/.test(rawCode)) {
+          sevenDigitCode = Number(rawCode);
+        } else if (parts.length === 2 && /^\d{1,4}$/.test(parts[1])) {
           const abbr = parts[0];
           const numPart = parts[1];
           const deptProg = Object.values(programsData.programs).find(p => p.short_name === abbr);
@@ -215,10 +228,16 @@ export class Client {
             sevenDigitCode = parseInt(programCode + paddedNum, 10);
           }
         }
+
+        const numericCode = String(sevenDigitCode ?? "");
+        const abbreviation = departmentAbbreviations.get(numericCode.slice(0, 3));
+        const stringCode = abbreviation
+          ? `${abbreviation}${numericCode.slice(3).replace(/^0/, "")}`
+          : rawCode;
         
         return {
            code: sevenDigitCode,
-           stringCode: e.code,
+           stringCode,
            name: e.name,
            category: e.category,
            isOpen: sevenDigitCode ? openCourseCodes.has(sevenDigitCode) : false
