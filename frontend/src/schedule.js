@@ -45,26 +45,32 @@ function surnameCheck(surname, course_surname_start, course_surname_end) {
         Y : 31,
         Z : 32
     }
-    
-    var surFirstVal = alphabet[surname[0]];
-    var surSecondVal = alphabet[surname[1]];
-    var surStartFirstVal = alphabet[course_surname_start[0]];
-    var surStartSecondVal = alphabet[course_surname_start[1]];
-    var surEndFirstVal = alphabet[course_surname_end[0]];
-    var surEndSecondVal = alphabet[course_surname_end[1]];
 
-    if(surStartFirstVal < surFirstVal && surFirstVal < surEndFirstVal) {
-        return true;
+    // A range such as AA-AZ runs from the surname "AA" to the surname "AZ", so
+    // both letters make up one position on the list. Weighing them separately
+    // turned every range whose two ends start with the same letter into a range
+    // nobody could fall in, which cost e.g. an EE student named ARSLAN the
+    // MATH 119 section reserved for exactly them.
+    var rank = function (letters) {
+        var first = alphabet[letters[0]];
+        var second = alphabet[letters[1]];
+
+        if (first === undefined || second === undefined) {
+            return undefined;
+        }
+
+        return first * 100 + second;
+    };
+
+    var surnameRank = rank(surname);
+    var startRank = rank(course_surname_start);
+    var endRank = rank(course_surname_end);
+
+    if (surnameRank === undefined || startRank === undefined || endRank === undefined) {
+        return false;
     }
-    if((surStartFirstVal === surFirstVal && surFirstVal < surEndFirstVal)
-        && (surStartSecondVal <= surSecondVal)) {
-        return true;
-    }
-    if((surStartFirstVal < surFirstVal && surFirstVal === surEndFirstVal)
-        && (surSecondVal <= surEndSecondVal)) {
-        return true;
-    }
-    return false;
+
+    return startRank <= surnameRank && surnameRank <= endRank;
 }
 
 function apply_criteria_sections(surname, department, grade, course) {

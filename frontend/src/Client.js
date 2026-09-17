@@ -3,6 +3,9 @@ import { courseNumber } from "./helpers/courseCode";
 
 const DEFAULT_S3_BASE_URL = "https://s3.amazonaws.com/cdn.robotdegilim.xyz";
 const DEFAULT_BACKEND_BASE_URL = "https://robotdegilim-xyz-backend.fly.dev";
+// METU's academic catalogue keys a programme by the same three digits its
+// course codes start with, e.g. CENG -> 571.
+const CATALOG_PROGRAM_URL = "https://catalog.metu.edu.tr/program.php";
 
 function _normalizeBaseUrl(url, fallback) {
   const raw = (url || fallback || "").trim();
@@ -188,12 +191,52 @@ export class Client {
     return courses;
   }
 
+  // Every department teaching this semester, taken from the catalogue the app
+  // has already downloaded. programs.json names a handful more, but it weighs
+  // eight megabytes and this is only a lookup table.
+  async getDepartments() {
+    const data = await this._getLatestCourseData();
+
+    return Object.values(data.programs)
+      .filter((department) => department.short_name)
+      .map((department) => ({
+        abbreviation: department.short_name,
+        name: department.name || "",
+      }))
+      .sort((a, b) => a.abbreviation.localeCompare(b.abbreviation, "tr"));
+  }
+
+  // programs.json lists a department once per education level and once more
+  // for each double major and minor variant. The undergraduate major is the
+  // one the student filling in this form is following.
+  _findBachelorProgram(programsData, dept) {
+    return Object.values(programsData.programs).find(
+      (p) =>
+        p.short_name === dept &&
+        p.program_type === "MAJOR" &&
+        p.education_level === "Bachelor`s"
+    );
+  }
+
+  // The catalogue only publishes an undergraduate curriculum for the bachelor's
+  // majors, which is the same set getMusts can answer for. Anything else, a
+  // graduate-only abbreviation or a department that teaches without awarding a
+  // degree, has no page to link to.
+  async getCurriculumUrl(dept) {
+    const programsData = await this._getProgramsData();
+    const program = this._findBachelorProgram(programsData, dept);
+
+    if (!program || !program.program_code) return null;
+
+    const facultyProgram = encodeURIComponent(program.program_code);
+    return `${CATALOG_PROGRAM_URL}?fac_prog=${facultyProgram}&submenuheader=2`;
+  }
+
   async getMusts(dept, semester) {
     const programsData = await this._getProgramsData();
     const departmentCodes = await this._getDepartmentCodes();
 
-    // Find program by short_name (e.g. "ARCH") and program_type === "MAJOR"
-    const targetProgram = Object.values(programsData.programs).find(p => p.short_name === dept && p.program_type === "MAJOR" && p.education_level === "Bachelor`s");
+    const targetProgram = this._findBachelorProgram(programsData, dept);
     
     if (!targetProgram || !targetProgram.curriculum[semester]) {
       throw new Error("Must courses not found for this department and semester");
@@ -230,7 +273,7 @@ export class Client {
   async getElectives(dept) {
     const programsData = await this._getProgramsData();
     const departmentCodes = await this._getDepartmentCodes();
-    const targetProgram = Object.values(programsData.programs).find(p => p.short_name === dept && p.program_type === "MAJOR" && p.education_level === "Bachelor`s");
+    const targetProgram = this._findBachelorProgram(programsData, dept);
     
     if (!targetProgram || !targetProgram.electives) {
       return [];

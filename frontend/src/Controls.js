@@ -25,7 +25,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import { isMobile } from "react-device-detect";
 import ls from "./utils/storage";
 import { resetScenarios, setScenarios } from "./slices/scenariosSlice";
-import { getAllCourses, getMusts } from "./data/Course";
+import { getAllCourses, getCurriculumUrl, getMusts } from "./data/Course";
 import { compute_schedule } from "./schedule";
 import { client } from "./Client";
 import { CourseCard } from "./CourseCard";
@@ -39,10 +39,13 @@ import { withDeadline } from "./helpers/withDeadline";
 import "./Controls.css";
 import { resetDontFills } from "./slices/dontFillsSlice";
 import NTEDialog from "./NTEDialog";
+import DepartmentsDialog from "./DepartmentsDialog";
 import SchoolIcon from "@mui/icons-material/School";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import BusinessIcon from "@mui/icons-material/Business";
 import CalendarToday from "@mui/icons-material/CalendarToday";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import ApartmentIcon from "@mui/icons-material/Apartment";
 
 // Long enough for the multi-megabyte catalogue on a slow connection, short
 // enough that a request which will never arrive does not hold the app hostage.
@@ -55,6 +58,7 @@ export const Controls = (props) => {
     const [semester, setSemester] = useState(0);
     const [alertMsg, setAlertMsg] = useState("");
     const [errorDept, setErrorDept] = useState(false);
+    const [departmentsDialogOpen, setDepartmentsDialogOpen] = useState(false);
     const [errorSemester, setErrorSemester] = useState(false);
     const [errorSurname, setErrorSurname] = useState(false);
     const [restoreAvailable, setRestoreAvailable] = useState(false);
@@ -609,6 +613,49 @@ export const Controls = (props) => {
         return occupiedSlots;
     };
 
+    const handleOpenCurriculum = async () => {
+        const dept = department.trim();
+
+        if (dept.length < 2) {
+            setErrorDept(true);
+            setAlertMsg(
+                "Please enter your department first to see its curriculum."
+            );
+            return;
+        }
+
+        // The programme list is eight megabytes and is only downloaded when a
+        // feature needs it, so the address is rarely ready when the button is
+        // clicked. Claim the tab inside the click, while the browser still
+        // credits the gesture, and send it on once the lookup answers.
+        const tab = window.open("", "_blank");
+        if (tab) tab.opener = null;
+
+        setLoadingMessage("Looking up your curriculum...");
+        setLoading(true);
+
+        try {
+            const url = await getCurriculumUrl(dept);
+
+            if (!url) {
+                if (tab) tab.close();
+                setErrorDept(true);
+                setAlertMsg(
+                    `The catalog has no undergraduate curriculum for ${dept}.`
+                );
+                return;
+            }
+
+            if (tab) tab.location = url;
+            else openInNewTab(url);
+        } catch (error) {
+            if (tab) tab.close();
+            setAlertMsg("Could not reach the curriculum. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleGetAvailableNTE = () => {
         if (!department || department.length < 2) {
             setAlertMsg("Please enter your department first to see electives.");
@@ -810,6 +857,28 @@ export const Controls = (props) => {
                         fullWidth
                         variant="contained"
                         className="pretty-button pretty-ternary"
+                        startIcon={<MenuBookIcon />}
+                        onClick={handleOpenCurriculum}
+                    >
+                        My Curriculum
+                    </Button>
+                </Grid>
+                <Grid item xs={12} sm={12} md={12} lg={6}>
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        className="pretty-button pretty-ternary"
+                        startIcon={<ApartmentIcon />}
+                        onClick={() => setDepartmentsDialogOpen(true)}
+                    >
+                        Departments
+                    </Button>
+                </Grid>
+                <Grid item xs={12} sm={12} md={12} lg={6}>
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        className="pretty-button pretty-ternary"
                         startIcon={<ImportContactsIcon />}
                         onClick={() => openInNewTab("https://metu-non.tech")}
                     >
@@ -932,6 +1001,11 @@ export const Controls = (props) => {
                     </div>
                 </div>
             </div>
+
+            <DepartmentsDialog
+                open={departmentsDialogOpen}
+                onClose={() => setDepartmentsDialogOpen(false)}
+            />
 
             <NTEDialog
                 open={nteDialogOpen}
