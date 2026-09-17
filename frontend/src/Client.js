@@ -203,13 +203,27 @@ export class Client {
     });
     
     const electivesProcessed = targetProgram.electives.map(e => {
+        const parts = e.code.split(" ");
+        let sevenDigitCode = null;
+        if (parts.length >= 2) {
+          const abbr = parts[0];
+          const numPart = parts[1];
+          const deptProg = Object.values(programsData.programs).find(p => p.short_name === abbr);
+          if (deptProg) {
+            const programCode = deptProg.department_code; 
+            const paddedNum = numPart.padStart(4, "0");
+            sevenDigitCode = parseInt(programCode + paddedNum, 10);
+          }
+        }
+        
         return {
-           code: parseInt(e.code, 10),
+           code: sevenDigitCode,
+           stringCode: e.code,
            name: e.name,
            category: e.category,
-           isOpen: openCourseCodes.has(parseInt(e.code, 10))
+           isOpen: sevenDigitCode ? openCourseCodes.has(sevenDigitCode) : false
         };
-    });
+    }).filter(e => e.code !== null);
     
     return electivesProcessed;
   }
