@@ -191,6 +191,21 @@ export class Client {
     return courses;
   }
 
+  // Every department teaching this semester, taken from the catalogue the app
+  // has already downloaded. programs.json names a handful more, but it weighs
+  // eight megabytes and this is only a lookup table.
+  async getDepartments() {
+    const data = await this._getLatestCourseData();
+
+    return Object.values(data.programs)
+      .filter((department) => department.short_name)
+      .map((department) => ({
+        abbreviation: department.short_name,
+        name: department.name || "",
+      }))
+      .sort((a, b) => a.abbreviation.localeCompare(b.abbreviation, "tr"));
+  }
+
   // programs.json lists a department once per education level and once more
   // for each double major and minor variant. The undergraduate major is the
   // one the student filling in this form is following.

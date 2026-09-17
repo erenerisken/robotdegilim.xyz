@@ -126,6 +126,11 @@ export async function getMusts(dept, semester){
     return client.getMusts(dept, semester);
 }
 
+// Every department that teaches this semester, as { abbreviation, name }.
+export async function getDepartments(){
+    return client.getDepartments();
+}
+
 // Returns the METU catalogue page for a department's undergraduate curriculum,
 // or null when the catalogue has no such page for it.
 export async function getCurriculumUrl(dept){

@@ -199,6 +199,28 @@ describe("Client request sharing", () => {
   });
 });
 
+describe("Client.getDepartments", () => {
+  it("lists every teaching department from the catalogue, by abbreviation", async () => {
+    const client = clientWithElectives([]);
+
+    expect(await client.getDepartments()).toEqual([
+      { abbreviation: "ARCH", name: "" },
+      { abbreviation: "HIST", name: "" },
+      { abbreviation: "TURK", name: "" },
+    ]);
+  });
+
+  it("costs nothing beyond the catalogue the app already has", async () => {
+    const { client, calls } = countingClient(async (key) => ({ data: CATALOGUE[key] }));
+
+    await client.getCourses();
+    await client.getDepartments();
+
+    expect(calls.filter((k) => k.includes("programs.json"))).toHaveLength(0);
+    expect(calls.filter((k) => k.endsWith("20261.json"))).toHaveLength(1);
+  });
+});
+
 describe("Client.getCurriculumUrl", () => {
   it("points at the catalog page for the department's undergraduate major", async () => {
     const client = clientWithCurriculum([must("CENG 223")]);

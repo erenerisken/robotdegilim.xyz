@@ -39,11 +39,13 @@ import { withDeadline } from "./helpers/withDeadline";
 import "./Controls.css";
 import { resetDontFills } from "./slices/dontFillsSlice";
 import NTEDialog from "./NTEDialog";
+import DepartmentsDialog from "./DepartmentsDialog";
 import SchoolIcon from "@mui/icons-material/School";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import BusinessIcon from "@mui/icons-material/Business";
 import CalendarToday from "@mui/icons-material/CalendarToday";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import ApartmentIcon from "@mui/icons-material/Apartment";
 
 // Long enough for the multi-megabyte catalogue on a slow connection, short
 // enough that a request which will never arrive does not hold the app hostage.
@@ -56,6 +58,7 @@ export const Controls = (props) => {
     const [semester, setSemester] = useState(0);
     const [alertMsg, setAlertMsg] = useState("");
     const [errorDept, setErrorDept] = useState(false);
+    const [departmentsDialogOpen, setDepartmentsDialogOpen] = useState(false);
     const [errorSemester, setErrorSemester] = useState(false);
     const [errorSurname, setErrorSurname] = useState(false);
     const [restoreAvailable, setRestoreAvailable] = useState(false);
@@ -837,7 +840,7 @@ export const Controls = (props) => {
                         Clear
                     </Button>
                 </Grid>
-                <Grid item xs={12} sm={12} md={12} lg={4}>
+                <Grid item xs={12} sm={12} md={12} lg={6}>
                     <Button
                         fullWidth
                         variant="contained"
@@ -849,7 +852,7 @@ export const Controls = (props) => {
                         Get Available Electives
                     </Button>
                 </Grid>
-                <Grid item xs={12} sm={12} md={12} lg={4}>
+                <Grid item xs={12} sm={12} md={12} lg={6}>
                     <Button
                         fullWidth
                         variant="contained"
@@ -860,7 +863,18 @@ export const Controls = (props) => {
                         My Curriculum
                     </Button>
                 </Grid>
-                <Grid item xs={12} sm={12} md={12} lg={4}>
+                <Grid item xs={12} sm={12} md={12} lg={6}>
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        className="pretty-button pretty-ternary"
+                        startIcon={<ApartmentIcon />}
+                        onClick={() => setDepartmentsDialogOpen(true)}
+                    >
+                        Departments
+                    </Button>
+                </Grid>
+                <Grid item xs={12} sm={12} md={12} lg={6}>
                     <Button
                         fullWidth
                         variant="contained"
@@ -987,6 +1001,11 @@ export const Controls = (props) => {
                     </div>
                 </div>
             </div>
+
+            <DepartmentsDialog
+                open={departmentsDialogOpen}
+                onClose={() => setDepartmentsDialogOpen(false)}
+            />
 
             <NTEDialog
                 open={nteDialogOpen}
