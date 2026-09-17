@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
     TextField,
@@ -27,13 +27,15 @@ import ls from "./utils/storage";
 import { resetScenarios, setScenarios } from "./slices/scenariosSlice";
 import { getAllCourses, getMusts } from "./data/Course";
 import { compute_schedule } from "./schedule";
-import { Client } from "./Client";
+import { client } from "./Client";
 import { CourseCard } from "./CourseCard";
 import { AddCourseWidget } from "./AddCourseWidget";
 import { AddDontFillWidget } from "./AddDontFillWidget";
 import { AdvancedSettings } from "./AdvancedSettings";
 import { Colorset } from "./Colorset";
 import { LoadingDialog } from "./LoadingDialog/LoadingDialog";
+import { LoadErrorDialog } from "./LoadErrorDialog";
+import { withDeadline } from "./helpers/withDeadline";
 import "./Controls.css";
 import { resetDontFills } from "./slices/dontFillsSlice";
 import NTEDialog from "./NTEDialog";
@@ -41,6 +43,10 @@ import SchoolIcon from "@mui/icons-material/School";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import BusinessIcon from "@mui/icons-material/Business";
 import CalendarToday from "@mui/icons-material/CalendarToday";
+
+// Long enough for the multi-megabyte catalogue on a slow connection, short
+// enough that a request which will never arrive does not hold the app hostage.
+const LOAD_TIMEOUT_MS = 35000;
 
 export const Controls = (props) => {
     const { currentScenario } = props;
@@ -75,25 +81,40 @@ export const Controls = (props) => {
     const [lastUpdated, setLastUpdated] = useState(0);
     const [loading, setLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("Loading...");
+    const [loadFailed, setLoadFailed] = useState(false);
     const [nteDialogOpen, setNteDialogOpen] = useState(false);
 
     const dispatch = useDispatch();
     const scenariosState = useSelector((state) => state.scenariosState);
 
-    const clientRef = useRef(new Client());
-
-    useEffect(() => {
-        clientRef.current.sendUpdateRequest();
-        document.title = "Robot Değilim *-*";
+    const loadCourses = () => {
+        setLoadFailed(false);
         setLoading(true);
         setLoadingMessage("Loading...");
-        getAllCourses().then((data) => {
-            setAllCourses(data);
-            restoreData();
-            setLoading(false);
-            props.onLoadingCompleted();
-        });
-        clientRef.current.getLastUpdated().then((lu) => setLastUpdated(lu));
+        withDeadline(getAllCourses(), LOAD_TIMEOUT_MS)
+            .then((data) => {
+                setAllCourses(data);
+                restoreData();
+                setLoading(false);
+                props.onLoadingCompleted();
+            })
+            .catch((error) => {
+                console.error("Could not load course data:", error);
+                setLoading(false);
+                setLoadFailed(true);
+            });
+    };
+
+    useEffect(() => {
+        client.sendUpdateRequest();
+        document.title = "Robot Değilim *-*";
+        loadCourses();
+        client
+            .getLastUpdated()
+            .then((lu) => setLastUpdated(lu))
+            .catch((error) =>
+                console.error("Could not read the data timestamp:", error),
+            );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -868,6 +889,7 @@ export const Controls = (props) => {
                 endMin={30}
             />
             {loading && <LoadingDialog text={loadingMessage} />}
+            {loadFailed && <LoadErrorDialog onRetry={loadCourses} />}
             {lastUpdated ? (
                 <Typography>
                     {"Course data is updated at " + lastUpdated.u}

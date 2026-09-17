@@ -82,7 +82,141 @@ function clientWithElectives(electives) {
   return client;
 }
 
+function clientWithCurriculum(courses) {
+  const client = new Client();
+  const responses = {
+    "data/scrape_programs/programs.json": {
+      programs: {
+        "571|1|1|1": {
+          short_name: "CENG",
+          department_code: "571",
+          program_type: "MAJOR",
+          education_level: "Bachelor`s",
+          curriculum: { 3: { semester_number: 3, courses } },
+        },
+        "236|1|1|1": { short_name: "MATH", department_code: "236" },
+      },
+    },
+    "data/scrape_courses/latest.json": { latest: "20261.json" },
+    // ENG and TURK teach courses without awarding a degree, so they appear here
+    // and nowhere in programs.json.
+    "data/scrape_courses/20261.json": {
+      programs: {
+        "571": { short_name: "CENG", courses: {} },
+        "236": { short_name: "MATH", courses: {} },
+        "639": { short_name: "ENG", courses: {} },
+        "642": { short_name: "TURK", courses: {} },
+      },
+    },
+  };
+  vi.spyOn(client.http, "get").mockImplementation(async (url) => {
+    const key = url.slice(client.s3BaseUrl.length + 1);
+    if (!(key in responses)) throw new Error(`Unexpected URL: ${url}`);
+    return { data: responses[key] };
+  });
+  return client;
+}
+
+const must = (code) => ({ code, is_elective: false });
+
+function countingClient(onGet) {
+  const client = new Client();
+  const calls = [];
+  vi.spyOn(client.http, "get").mockImplementation(async (url) => {
+    const key = url.slice(client.s3BaseUrl.length + 1);
+    calls.push(key);
+    return onGet(key);
+  });
+  return { client, calls };
+}
+
+const CATALOGUE = {
+  "data/scrape_courses/latest.json": { latest: "20261.json" },
+  "data/scrape_courses/20261.json": {
+    metadata: { semester_name: "2026-2027 Fall", updated_at: "2026-09-06T16:45:12+03:00" },
+    programs: { "571": { short_name: "CENG", courses: {} } },
+  },
+  "data/scrape_programs/programs.json": { programs: {} },
+};
+
 afterEach(() => vi.restoreAllMocks());
+
+describe("Client request sharing", () => {
+  it("downloads the catalogue once however many callers ask", async () => {
+    const { client, calls } = countingClient(async (key) => ({ data: CATALOGUE[key] }));
+
+    await Promise.all([client.getCourses(), client.getLastUpdated()]);
+    await client.getCourses();
+
+    expect(calls.filter((k) => k.endsWith("20261.json"))).toHaveLength(1);
+    expect(calls.filter((k) => k.endsWith("latest.json"))).toHaveLength(1);
+  });
+
+  it("shares one request between callers that ask while it is in flight", async () => {
+    let release;
+    const gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    const { client, calls } = countingClient(async (key) => {
+      await gate;
+      return { data: CATALOGUE[key] };
+    });
+
+    const both = Promise.all([client.getCourses(), client.getCourses()]);
+    release();
+    await both;
+
+    expect(calls.filter((k) => k.endsWith("20261.json"))).toHaveLength(1);
+  });
+
+  it("lets a retry start over after a failure", async () => {
+    let failing = true;
+    const { client, calls } = countingClient(async (key) => {
+      if (failing) throw new Error("offline");
+      return { data: CATALOGUE[key] };
+    });
+
+    await expect(client.getCourses()).rejects.toThrow("offline");
+    failing = false;
+    await expect(client.getCourses()).resolves.toEqual([]);
+
+    expect(calls.filter((k) => k.endsWith("latest.json"))).toHaveLength(2);
+  });
+});
+
+describe("Client.getMusts", () => {
+  it("keeps courses taught by departments that award no degree", async () => {
+    const client = clientWithCurriculum([
+      must("CENG 223"),
+      must("ENG 211"),
+      must("TURK 105"),
+    ]);
+
+    expect(await client.getMusts("CENG", 3)).toEqual([5710223, 6390211, 6420105]);
+  });
+
+  it("pads three-digit numbers and leaves four-digit ones alone", async () => {
+    const client = clientWithCurriculum([must("MATH 219"), must("CENG 2205")]);
+
+    expect(await client.getMusts("CENG", 3)).toEqual([2360219, 5712205]);
+  });
+
+  it("skips electives and codes it cannot resolve", async () => {
+    const client = clientWithCurriculum([
+      { code: "CENG 300", is_elective: true },
+      must("SCE 322"),
+      must("CENG213"),
+      must("CENG 223"),
+    ]);
+
+    expect(await client.getMusts("CENG", 3)).toEqual([5710223]);
+  });
+
+  it("reports a department or semester it has no curriculum for", async () => {
+    await expect(clientWithCurriculum([must("CENG 223")]).getMusts("CENG", 4))
+      .rejects.toThrow(/not found/i);
+  });
+});
 
 describe("Client.getCourses", () => {
   const weekdays = [

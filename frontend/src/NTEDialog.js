@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -11,7 +11,11 @@ import {
     CircularProgress,
     Card,
     CardContent,
+    Checkbox,
+    FormControlLabel,
+    FormGroup,
     Grid,
+    Switch,
     Alert
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -65,6 +69,35 @@ const ModernButton = withStyles((theme) => ({
     },
 }))(Button);
 
+const filterBarSx = {
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    padding: (theme) => theme.spacing(1.5, 2),
+    marginBottom: 1,
+    // A department can list hundreds of electives, so the filter has to stay
+    // reachable without scrolling back to the top.
+    position: 'sticky',
+    top: 0,
+    zIndex: 2,
+    backgroundColor: 'background.paper',
+};
+
+// Which elective types a department offers is up to its curriculum: some list a
+// single one, others seven. Read them off the data rather than naming them.
+const categoryOf = (course) => course.category || 'General Electives';
+
+const conflictsWithSchedule = (section, occupiedSlots) =>
+    (section.lectureTimes || []).some((time) =>
+        occupiedSlots.some((occupied) => {
+            if (time.day !== occupied.day) return false;
+            const tStart = time.startHour * 60 + time.startMin;
+            const tEnd = time.endHour * 60 + time.endMin;
+            const oStart = occupied.startHour * 60 + occupied.startMin;
+            const oEnd = occupied.endHour * 60 + occupied.endMin;
+            return !(tEnd <= oStart || oEnd <= tStart);
+        })
+    );
+
 const HeaderBox = withStyles((theme) => ({
     root: {
         background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
@@ -79,6 +112,8 @@ const HeaderBox = withStyles((theme) => ({
 
 const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allCourses }) => {
     const [electivesData, setElectivesData] = useState([]);
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [showConflicts, setShowConflicts] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -116,12 +151,52 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
             });
 
             setElectivesData(fullyLinkedData);
+            // Every type starts ticked, and a department switch re-reads them.
+            setSelectedCategories([...new Set(fullyLinkedData.map(categoryOf))]);
         } catch (err) {
             setError('Error loading electives.');
             console.error('Error loading electives:', err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const categories = useMemo(() => {
+        const counts = new Map();
+        electivesData.forEach((course) => {
+            const category = categoryOf(course);
+            counts.set(category, (counts.get(category) || 0) + 1);
+        });
+        return [...counts.entries()]
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [electivesData]);
+
+    // Sections keep the index they have on the course, because that is what
+    // gets handed back when one is added.
+    const visibleElectives = useMemo(
+        () =>
+            electivesData
+                .filter((course) => selectedCategories.includes(categoryOf(course)))
+                .map((course) => {
+                    const sections = (course.sections || []).map((section, index) => ({ section, index }));
+                    return {
+                        ...course,
+                        visibleSections: showConflicts
+                            ? sections
+                            : sections.filter(({ section }) => !conflictsWithSchedule(section, occupiedSlots)),
+                    };
+                })
+                .filter((course) => showConflicts || !course.isOpen || course.visibleSections.length > 0),
+        [electivesData, selectedCategories, showConflicts, occupiedSlots]
+    );
+
+    const toggleCategory = (category) => {
+        setSelectedCategories((selected) =>
+            selected.includes(category)
+                ? selected.filter((name) => name !== category)
+                : [...selected, category]
+        );
     };
 
     const handleAddElective = (course, sectionIndex) => {
@@ -143,6 +218,53 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
         return dayNames[dayNum] || "Unknown";
     };
 
+    const renderCategoryFilter = () => {
+        if (categories.length === 0) return null;
+        return (
+            <Box sx={filterBarSx}>
+                <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: 4 }}>
+                    Elective types
+                </Typography>
+                <FormGroup row>
+                    {categories.map(({ name, count }) => (
+                        <FormControlLabel
+                            key={name}
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    color="primary"
+                                    checked={selectedCategories.includes(name)}
+                                    onChange={() => toggleCategory(name)}
+                                />
+                            }
+                            label={
+                                <Typography variant="body2">
+                                    {name} ({count})
+                                </Typography>
+                            }
+                        />
+                    ))}
+                </FormGroup>
+                <Divider style={{ margin: '4px 0' }} />
+                <FormControlLabel
+                    control={
+                        <Switch
+                            size="small"
+                            color="primary"
+                            checked={showConflicts}
+                            onChange={() => setShowConflicts((shown) => !shown)}
+                        />
+                    }
+                    label={
+                        <Typography variant="body2">
+                            Show sections that clash with your schedule
+                        </Typography>
+                    }
+                />
+            </Box>
+        );
+    };
+
     // Grouping for render
     const renderElectivesList = () => {
         if (electivesData.length === 0) {
@@ -153,13 +275,23 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
             );
         }
 
+        if (visibleElectives.length === 0) {
+            return (
+                <Alert severity="info" style={{ borderRadius: '12px' }}>
+                    {selectedCategories.length === 0
+                        ? 'Tick an elective type to see courses.'
+                        : 'Every elective of the ticked types clashes with your schedule.'}
+                </Alert>
+            );
+        }
+
         let currentCategory = "";
         let currentIsOpen = true;
 
-        return electivesData.map((course, index) => {
-            const isNewGroup = course.isOpen !== currentIsOpen || course.category !== currentCategory || index === 0;
+        return visibleElectives.map((course, index) => {
+            const isNewGroup = course.isOpen !== currentIsOpen || categoryOf(course) !== currentCategory || index === 0;
             if (isNewGroup) {
-                currentCategory = course.category;
+                currentCategory = categoryOf(course);
                 currentIsOpen = course.isOpen;
             }
 
@@ -167,7 +299,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                 <Box key={`${course.code}-${index}`}>
                     {isNewGroup && (
                         <Typography variant="h6" style={{ marginTop: 24, marginBottom: 12, fontWeight: 700, color: currentIsOpen ? '#1d4ed8' : '#6b7280' }}>
-                            {currentIsOpen ? "🟢 Open: " : "🔴 Closed: "} {currentCategory || "General Electives"}
+                            {currentIsOpen ? "🟢 Open: " : "🔴 Closed: "} {currentCategory}
                         </Typography>
                     )}
                     
@@ -204,28 +336,15 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                                 )}
                             </Box>
 
-                            {currentIsOpen && course.sections && (
+                            {currentIsOpen && course.visibleSections.length > 0 && (
                                 <>
                                     <Divider style={{ margin: '16px 0' }} />
                                     <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: 12 }}>
                                         Available Sections:
                                     </Typography>
                                     <Grid container spacing={2}>
-                                        {course.sections.map((section, sectionIndex) => {
-                                            // Check time conflict dynamically
-                                            let isConflict = false;
-                                            if (section.lectureTimes) {
-                                                isConflict = !section.lectureTimes.every(time => {
-                                                    return !occupiedSlots.some(occupied => {
-                                                        if (time.day !== occupied.day) return false;
-                                                        const tStart = time.startHour * 60 + time.startMin;
-                                                        const tEnd = time.endHour * 60 + time.endMin;
-                                                        const oStart = occupied.startHour * 60 + occupied.startMin;
-                                                        const oEnd = occupied.endHour * 60 + occupied.endMin;
-                                                        return !(tEnd <= oStart || oEnd <= tStart);
-                                                    });
-                                                });
-                                            }
+                                        {course.visibleSections.map(({ section, index: sectionIndex }) => {
+                                            const isConflict = conflictsWithSchedule(section, occupiedSlots);
 
                                             return (
                                                 <Grid item xs={12} sm={6} md={4} key={sectionIndex}>
@@ -310,6 +429,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                         <Alert severity="error">{error}</Alert>
                     ) : (
                         <>
+                            {renderCategoryFilter()}
                             {renderElectivesList()}
                         </>
                     )}

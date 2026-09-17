@@ -1,4 +1,4 @@
-import {Client} from "../Client";
+import {client} from "../Client";
 // eslint-disable-next-line
 const exampleCourses = [
     {
@@ -120,17 +120,14 @@ const exampleCourses = [
 ]
 
 export async function getAllCourses(){
-    const client = new Client();
     return await client.getCourses();
 }
 export async function getMusts(dept, semester){
-    const client = new Client();
     return client.getMusts(dept, semester);
 }
 
 // Elective fonksiyonları
 export async function getElectives(dept){
-    const client = new Client();
     return await client.getElectives(dept);
 }
 

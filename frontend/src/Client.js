@@ -22,36 +22,77 @@ export class Client {
     this.scrapeUrl = _joinUrl(backendBaseUrl, "api/v1/jobs/scrape_courses"); 
 
     this.http = axios.create({
-      timeout: Number(env.VITE_API_TIMEOUT_MS || env.REACT_APP_API_TIMEOUT_MS || 15000),
+      // The course catalogue is several megabytes, which takes well over 15s on
+      // a phone connection.
+      timeout: Number(env.VITE_API_TIMEOUT_MS || env.REACT_APP_API_TIMEOUT_MS || 30000),
     });
 
-    this._coursesDataCache = null;
-    this._programsDataCache = null;
+    this._pending = {};
   }
 
-  async _getLatestCourseData() {
-    if (this._coursesDataCache) return this._coursesDataCache;
-
-    // Discover latest
-    const latestPointerUrl = _joinUrl(this.s3BaseUrl, "data/scrape_courses/latest.json");
-    const pointerResponse = await this.http.get(latestPointerUrl);
-    const latestFilename = pointerResponse.data.latest; // e.g. "20261.json"
-
-    const coursesUrl = _joinUrl(this.s3BaseUrl, `data/scrape_courses/${latestFilename}`);
-    const coursesResponse = await this.http.get(coursesUrl);
-    
-    this._coursesDataCache = coursesResponse.data;
-    return this._coursesDataCache;
+  // Remembers the request rather than its result, so a caller that asks while
+  // one is still in flight joins it instead of starting a second download of
+  // the same multi-megabyte file. A failed request is forgotten, leaving a
+  // retry free to start a fresh one.
+  _once(key, run) {
+    if (!this._pending[key]) {
+      this._pending[key] = run().catch((error) => {
+        this._pending[key] = null;
+        throw error;
+      });
+    }
+    return this._pending[key];
   }
 
-  async _getProgramsData() {
-    if (this._programsDataCache) return this._programsDataCache;
+  _getLatestCourseData() {
+    return this._once("courses", async () => {
+      // Discover latest
+      const latestPointerUrl = _joinUrl(this.s3BaseUrl, "data/scrape_courses/latest.json");
+      const pointerResponse = await this.http.get(latestPointerUrl);
+      const latestFilename = pointerResponse.data.latest; // e.g. "20261.json"
 
-    const programsUrl = _joinUrl(this.s3BaseUrl, "data/scrape_programs/programs.json");
-    const programsResponse = await this.http.get(programsUrl);
-    
-    this._programsDataCache = programsResponse.data;
-    return this._programsDataCache;
+      const coursesUrl = _joinUrl(this.s3BaseUrl, `data/scrape_courses/${latestFilename}`);
+      const coursesResponse = await this.http.get(coursesUrl);
+
+      return coursesResponse.data;
+    });
+  }
+
+  _getProgramsData() {
+    return this._once("programs", async () => {
+      const programsUrl = _joinUrl(this.s3BaseUrl, "data/scrape_programs/programs.json");
+      const programsResponse = await this.http.get(programsUrl);
+
+      return programsResponse.data;
+    });
+  }
+
+  // Maps a department's abbreviation to the three digits its course codes start
+  // with, e.g. "ENG" -> "639". programs.json only lists the departments that
+  // award a degree; 48 more teach courses without awarding one, ENG, TURK and
+  // HST among them, and curricula are full of those. Take them from the course
+  // catalogue, which covers every department.
+  _getDepartmentCodes() {
+    return this._once("departmentCodes", async () => {
+      const [programsData, coursesData] = await Promise.all([
+        this._getProgramsData(),
+        this._getLatestCourseData(),
+      ]);
+
+      const departmentCodes = new Map();
+      Object.values(programsData.programs).forEach((program) => {
+        if (program.short_name && !departmentCodes.has(program.short_name)) {
+          departmentCodes.set(program.short_name, String(program.department_code));
+        }
+      });
+      Object.entries(coursesData.programs).forEach(([departmentCode, department]) => {
+        if (department.short_name && !departmentCodes.has(department.short_name)) {
+          departmentCodes.set(department.short_name, departmentCode);
+        }
+      });
+
+      return departmentCodes;
+    });
   }
 
   async getLastUpdated() {
@@ -149,7 +190,8 @@ export class Client {
 
   async getMusts(dept, semester) {
     const programsData = await this._getProgramsData();
-    
+    const departmentCodes = await this._getDepartmentCodes();
+
     // Find program by short_name (e.g. "ARCH") and program_type === "MAJOR"
     const targetProgram = Object.values(programsData.programs).find(p => p.short_name === dept && p.program_type === "MAJOR" && p.education_level === "Bachelor`s");
     
@@ -170,13 +212,10 @@ export class Client {
         
         const abbr = parts[0];
         const numPart = parts[1];
-        
-        // Find dept base code from programsData
-        const deptProg = Object.values(programsData.programs).find(p => p.short_name === abbr);
-        if (!deptProg) return null;
-        
-        const programCode = deptProg.department_code; // e.g. "120"
-        
+
+        const programCode = departmentCodes.get(abbr); // e.g. "120"
+        if (!programCode) return null;
+
         // Pad the numeric part to 4 digits always. 103 -> 0103. 2205 -> 2205.
         const paddedNum = numPart.padStart(4, "0");
         
@@ -190,6 +229,7 @@ export class Client {
   // Replaces getNTEs -> getElectives
   async getElectives(dept) {
     const programsData = await this._getProgramsData();
+    const departmentCodes = await this._getDepartmentCodes();
     const targetProgram = Object.values(programsData.programs).find(p => p.short_name === dept && p.program_type === "MAJOR" && p.education_level === "Bachelor`s");
     
     if (!targetProgram || !targetProgram.electives) {
@@ -225,9 +265,8 @@ export class Client {
         } else if (parts.length === 2 && /^\d{1,4}$/.test(parts[1])) {
           const abbr = parts[0];
           const numPart = parts[1];
-          const deptProg = Object.values(programsData.programs).find(p => p.short_name === abbr);
-          if (deptProg) {
-            const programCode = deptProg.department_code; 
+          const programCode = departmentCodes.get(abbr);
+          if (programCode) {
             const paddedNum = numPart.padStart(4, "0");
             sevenDigitCode = parseInt(programCode + paddedNum, 10);
           }
@@ -281,3 +320,7 @@ export class Client {
     }
   }
 }
+
+// One instance for the whole app: every screen needs the same catalogue, and a
+// per-call client would download those megabytes again each time.
+export const client = new Client();
