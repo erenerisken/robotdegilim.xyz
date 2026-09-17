@@ -11,13 +11,13 @@ import {
     CircularProgress,
     Card,
     CardContent,
-    Grid
-} from '@material-ui/core';
-import { Alert } from '@material-ui/lab';
-import AddIcon from '@material-ui/icons/Add';
-import SchoolIcon from '@material-ui/icons/School';
-import LibraryAddIcon from '@material-ui/icons/LibraryAdd';
-import { withStyles } from '@material-ui/core/styles';
+    Grid,
+    Alert
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import SchoolIcon from '@mui/icons-material/School';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
+import { withStyles } from '@mui/styles';
 import { getElectives, filterAvailableElectives } from './data/Course';
 
 // Styled Components

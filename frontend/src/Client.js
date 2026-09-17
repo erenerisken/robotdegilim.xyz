@@ -14,15 +14,14 @@ function _joinUrl(base, key) {
 
 export class Client {
   constructor() {
-    this.s3BaseUrl = _normalizeBaseUrl(process.env.REACT_APP_S3_BASE_URL, DEFAULT_S3_BASE_URL);
-    const backendBaseUrl = _normalizeBaseUrl(process.env.REACT_APP_BACKEND_BASE_URL, DEFAULT_BACKEND_BASE_URL);
+    const env = import.meta.env;
+    this.s3BaseUrl = _normalizeBaseUrl(env.VITE_S3_BASE_URL || env.REACT_APP_S3_BASE_URL, DEFAULT_S3_BASE_URL);
+    const backendBaseUrl = _normalizeBaseUrl(env.VITE_BACKEND_BASE_URL || env.REACT_APP_BACKEND_BASE_URL, DEFAULT_BACKEND_BASE_URL);
 
-    // Old S3_FILE_KEYS mostly deprecated
-    this.statusUrl = _joinUrl(this.s3BaseUrl, "status.json"); // Might still be polled by legacy?
     this.scrapeUrl = _joinUrl(backendBaseUrl, "api/v1/jobs/scrape_courses"); 
 
     this.http = axios.create({
-      timeout: Number(process.env.REACT_APP_API_TIMEOUT_MS || 15000),
+      timeout: Number(env.VITE_API_TIMEOUT_MS || env.REACT_APP_API_TIMEOUT_MS || 15000),
     });
 
     this._coursesDataCache = null;
