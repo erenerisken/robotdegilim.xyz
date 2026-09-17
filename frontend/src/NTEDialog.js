@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -11,6 +11,9 @@ import {
     CircularProgress,
     Card,
     CardContent,
+    Checkbox,
+    FormControlLabel,
+    FormGroup,
     Grid,
     Alert
 } from '@mui/material';
@@ -65,6 +68,23 @@ const ModernButton = withStyles((theme) => ({
     },
 }))(Button);
 
+const filterBarSx = {
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    padding: (theme) => theme.spacing(1.5, 2),
+    marginBottom: 1,
+    // A department can list hundreds of electives, so the filter has to stay
+    // reachable without scrolling back to the top.
+    position: 'sticky',
+    top: 0,
+    zIndex: 2,
+    backgroundColor: 'background.paper',
+};
+
+// Which elective types a department offers is up to its curriculum: some list a
+// single one, others seven. Read them off the data rather than naming them.
+const categoryOf = (course) => course.category || 'General Electives';
+
 const HeaderBox = withStyles((theme) => ({
     root: {
         background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
@@ -79,6 +99,7 @@ const HeaderBox = withStyles((theme) => ({
 
 const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allCourses }) => {
     const [electivesData, setElectivesData] = useState([]);
+    const [selectedCategories, setSelectedCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -116,12 +137,38 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
             });
 
             setElectivesData(fullyLinkedData);
+            // Every type starts ticked, and a department switch re-reads them.
+            setSelectedCategories([...new Set(fullyLinkedData.map(categoryOf))]);
         } catch (err) {
             setError('Error loading electives.');
             console.error('Error loading electives:', err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const categories = useMemo(() => {
+        const counts = new Map();
+        electivesData.forEach((course) => {
+            const category = categoryOf(course);
+            counts.set(category, (counts.get(category) || 0) + 1);
+        });
+        return [...counts.entries()]
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [electivesData]);
+
+    const visibleElectives = useMemo(
+        () => electivesData.filter((course) => selectedCategories.includes(categoryOf(course))),
+        [electivesData, selectedCategories]
+    );
+
+    const toggleCategory = (category) => {
+        setSelectedCategories((selected) =>
+            selected.includes(category)
+                ? selected.filter((name) => name !== category)
+                : [...selected, category]
+        );
     };
 
     const handleAddElective = (course, sectionIndex) => {
@@ -143,6 +190,37 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
         return dayNames[dayNum] || "Unknown";
     };
 
+    const renderCategoryFilter = () => {
+        if (categories.length === 0) return null;
+        return (
+            <Box sx={filterBarSx}>
+                <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: 4 }}>
+                    Elective types
+                </Typography>
+                <FormGroup row>
+                    {categories.map(({ name, count }) => (
+                        <FormControlLabel
+                            key={name}
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    color="primary"
+                                    checked={selectedCategories.includes(name)}
+                                    onChange={() => toggleCategory(name)}
+                                />
+                            }
+                            label={
+                                <Typography variant="body2">
+                                    {name} ({count})
+                                </Typography>
+                            }
+                        />
+                    ))}
+                </FormGroup>
+            </Box>
+        );
+    };
+
     // Grouping for render
     const renderElectivesList = () => {
         if (electivesData.length === 0) {
@@ -153,13 +231,21 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
             );
         }
 
+        if (visibleElectives.length === 0) {
+            return (
+                <Alert severity="info" style={{ borderRadius: '12px' }}>
+                    Tick an elective type to see courses.
+                </Alert>
+            );
+        }
+
         let currentCategory = "";
         let currentIsOpen = true;
 
-        return electivesData.map((course, index) => {
-            const isNewGroup = course.isOpen !== currentIsOpen || course.category !== currentCategory || index === 0;
+        return visibleElectives.map((course, index) => {
+            const isNewGroup = course.isOpen !== currentIsOpen || categoryOf(course) !== currentCategory || index === 0;
             if (isNewGroup) {
-                currentCategory = course.category;
+                currentCategory = categoryOf(course);
                 currentIsOpen = course.isOpen;
             }
 
@@ -167,7 +253,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                 <Box key={`${course.code}-${index}`}>
                     {isNewGroup && (
                         <Typography variant="h6" style={{ marginTop: 24, marginBottom: 12, fontWeight: 700, color: currentIsOpen ? '#1d4ed8' : '#6b7280' }}>
-                            {currentIsOpen ? "🟢 Open: " : "🔴 Closed: "} {currentCategory || "General Electives"}
+                            {currentIsOpen ? "🟢 Open: " : "🔴 Closed: "} {currentCategory}
                         </Typography>
                     )}
                     
@@ -310,6 +396,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                         <Alert severity="error">{error}</Alert>
                     ) : (
                         <>
+                            {renderCategoryFilter()}
                             {renderElectivesList()}
                         </>
                     )}
