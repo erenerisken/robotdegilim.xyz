@@ -138,7 +138,8 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
     };
 
     const formatDay = (dayNum) => {
-        const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        // Indexed by Date.getDay(), the numbering lecture times use.
+        const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         return dayNames[dayNum] || "Unknown";
     };
 

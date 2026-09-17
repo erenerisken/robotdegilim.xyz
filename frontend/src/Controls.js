@@ -660,7 +660,7 @@ export const Controls = (props) => {
                         value={surname}
                         inputProps={{ maxLength: 12 }}
                         variant="outlined"
-                        placeholder="e.g. KORKMAZ"
+                        placeholder="e.g. GUNDUZ"
                         className="pretty-textfield"
                         InputProps={{
                             startAdornment: (

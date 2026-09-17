@@ -65,14 +65,16 @@ export class Client {
     const data = await this._getLatestCourseData();
     const courses = [];
     
+    // Date.getDay() numbering: the weekly program renders a lecture on
+    // 2021-02-14 + day, and 2021-02-14 is a Sunday.
     const dayMap = {
-      Monday: 0,
-      Tuesday: 1,
-      Wednesday: 2,
-      Thursday: 3,
-      Friday: 4,
-      Saturday: 5,
-      Sunday: 6
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6
     };
 
     // programs dict is { "642": { "short_name": "TURK", "name": "Turkish Language", "courses": { "6420101": { ... } } } }
@@ -100,10 +102,11 @@ export class Client {
           
           if (sectionData.schedule) {
             sectionData.schedule.forEach((t) => {
-              if (t.day && t.start_hour && t.end_hour) {
+              const day = dayMap[t.day];
+              if (day !== undefined && t.start_hour && t.end_hour) {
                  sectionToPush.lectureTimes.push({
                    classroom: t.classroom || t.building || "TBA",
-                   day: dayMap[t.day] !== undefined ? dayMap[t.day] : 0,
+                   day,
                    startHour: parseInt(t.start_hour.split(":")[0], 10),
                    startMin: parseInt(t.start_hour.split(":")[1], 10),
                    endHour: parseInt(t.end_hour.split(":")[0], 10),
