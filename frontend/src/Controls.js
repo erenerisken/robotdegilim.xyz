@@ -669,19 +669,15 @@ export const Controls = (props) => {
         setNteDialogOpen(false);
     };
 
-    const handleAddNTECourse = (nteCourse, selectedSectionIndex = 0) => {
-        // NTE dersleri için özel handler
+    // The dialog hands back the sections the department is let into, as indexes
+    // on the course, so a section held for another department never arrives
+    // switched on.
+    const handleAddNTECourse = (nteCourse, sectionIndexes) => {
         const newSelected = [...selectedCourses];
-        let sectionsArray;
-
-        if (selectedSectionIndex === -1) {
-            // Tüm section'ları aktif et
-            sectionsArray = new Array(nteCourse.sections.length).fill(true);
-        } else {
-            // Tüm section'lar için false array oluştur, sadece seçilen index'i true yap
-            sectionsArray = new Array(nteCourse.sections.length).fill(false);
-            sectionsArray[selectedSectionIndex] = true;
-        }
+        const sectionsArray = new Array(nteCourse.sections.length).fill(false);
+        sectionIndexes.forEach((index) => {
+            sectionsArray[index] = true;
+        });
 
         newSelected.push({
             code: nteCourse.code,

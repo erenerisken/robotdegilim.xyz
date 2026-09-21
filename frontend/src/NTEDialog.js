@@ -5,7 +5,6 @@ import {
     DialogActions,
     Button,
     Typography,
-    Chip,
     Box,
     Divider,
     CircularProgress,
@@ -22,7 +21,7 @@ import AddIcon from '@mui/icons-material/Add';
 import SchoolIcon from '@mui/icons-material/School';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import { withStyles } from '@mui/styles';
-import { getElectives, filterAvailableElectives } from './data/Course';
+import { getElectives } from './data/Course';
 
 // Styled Components
 const StyledDialog = withStyles((theme) => ({
@@ -45,13 +44,6 @@ const CourseCard = withStyles((theme) => ({
         },
     },
 }))(Card);
-
-const SectionChip = withStyles((theme) => ({
-    root: {
-        margin: theme.spacing(0.5, 0.5, 0.5, 0),
-        borderRadius: '6px',
-    },
-}))(Chip);
 
 const ModernButton = withStyles((theme) => ({
     root: {
@@ -127,32 +119,38 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
         setLoading(true);
         setError('');
         try {
-            // Returns [{ code, stringCode, name, category, isOpen }]
+            // Returns the electives the department may take this semester, as
+            // [{ code, stringCode, name, category, sectionNumbers }].
             const data = await getElectives(department);
-            
-            // Link to full courses to get sections and time info for 'isOpen' ones
-            const fullyLinkedData = data.map(elective => {
-               if (elective.isOpen) {
-                  const fullCourse = allCourses.find(c => c.code === elective.code);
-                  if (fullCourse) {
-                      return { ...elective, sections: fullCourse.sections, fullCourse };
-                  }
-               }
-               return elective;
-            });
-            
-            // Sort: open courses first, then grouped by category
-            fullyLinkedData.sort((a, b) => {
-               if (a.isOpen && !b.isOpen) return -1;
-               if (!a.isOpen && b.isOpen) return 1;
-               if (a.category < b.category) return -1;
-               if (a.category > b.category) return 1;
-               return 0;
-            });
+            const coursesByCode = new Map(allCourses.map((course) => [course.code, course]));
 
-            setElectivesData(fullyLinkedData);
+            // Sections keep the index they have on the course, because that is
+            // what gets handed back when one is added and the sections held for
+            // other departments never make it into this list.
+            const linked = data
+                .map((elective) => {
+                    const fullCourse = coursesByCode.get(elective.code);
+                    if (!fullCourse) return null;
+
+                    const sections = fullCourse.sections
+                        .map((section, index) => ({ section, index }))
+                        .filter(({ section }) =>
+                            elective.sectionNumbers.includes(section.sectionNumber)
+                        );
+
+                    return sections.length ? { ...elective, fullCourse, sections } : null;
+                })
+                .filter((elective) => elective !== null);
+
+            linked.sort(
+                (a, b) =>
+                    categoryOf(a).localeCompare(categoryOf(b)) ||
+                    a.stringCode.localeCompare(b.stringCode)
+            );
+
+            setElectivesData(linked);
             // Every type starts ticked, and a department switch re-reads them.
-            setSelectedCategories([...new Set(fullyLinkedData.map(categoryOf))]);
+            setSelectedCategories([...new Set(linked.map(categoryOf))]);
         } catch (err) {
             setError('Error loading electives.');
             console.error('Error loading electives:', err);
@@ -172,22 +170,19 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [electivesData]);
 
-    // Sections keep the index they have on the course, because that is what
-    // gets handed back when one is added.
     const visibleElectives = useMemo(
         () =>
             electivesData
                 .filter((course) => selectedCategories.includes(categoryOf(course)))
-                .map((course) => {
-                    const sections = (course.sections || []).map((section, index) => ({ section, index }));
-                    return {
-                        ...course,
-                        visibleSections: showConflicts
-                            ? sections
-                            : sections.filter(({ section }) => !conflictsWithSchedule(section, occupiedSlots)),
-                    };
-                })
-                .filter((course) => showConflicts || !course.isOpen || course.visibleSections.length > 0),
+                .map((course) => ({
+                    ...course,
+                    visibleSections: showConflicts
+                        ? course.sections
+                        : course.sections.filter(
+                              ({ section }) => !conflictsWithSchedule(section, occupiedSlots)
+                          ),
+                }))
+                .filter((course) => showConflicts || course.visibleSections.length > 0),
         [electivesData, selectedCategories, showConflicts, occupiedSlots]
     );
 
@@ -200,11 +195,16 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
     };
 
     const handleAddElective = (course, sectionIndex) => {
-        onAddCourse(course.fullCourse, sectionIndex);
+        onAddCourse(course.fullCourse, [sectionIndex]);
     };
 
+    // "All" means the sections on screen: the ones the department is let into,
+    // minus any the clash filter is currently hiding.
     const handleAddAllSections = (course) => {
-        onAddCourse(course.fullCourse, -1);
+        onAddCourse(
+            course.fullCourse,
+            course.visibleSections.map(({ index }) => index)
+        );
     };
 
     const formatTime = (t) => {
@@ -270,7 +270,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
         if (electivesData.length === 0) {
             return (
                 <Alert severity="info" style={{ borderRadius: '12px' }}>
-                    No electives found for {department}.
+                    None of {department}'s electives are open to it this semester.
                 </Alert>
             );
         }
@@ -286,24 +286,22 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
         }
 
         let currentCategory = "";
-        let currentIsOpen = true;
 
         return visibleElectives.map((course, index) => {
-            const isNewGroup = course.isOpen !== currentIsOpen || categoryOf(course) !== currentCategory || index === 0;
+            const isNewGroup = index === 0 || categoryOf(course) !== currentCategory;
             if (isNewGroup) {
                 currentCategory = categoryOf(course);
-                currentIsOpen = course.isOpen;
             }
 
             return (
-                <Box key={`${course.code}-${index}`}>
+                <Box key={`${course.code}-${categoryOf(course)}`}>
                     {isNewGroup && (
-                        <Typography variant="h6" style={{ marginTop: 24, marginBottom: 12, fontWeight: 700, color: currentIsOpen ? '#1d4ed8' : '#6b7280' }}>
-                            {currentIsOpen ? "🟢 Open: " : "🔴 Closed: "} {currentCategory}
+                        <Typography variant="h6" style={{ marginTop: 24, marginBottom: 12, fontWeight: 700, color: '#1d4ed8' }}>
+                            {currentCategory}
                         </Typography>
                     )}
                     
-                    <CourseCard style={{ opacity: currentIsOpen ? 1 : 0.6 }}>
+                    <CourseCard>
                         <CardContent>
                             <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                                 <Box>
@@ -313,16 +311,8 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                                     <Typography variant="body1" color="textSecondary" style={{ marginBottom: 8 }}>
                                         {course.name}
                                     </Typography>
-                                    {!currentIsOpen && (
-                                        <SectionChip
-                                            label="Not Offered This Semester"
-                                            size="small"
-                                            color="secondary"
-                                            variant="outlined"
-                                        />
-                                    )}
                                 </Box>
-                                {currentIsOpen && (
+                                {course.visibleSections.length > 0 && (
                                     <Box display="flex" gap={1}>
                                         <ModernButton
                                             variant="contained"
@@ -336,7 +326,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                                 )}
                             </Box>
 
-                            {currentIsOpen && course.visibleSections.length > 0 && (
+                            {course.visibleSections.length > 0 && (
                                 <>
                                     <Divider style={{ margin: '16px 0' }} />
                                     <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: 12 }}>
@@ -413,7 +403,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                                     Available Electives for {department}
                                 </Typography>
                                 <Typography variant="body2" style={{ opacity: 0.9 }}>
-                                    Electives curated for your department
+                                    Offered this semester and open to your department
                                 </Typography>
                             </Box>
                         </Box>
