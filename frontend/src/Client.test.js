@@ -49,7 +49,22 @@ async function lectureTimesOf(client) {
   return course.sections[0].lectureTimes;
 }
 
-function clientWithElectives(electives) {
+// A section nobody is kept out of: nearly half the catalogue's carry no
+// criteria at all.
+const openSection = (sectionNumber, criteria = []) => ({
+  section_number: sectionNumber,
+  criteria,
+});
+
+const forDept = (dept) => ({ given_dept: dept, start_char: "AA", end_char: "ZZ" });
+
+const OFFERED_COURSES = {
+  "120": { short_name: "ARCH", courses: { "1200211": { sections: { "1": openSection(1) } } } },
+  "240": { short_name: "HIST", courses: { "2402205": { sections: { "1": openSection(1) } } } },
+  "642": { short_name: "TURK", courses: { "6420101": { sections: { "1": openSection(1) } } } },
+};
+
+function clientWithElectives(electives, offered = OFFERED_COURSES) {
   const client = new Client();
   const responses = {
     "data/scrape_programs/programs.json": {
@@ -66,13 +81,7 @@ function clientWithElectives(electives) {
       },
     },
     "data/scrape_courses/latest.json": { latest: "20261.json" },
-    "data/scrape_courses/20261.json": {
-      programs: {
-        "120": { short_name: "ARCH", courses: { "1200211": {} } },
-        "240": { short_name: "HIST", courses: { "2402205": {} } },
-        "642": { short_name: "TURK", courses: { "6420101": {} } },
-      },
-    },
+    "data/scrape_courses/20261.json": { programs: offered },
   };
   vi.spyOn(client.http, "get").mockImplementation(async (url) => {
     const key = url.slice(client.s3BaseUrl.length + 1);
@@ -329,16 +338,75 @@ describe("Client.getCourses", () => {
 });
 
 describe("Client.getElectives", () => {
-  it("reads S3's seven-digit codes and distinguishes open and closed courses", async () => {
+  it("reads S3's seven-digit codes and names the sections on offer", async () => {
     const electives = [
       { code: "1200211", name: "ARCHITECTURAL HISTORY II", category: "NONTECHNICAL ELECTIVE" },
-      { code: "5710332", name: "SYSTEMS PROGRAMMING", category: "TECHNICAL ELECTIVE" },
+      { code: "6420101", name: "TURKISH I", category: "ELECTIVE" },
     ];
     const client = clientWithElectives(electives);
 
     expect(await client.getElectives("CENG")).toEqual([
-      { ...electives[0], code: 1200211, stringCode: "ARCH 211", isOpen: true },
-      { ...electives[1], code: 5710332, stringCode: "CENG 332", isOpen: false },
+      { ...electives[0], code: 1200211, stringCode: "ARCH 211", sectionNumbers: [1] },
+      { ...electives[1], code: 6420101, stringCode: "TURK 101", sectionNumbers: [1] },
+    ]);
+  });
+
+  it("leaves out an elective the catalogue is not offering this semester", async () => {
+    // CENG 332 is in the curriculum but nothing in the catalogue opens it.
+    const client = clientWithElectives([
+      { code: "5710332", name: "SYSTEMS PROGRAMMING", category: "TECHNICAL ELECTIVE" },
+      { code: "1200211", name: "ARCHITECTURAL HISTORY II", category: "NONTECHNICAL ELECTIVE" },
+    ]);
+
+    expect(await client.getElectives("CENG")).toEqual([
+      expect.objectContaining({ code: 1200211 }),
+    ]);
+  });
+
+  it("leaves out an elective whose every section is held for other departments", async () => {
+    const client = clientWithElectives(
+      [{ code: "1200211", name: "ARCHITECTURAL HISTORY II", category: "NONTECHNICAL ELECTIVE" }],
+      {
+        "120": {
+          short_name: "ARCH",
+          courses: {
+            "1200211": {
+              sections: {
+                "1": openSection(1, [forDept("ARCH")]),
+                "2": openSection(2, [forDept("CRP")]),
+              },
+            },
+          },
+        },
+      }
+    );
+
+    expect(await client.getElectives("CENG")).toEqual([]);
+  });
+
+  it("keeps only the sections the department is let into", async () => {
+    const client = clientWithElectives(
+      [{ code: "1200211", name: "ARCHITECTURAL HISTORY II", category: "NONTECHNICAL ELECTIVE" }],
+      {
+        "120": {
+          short_name: "ARCH",
+          courses: {
+            "1200211": {
+              sections: {
+                "1": openSection(1, [forDept("ARCH")]),
+                "2": openSection(2, [forDept("ALL")]),
+                "3": openSection(3, [forDept("EE"), forDept("CENG")]),
+                // A section with no criteria at all is open to everyone.
+                "4": openSection(4),
+              },
+            },
+          },
+        },
+      }
+    );
+
+    expect(await client.getElectives("CENG")).toEqual([
+      expect.objectContaining({ code: 1200211, sectionNumbers: [2, 3, 4] }),
     ]);
   });
 
@@ -346,15 +414,28 @@ describe("Client.getElectives", () => {
     const client = clientWithElectives([
       { code: "ARCH 211", name: "ARCHITECTURAL HISTORY II", category: "NONTECHNICAL ELECTIVE" },
       { code: "HIST 2205", name: "HISTORY OF THE TURKISH REVOLUTION I", category: "NONTECHNICAL ELECTIVE" },
-      { code: "2402205", name: "HISTORY OF THE TURKISH REVOLUTION I", category: "NONTECHNICAL ELECTIVE" },
       { code: "6420101", name: "TURKISH I", category: "ELECTIVE" },
     ]);
 
     expect(await client.getElectives("CENG")).toEqual([
-      expect.objectContaining({ code: 1200211, stringCode: "ARCH 211", isOpen: true }),
-      expect.objectContaining({ code: 2402205, stringCode: "HIST 2205", isOpen: true }),
-      expect.objectContaining({ code: 2402205, stringCode: "HIST 2205", isOpen: true }),
-      expect.objectContaining({ code: 6420101, stringCode: "TURK 101", isOpen: true }),
+      expect.objectContaining({ code: 1200211, stringCode: "ARCH 211" }),
+      expect.objectContaining({ code: 2402205, stringCode: "HIST 2205" }),
+      expect.objectContaining({ code: 6420101, stringCode: "TURK 101" }),
+    ]);
+  });
+
+  it("lists a course once per heading however often the curriculum repeats it", async () => {
+    // 740 of the catalogue's electives repeat a code under one heading; a code
+    // under two headings is not a repeat, because the two are filtered apart.
+    const client = clientWithElectives([
+      { code: "HIST 2205", name: "HISTORY", category: "NONTECHNICAL ELECTIVE" },
+      { code: "2402205", name: "HISTORY", category: "NONTECHNICAL ELECTIVE" },
+      { code: "2402205", name: "HISTORY", category: "RESTRICTED ELECTIVE" },
+    ]);
+
+    expect(await client.getElectives("CENG")).toEqual([
+      expect.objectContaining({ code: 2402205, category: "NONTECHNICAL ELECTIVE" }),
+      expect.objectContaining({ code: 2402205, category: "RESTRICTED ELECTIVE" }),
     ]);
   });
 
@@ -369,7 +450,7 @@ describe("Client.getElectives", () => {
     ]);
 
     expect(await client.getElectives("CENG")).toEqual([
-      expect.objectContaining({ code: 1200211, isOpen: true }),
+      expect.objectContaining({ code: 1200211 }),
     ]);
   });
 });

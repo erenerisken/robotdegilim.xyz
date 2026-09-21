@@ -16,6 +16,20 @@ function _joinUrl(base, key) {
   return `${base}/${key}`;
 }
 
+// Whether a department's students may register for a section. Nearly half the
+// catalogue's sections carry no criteria at all, which leaves them open to
+// everyone; the rest have to name the department or be given to "ALL". Surname
+// and CGPA decide which section a student lands in, not whether the course is
+// theirs to take, so neither narrows this.
+function sectionAdmits(section, dept) {
+  const criteria = section.criteria || [];
+
+  return (
+    criteria.length === 0 ||
+    criteria.some((c) => c.given_dept === "ALL" || c.given_dept === dept)
+  );
+}
+
 export class Client {
   constructor() {
     const env = import.meta.env;
@@ -269,7 +283,10 @@ export class Client {
     return mustCodes;
   }
 
-  // Replaces getNTEs -> getElectives
+  // The electives a department can actually sign up for: the ones its
+  // curriculum lists, that the catalogue offers this semester, and that keep at
+  // least one section its students are let into. sectionNumbers names those
+  // sections, so the ones held for other departments are never offered either.
   async getElectives(dept) {
     const programsData = await this._getProgramsData();
     const departmentCodes = await this._getDepartmentCodes();
@@ -288,15 +305,20 @@ export class Client {
         departmentAbbreviations.set(departmentCode, program.short_name);
       }
     });
-    // Build a set of open course codes
-    const openCourseCodes = new Set();
+    const openCourses = new Map();
     Object.entries(openCoursesData.programs).forEach(([departmentCode, prog]) => {
        // The course catalog also includes departments without a degree program (e.g. TURK).
        if (prog.short_name) departmentAbbreviations.set(departmentCode, prog.short_name);
-       Object.keys(prog.courses).forEach(cCode => {
-          openCourseCodes.add(parseInt(cCode, 10));
+       Object.entries(prog.courses).forEach(([cCode, course]) => {
+          openCourses.set(parseInt(cCode, 10), course);
        });
     });
+
+    // A curriculum lists the same course twice often enough that it is worth
+    // saying so: 740 of them across the catalogue repeat a code under one
+    // heading. Repeats under two headings are not duplicates, because the two
+    // headings are filtered separately.
+    const listed = new Set();
     
     const electivesProcessed = targetProgram.electives.map(e => {
         const rawCode = String(e.code ?? "").trim();
@@ -315,20 +337,32 @@ export class Client {
           }
         }
 
-        const numericCode = String(sevenDigitCode ?? "");
+        const openCourse = sevenDigitCode === null ? undefined : openCourses.get(sevenDigitCode);
+        if (!openCourse) return null;
+
+        const sectionNumbers = Object.values(openCourse.sections || {})
+          .filter((section) => sectionAdmits(section, dept))
+          .map((section) => section.section_number);
+        if (sectionNumbers.length === 0) return null;
+
+        const listing = `${sevenDigitCode}|${e.category}`;
+        if (listed.has(listing)) return null;
+        listed.add(listing);
+
+        const numericCode = String(sevenDigitCode);
         const abbreviation = departmentAbbreviations.get(numericCode.slice(0, 3));
         const stringCode = abbreviation
           ? `${abbreviation} ${courseNumber(numericCode)}`
           : rawCode;
-        
+
         return {
            code: sevenDigitCode,
            stringCode,
            name: e.name,
            category: e.category,
-           isOpen: sevenDigitCode ? openCourseCodes.has(sevenDigitCode) : false
+           sectionNumbers,
         };
-    }).filter(e => e.code !== null);
+    }).filter(e => e !== null);
     
     return electivesProcessed;
   }
