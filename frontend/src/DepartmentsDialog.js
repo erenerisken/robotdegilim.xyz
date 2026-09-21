@@ -50,7 +50,10 @@ const cellSx = {
     fontWeight: 600,
 };
 
-const normalise = (text) => text.toLocaleUpperCase("tr");
+// Turkish keeps two i's apart and JavaScript honours that: "ie" uppercased in
+// the Turkish locale is "İE", which never matches the abbreviation "IE". Fold
+// all four onto one letter so either spelling finds the other.
+const normalise = (text) => text.replace(/[ıİ]/g, "i").toLocaleUpperCase("en");
 
 export default function DepartmentsDialog({ open, onClose }) {
     const [departments, setDepartments] = useState([]);
@@ -74,11 +77,26 @@ export default function DepartmentsDialog({ open, onClose }) {
 
         if (!needle) return departments;
 
-        return departments.filter(
-            (department) =>
-                normalise(department.abbreviation).includes(needle) ||
-                normalise(department.name).includes(needle)
-        );
+        // The abbreviation is what this box is for, so a department whose
+        // abbreviation matches outranks one that merely spells the query
+        // somewhere in its name: "ie" must not bury IE under the 22
+        // departments with "Science" or "Studies" in them.
+        const rank = (department) => {
+            const abbreviation = normalise(department.abbreviation);
+
+            if (abbreviation === needle) return 0;
+            if (abbreviation.startsWith(needle)) return 1;
+            if (abbreviation.includes(needle)) return 2;
+            return 3;
+        };
+
+        return departments
+            .filter(
+                (department) =>
+                    normalise(department.abbreviation).includes(needle) ||
+                    normalise(department.name).includes(needle)
+            )
+            .sort((a, b) => rank(a) - rank(b));
     }, [departments, query]);
 
     return (
