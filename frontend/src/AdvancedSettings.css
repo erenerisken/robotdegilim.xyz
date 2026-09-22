@@ -1,67 +1,100 @@
-/* Use the same class names as in the component */
-.course-settings-wrapper {
-    margin: 8px 6pt;
+/* Scoped to .adv-accordion: the course-card settings panel reuses the same
+   class names from its own stylesheet. */
+.adv-accordion.course-settings-wrapper {
+    margin: 0;
     padding: 0;
 }
-.course-settings-row {
-    display: inline-flex;
+
+.adv-accordion .course-settings-row {
+    display: flex;
     width: 100%;
     flex-wrap: wrap;
     align-items: center;
+    gap: 4px 12px;
 }
-.course-settings-accordion {
+
+.adv-accordion .course-settings-accordion {
     width: 100%;
 }
-.course-settings-typo {
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: 6pt;
+
+.adv-accordion .course-settings-typo {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    font-weight: 600;
 }
 
-/* Flat accordion look - dark mode */
+/* Flat accordion: a bordered strip, not a floating paper. */
 .adv-accordion .MuiAccordion-root {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius) !important;
   box-shadow: none;
-  background: var(--bg-card) !important;
-  transition: background 0.3s ease, border-color 0.3s ease;
+  background: var(--bg-subtle) !important;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  margin: 0 !important;
 }
 
-.adv-accordion .MuiAccordion-root:before { display: none; }
+.adv-accordion .MuiAccordion-root:before {
+  display: none;
+}
+
+.adv-accordion .MuiAccordion-root:hover {
+  border-color: var(--border-strong);
+}
 
 .adv-accordion .MuiAccordionSummary-root {
-  padding: 0 12px;
-  min-height: 44px;
-  background: var(--bg-card) !important;
+  padding: 0 14px;
+  min-height: 48px;
+  background: transparent !important;
   color: var(--text-primary);
 }
 
+.adv-accordion .MuiAccordionSummary-root.Mui-expanded {
+  min-height: 48px;
+}
+
+.adv-accordion .MuiAccordionSummary-content,
+.adv-accordion .MuiAccordionSummary-content.Mui-expanded {
+  margin: 10px 0;
+}
+
+.adv-accordion .MuiAccordionSummary-expandIconWrapper,
 .adv-accordion .MuiAccordionSummary-expandIcon {
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
-.adv-accordion .MuiAccordionSummary-content {
-  margin: 8px 0;
+/* The oversized icon read as decoration; bring it down to label size. */
+.adv-accordion .MuiAccordionSummary-content .MuiSvgIcon-root {
+  font-size: 20px;
 }
 
 .adv-accordion .MuiAccordionDetails-root {
   border-top: 1px solid var(--border);
-  padding: 12px;
-  background: var(--bg-card) !important;
+  padding: 12px 14px;
+  background: transparent !important;
   color: var(--text-primary);
 }
 
-.adv-accordion .MuiFormControlLabel-root {
-  margin-right: 12px;
+/* The divider inside the details duplicated the border above it. */
+.adv-accordion .MuiAccordionDetails-root .MuiDivider-root {
+  display: none;
 }
 
-/* Mobile responsive adjustments */
+.adv-accordion .MuiFormControlLabel-root {
+  margin-right: 10px;
+}
+
+.adv-accordion .MuiFormControlLabel-label {
+  font-size: 0.875rem;
+}
+
 @media (max-width: 768px) {
   .course-settings-row {
-    flex-direction: column;
-    gap: 6pt;
+    align-items: flex-start;
   }
-  .course-settings-accordion {
-    width: 100%;
+
+  .adv-accordion .MuiAccordionDetails-root .course-settings-row {
+    flex-direction: column;
+    gap: 0;
   }
 }

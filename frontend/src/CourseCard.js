@@ -19,7 +19,6 @@ import {
   ExpandMore as ExpandMoreIcon,
   School as SchoolIcon,
 } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
 import { withStyles } from "@mui/styles";
 
 import { SectionInfo } from "./SectionInfo";
@@ -29,44 +28,29 @@ import "./CourseCard.css";
 
 const ModernCard = withStyles((theme) => ({
   root: {
-    borderRadius: '16px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    backdropFilter: 'blur(10px)',
-    transition: 'all 0.3s ease',
+    borderRadius: 'var(--radius-lg)',
+    boxShadow: 'var(--shadow-xs)',
+    transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
     '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+      boxShadow: 'var(--shadow-md)',
     },
-    margin: theme.spacing(1),
+    margin: theme.spacing(0.75, 0),
     position: 'relative',
     overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '4px',
-      zIndex: 1,
-    },
   },
 }))(Card);
 
-const CardHeader = withStyles((theme) => ({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: theme.spacing(2, 2, 0, 2),
-    position: 'relative',
-    zIndex: 2,
-  },
-}))(Box);
+// Box ignores a `classes` prop, so these two are styled from CourseCard.css
+// rather than through withStyles.
+const CardHeader = ({ children }) => (
+  <div className="course-card-header">{children}</div>
+);
 
 const CourseTitle = withStyles((theme) => ({
   root: {
     fontWeight: 600,
-    fontSize: '1.1rem',
+    fontSize: '1rem',
+    letterSpacing: '0.01em',
     lineHeight: 1.3,
     color: theme.palette.text.primary,
     display: 'flex',
@@ -119,55 +103,42 @@ const ModernAccordionDetails = withStyles((theme) => ({
   },
 }))(AccordionDetails);
 
-const SectionSelector = withStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: '10px',
-    padding: theme.spacing(2),
-    marginTop: theme.spacing(2),
-    border: `1px solid ${theme.palette.divider}`,
-    boxShadow: theme.palette.mode === 'dark' ? '0 1px 2px rgba(0,0,0,0.3)' : '0 1px 2px rgba(0,0,0,0.04)',
-  },
-}))(Box);
+const SectionSelector = ({ children }) => (
+  <div className="course-section-selector">{children}</div>
+);
 
 const ModernButton = withStyles((theme) => ({
   root: {
-    borderRadius: '8px',
+    borderRadius: 'var(--radius-sm)',
     fontWeight: 600,
+    fontSize: '0.78rem',
     textTransform: 'none',
-    padding: theme.spacing(0.5, 2),
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    '&:hover': {
-      transform: 'translateY(-1px)',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
-    },
-    transition: 'all 0.2s ease',
-    marginLeft: theme.spacing(1),
+    padding: theme.spacing(0.25, 1.25),
+    boxShadow: 'none',
+    transition: 'background-color 0.16s ease',
+    marginLeft: theme.spacing(0.5),
   },
 }))(Button);
 
 const ModernIconButton = withStyles((theme) => ({
   root: {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.1)'
-      : 'rgba(255, 255, 255, 0.8)',
-    borderRadius: '8px',
+    backgroundColor: 'transparent',
+    borderRadius: 'var(--radius-sm)',
     padding: theme.spacing(0.5),
     '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.2)'
-        : 'rgba(255, 255, 255, 0.95)',
-      transform: 'scale(1.05)',
+      backgroundColor: 'rgba(224, 82, 74, 0.12)',
     },
-    transition: 'all 0.2s ease',
+    transition: 'background-color 0.16s ease',
   },
 }))(IconButton);
 
 const SectionTitle = withStyles((theme) => ({
   root: {
     fontWeight: 600,
-    fontSize: '0.9rem',
-    color: theme.palette.text.primary,
+    fontSize: '0.72rem',
+    letterSpacing: '0.07em',
+    textTransform: 'uppercase',
+    color: 'var(--text-muted)',
     marginBottom: theme.spacing(1),
     display: 'flex',
     alignItems: 'center',
@@ -186,7 +157,6 @@ export const CourseCard = ({
   onClassroomUpdate,
   settings,
 }) => {
-  const theme = useTheme();
   const [selectedSections, setSelectedSections] = useState(sections.slice(0));
   const [expanded, setExpanded] = useState(false);
 
@@ -261,15 +231,15 @@ export const CourseCard = ({
   };
 
   const cardStyle = {
-    border: `2px solid ${color.main}`,
-    background: theme.palette.mode === 'dark'
-      ? theme.palette.background.paper
-      : `linear-gradient(135deg, ${color.main}10, ${color.main}05)`,
+    border: '1px solid var(--border)',
+    background: 'var(--bg-card)',
     cursor: 'pointer',
   };
 
+  // A thin rail in the course colour: the card stays neutral, the colour still
+  // ties it to its block in the schedule.
   const beforeStyle = {
-    background: `linear-gradient(90deg, ${color.main}, ${color.light || color.main})`,
+    background: color.main,
   };
 
   const handleCardClick = (event) => {
@@ -289,18 +259,18 @@ export const CourseCard = ({
     <ModernCard style={cardStyle} className="course-card fade-in" onClick={handleCardClick}>
       <div style={beforeStyle} className="course-card-top-border" />
       <CardHeader>
-        <Box style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-          <SchoolIcon style={{ color: color.main }} />
-          <Box>
+        <div className="course-card-identity">
+          <SchoolIcon style={{ color: color.main, flexShrink: 0 }} />
+          <div className="course-card-names">
             <CourseTitle>
               {course.abbreviation}
             </CourseTitle>
-            <Typography variant="body2" color="textSecondary" style={{ marginTop: 4 }}>
+            <Typography variant="body2" color="textSecondary" className="course-card-name">
               {course.name}
             </Typography>
-          </Box>
-        </Box>
-        <Box style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          </div>
+        </div>
+        <div className="course-card-actions">
           <CourseCode
             style={{
               backgroundColor: color.main,
@@ -310,19 +280,19 @@ export const CourseCard = ({
             size="small"
           />
           <ModernIconButton onClick={(e) => { e.stopPropagation(); onDelete(); }} size="small">
-            <DeleteIcon fontSize="small" style={{ color: '#ef4444' }} />
+            <DeleteIcon fontSize="small" style={{ color: '#e0524a' }} />
           </ModernIconButton>
-        </Box>
+        </div>
       </CardHeader>
 
       <ModernAccordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
         <ModernAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <SectionTitle>
-            Course Details & Sections
+          <SectionTitle className="course-card-toggle">
+            Course Details &amp; Sections
           </SectionTitle>
         </ModernAccordionSummary>
         <ModernAccordionDetails>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <SectionSelector>
               <SectionTitle variant="body2">
                 Available Sections
@@ -339,7 +309,7 @@ export const CourseCard = ({
 
             {expanded && (
               <Box>
-                <Divider style={{ marginBottom: 16 }} />
+                <Divider style={{ marginBottom: 12 }} />
                 <SectionTitle variant="body2">
                   Section Information
                 </SectionTitle>

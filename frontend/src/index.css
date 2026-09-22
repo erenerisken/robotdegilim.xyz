@@ -1,30 +1,79 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-/* Light theme (default) */
+/* ---------------------------------------------------------------------------
+   Design tokens
+   One place for surface, text, line, radius, shadow and accent. Components
+   read these instead of hard-coding colours, so light and dark stay in step.
+--------------------------------------------------------------------------- */
 :root {
-  --bg-page: #f1f5f9;
+  /* Surfaces */
+  --bg-page: #f6f7f9;
   --bg-card: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: rgba(0, 0, 0, 0.6);
-  --border: rgba(0, 0, 0, 0.1);
-  --shadow: rgba(0, 0, 0, 0.1);
+  --bg-subtle: #f1f3f7;
+  --bg-hover: #eceff4;
   --input-bg: #ffffff;
-  --scrollbar-track: #f1f5f9;
-  --scrollbar-thumb: #cbd5e1;
-  --scrollbar-thumb-hover: #94a3b8;
+
+  /* Text */
+  --text-primary: #131720;
+  --text-secondary: #5b6472;
+  --text-muted: #8a93a2;
+
+  /* Lines */
+  --border: #e3e7ee;
+  --border-strong: #cfd5e0;
+
+  /* Accent */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.1);
+  --accent-ring: rgba(37, 99, 235, 0.22);
+
+  /* Shadows: soft and low-contrast, never heavy */
+  --shadow: rgba(16, 24, 40, 0.08);
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.07), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.07), 0 1px 3px rgba(16, 24, 40, 0.05);
+  --shadow-lg: 0 12px 28px rgba(16, 24, 40, 0.1), 0 2px 6px rgba(16, 24, 40, 0.05);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* Scrollbar */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #cbd2dd;
+  --scrollbar-thumb-hover: #aeb7c5;
 }
 
 html[data-theme="dark"] {
-  --bg-page: #0f172a;
-  --text-primary: #f1f5f9;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border: rgba(255, 255, 255, 0.1);
-  --shadow: rgba(0, 0, 0, 0.3);
-  --bg-card: #1e293b;
-  --input-bg: #334155;
-  --scrollbar-track: #1e293b;
-  --scrollbar-thumb: #475569;
-  --scrollbar-thumb-hover: #64748b;
+  --bg-page: #0e1420;
+  --bg-card: #161d2b;
+  --bg-subtle: #1c2534;
+  --bg-hover: #222c3d;
+  --input-bg: #1c2534;
+
+  --text-primary: #e8ecf3;
+  --text-secondary: #a3adbd;
+  --text-muted: #7b8698;
+
+  --border: #263042;
+  --border-strong: #344056;
+
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-soft: rgba(59, 130, 246, 0.16);
+  --accent-ring: rgba(59, 130, 246, 0.3);
+
+  --shadow: rgba(0, 0, 0, 0.4);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.38);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.45);
+
+  --scrollbar-thumb: #33405a;
+  --scrollbar-thumb-hover: #445372;
 }
 
 * {
@@ -34,53 +83,59 @@ html[data-theme="dark"] {
 body {
   margin: 0;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+    "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   background-color: var(--bg-page);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-/* Modern scrollbar */
+/* Quieter scrollbars that pick up the theme */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--scrollbar-track);
-  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
+  background-clip: content-box;
 }
 
-/* Animation utilities */
+/* ---------------------------------------------------------------------------
+   Animation utilities
+--------------------------------------------------------------------------- */
 .fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.35s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -96,72 +151,85 @@ code {
   transform: scale(1.02);
 }
 
-/* Modern glass effect */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Modern shadow utilities */
+/* Shadow utilities kept for the components that already opt into them */
 .shadow-sm {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-xs);
 }
 
 .shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .shadow-xl {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Responsive utilities */
-@media (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-}
-
-/* Reusable pretty button styles (opt-in via className) */
+/* ---------------------------------------------------------------------------
+   Buttons
+   Every control keeps its own colour so it stays recognisable, but they now
+   share one radius, one weight and one hover, so a row of them reads as a set.
+--------------------------------------------------------------------------- */
 .pretty-button {
-  border-radius: 8px !important;
+  border-radius: var(--radius) !important;
   text-transform: none !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.1px !important;
-  padding: 8px 12px !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  padding: 9px 16px !important;
   background: var(--bg-card) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border) !important;
-  box-shadow: 0 1px 2px var(--shadow) !important;
-  transition: background-color 0.15s ease, border-color 0.15s ease !important;
+  box-shadow: var(--shadow-xs) !important;
+  transition: background-color 0.16s ease, border-color 0.16s ease,
+    box-shadow 0.16s ease, transform 0.16s ease !important;
 }
 
 .pretty-button .MuiButton-startIcon {
   margin-right: 8px;
+  margin-left: 0;
+}
+
+.pretty-button .MuiButton-startIcon > *:first-child {
+  font-size: 19px;
 }
 
 .pretty-button:hover {
-  background: var(--bg-page) !important;
-  border-color: var(--scrollbar-thumb) !important;
+  background: var(--bg-hover) !important;
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
-html[data-theme="dark"] .pretty-button:hover {
-  background: #334155 !important;
+.pretty-button:active {
+  transform: translateY(1px);
 }
 
-/* Flat, subtle colors */
-.pretty-primary {
-  background: #2563eb !important;
+/* Tinted variants: flat fill, slightly deeper on hover, no gradients. */
+.pretty-primary,
+.pretty-secondary,
+.pretty-ternary,
+.pretty-warning,
+.pretty-danger {
   color: #ffffff !important;
   border-color: transparent !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+.pretty-primary:hover,
+.pretty-secondary:hover,
+.pretty-ternary:hover,
+.pretty-warning:hover,
+.pretty-danger:hover {
+  border-color: transparent !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.pretty-primary {
+  background: #2563eb !important;
 }
 
 .pretty-primary:hover {
@@ -169,68 +237,65 @@ html[data-theme="dark"] .pretty-button:hover {
 }
 
 .pretty-secondary {
-  background: #16a34a !important; /* green-600 */
-  color: #ffffff !important;
-  border-color: transparent !important;
+  background: #0f9d70 !important;
 }
 
 .pretty-secondary:hover {
-  background: #15803d !important;
+  background: #0c8a61 !important;
 }
 
 .pretty-ternary {
-  background: #6a1b9a !important; /* green-600 */
-  color: #ffffff !important;
-  border-color: transparent !important;
+  background: #6d5ce0 !important;
 }
 
 .pretty-ternary:hover {
-  background: #5a0b8a !important;
+  background: #5c4bd0 !important;
 }
 
 .pretty-warning {
-  background: #f59e0b !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
+  background: #d97706 !important;
 }
 
 .pretty-warning:hover {
-  background: #e58e00 !important;
+  background: #c2690a !important;
 }
 
 .pretty-danger {
-  background: #ef4444 !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
+  background: #e0524a !important;
 }
 
 .pretty-danger:hover {
-  background: #df3434 !important;
+  background: #cf453d !important;
 }
 
 .pretty-outline {
-  border-radius: 8px !important;
+  border-radius: var(--radius) !important;
   border-width: 1px !important;
 }
 
 .pretty-button.small {
-  padding: 6px 10px !important;
-  font-size: 0.85rem !important;
+  padding: 6px 12px !important;
+  font-size: 0.8rem !important;
 }
 
-/* Focus styles */
-button:focus,
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  ring: 2px solid #3b82f6;
-  ring-offset: 2px;
+/* ---------------------------------------------------------------------------
+   Focus
+   The old `ring:` lines were not CSS and left keyboard users with nothing.
+--------------------------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.MuiButtonBase-root:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Loading skeleton */
 .skeleton {
-  background: linear-gradient(90deg, var(--scrollbar-track) 25%, var(--scrollbar-thumb) 50%, var(--scrollbar-track) 75%);
+  background: linear-gradient(90deg, var(--bg-subtle) 25%, var(--bg-hover) 50%, var(--bg-subtle) 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
 }
@@ -244,15 +309,69 @@ select:focus {
   }
 }
 
-/* Modern card styles - theme will be applied via styled components */
 .modern-card {
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  /* Background, border, and shadow colors will be set by styled components */
+  border-radius: var(--radius-lg);
 }
 
-/* Banner specific styles */
-.banner {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+/* ---------------------------------------------------------------------------
+   Shared MUI surface overrides
+--------------------------------------------------------------------------- */
+.MuiPaper-root {
+  background-image: none;
+}
+
+.MuiDialog-paper {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.MuiTooltip-tooltip {
+  border-radius: var(--radius-sm) !important;
+  font-size: 0.78rem !important;
+  padding: 6px 10px !important;
+}
+
+.MuiDivider-root {
+  border-color: var(--border) !important;
+}
+
+/* Inputs share one radius and one focus ring across the whole app. */
+.MuiOutlinedInput-root {
+  border-radius: var(--radius) !important;
+}
+
+.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-strong);
+  transition: border-color 0.16s ease;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--text-muted);
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-width: 1px !important;
+  border-color: var(--accent) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* A disabled tinted button must not still read as available. */
+.pretty-button.Mui-disabled {
+  opacity: 0.45;
+  box-shadow: none !important;
+  cursor: not-allowed;
 }

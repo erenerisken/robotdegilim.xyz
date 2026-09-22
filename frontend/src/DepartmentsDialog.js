@@ -27,6 +27,7 @@ const headerSx = {
     gap: 1.5,
     padding: (theme) => theme.spacing(2, 3),
     borderBottom: "1px solid var(--border)",
+    backgroundColor: "var(--bg-subtle)",
 };
 
 // The list runs to a couple of hundred rows. Only the table scrolls, so the
@@ -46,8 +47,12 @@ const searchSx = {
 };
 
 const cellSx = {
-    backgroundColor: "background.paper",
+    backgroundColor: "var(--bg-subtle)",
+    color: "var(--text-muted)",
     fontWeight: 600,
+    fontSize: "0.72rem",
+    letterSpacing: "0.07em",
+    textTransform: "uppercase",
 };
 
 // Turkish keeps two i's apart and JavaScript honours that: "ie" uppercased in
@@ -105,12 +110,14 @@ export default function DepartmentsDialog({ open, onClose }) {
             onClose={onClose}
             maxWidth="sm"
             fullWidth
-            PaperProps={{ sx: { borderRadius: "16px", maxHeight: "90vh" } }}
+            PaperProps={{ sx: { borderRadius: "var(--radius-lg)", maxHeight: "90vh" } }}
         >
             <Box sx={headerSx}>
                 <BusinessIcon color="primary" />
                 <Box>
-                    <Typography variant="h6">Departments</Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                        Departments
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
                         The abbreviation to type in the Department field.
                     </Typography>
@@ -187,7 +194,12 @@ export default function DepartmentsDialog({ open, onClose }) {
                 )}
             </DialogContent>
 
-            <DialogActions sx={{ padding: (theme) => theme.spacing(1.5, 3) }}>
+            <DialogActions
+                sx={{
+                    padding: (theme) => theme.spacing(1.5, 3),
+                    borderTop: "1px solid var(--border)",
+                }}
+            >
                 <Typography variant="body2" color="text.secondary" sx={{ marginRight: "auto" }}>
                     {visibleDepartments.length} of {departments.length} departments
                 </Typography>

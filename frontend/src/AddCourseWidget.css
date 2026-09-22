@@ -1,57 +1,56 @@
-/* Course name / Add course panel - dark mode */
+/* Course search panel: a bordered strip inside the controls card, not a second
+   floating paper on top of it. */
 .add-course-paper {
-  background: var(--bg-card) !important;
-  transition: background 0.3s ease;
+  margin: 0 !important;
+  padding: 12px !important;
+  text-align: left;
+  background: var(--bg-subtle) !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius) !important;
+  box-shadow: none !important;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
-.add-course-wrapper {
-    border-style: groove;
-    margin: 6pt;
-    padding: 6pt;
-    text-align: left;
-    background: var(--bg-page);
-    border-color: var(--border);
-    transition: background 0.3s ease;
-}
 .add-course-row {
-    display: inline-flex;
+    display: flex;
     width: 100%;
     flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
 }
+
 .add-course-name {
-    background: var(--input-bg);
+    background: transparent;
     flex: 1 1 auto;
+    min-width: 0;
 }
 
-/* Pretty autocomplete refinements */
 .pretty-autocomplete .MuiOutlinedInput-root {
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--input-bg);
-}
-
-.pretty-autocomplete .MuiOutlinedInput-notchedOutline {
-  border-color: var(--border);
-}
-
-.pretty-autocomplete:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0,0,0,0.25);
-}
-
-html[data-theme="dark"] .pretty-autocomplete:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255,255,255,0.35);
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
 }
 
 .pretty-autocomplete .MuiInputBase-input::placeholder {
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
-/* Mobile responsive adjustments */
+/* The popup is long; keep it readable and on-theme. */
+.MuiAutocomplete-paper {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.MuiAutocomplete-option {
+  font-size: 0.875rem;
+}
+
 @media (max-width: 768px) {
   .add-course-row {
     flex-direction: column;
-    gap: 6pt;
+    gap: 8px;
     flex-wrap: wrap;
   }
 }

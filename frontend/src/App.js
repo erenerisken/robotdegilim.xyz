@@ -11,13 +11,33 @@ import { useTheme } from "./contexts/ThemeContext";
 
 const App = () => {
   const { darkMode } = useTheme();
+  // Mirror of the CSS custom properties in index.css, so MUI's own surfaces
+  // (menus, dialogs, the scheduler grid) sit on the same palette as everything
+  // styled through the tokens.
   const theme = useMemo(
     () =>
       createTheme(adaptV4Theme({
         palette: {
           type: darkMode ? "dark" : "light",
-          primary: { main: "#1976d2" },
-          secondary: { main: "#71F154" },
+          primary: { main: darkMode ? "#3b82f6" : "#2563eb" },
+          secondary: { main: "#0f9d70" },
+          error: { main: "#e0524a" },
+          warning: { main: "#d97706" },
+          background: {
+            default: darkMode ? "#0e1420" : "#f6f7f9",
+            paper: darkMode ? "#161d2b" : "#ffffff",
+          },
+          text: {
+            primary: darkMode ? "#e8ecf3" : "#131720",
+            secondary: darkMode ? "#a3adbd" : "#5b6472",
+          },
+          divider: darkMode ? "#263042" : "#e3e7ee",
+        },
+        shape: { borderRadius: 10 },
+        typography: {
+          fontFamily:
+            '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", sans-serif',
+          button: { textTransform: "none", fontWeight: 600 },
         },
       })),
     [darkMode]

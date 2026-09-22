@@ -23,6 +23,11 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
+
+    // Keep the mobile browser chrome in step with the page background.
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", darkMode ? "#0e1420" : "#f6f7f9");
+
     try {
       localStorage.setItem(STORAGE_KEY, darkMode ? "dark" : "light");
     } catch (_) {}

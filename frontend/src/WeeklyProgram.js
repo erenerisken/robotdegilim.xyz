@@ -267,13 +267,11 @@ const TimeTableCell = memo(({ startDate, endDate, ...restProps }) => {
 
 const styles = {
   mobile: {
-    margin: 12,
-    width: "calc(100% - 24px)",
+    width: "100%",
     minWidth: 0,
   },
   desktop: {
-    margin: 12,
-    flex: "1 1 480px",
+    flex: "1 1 520px",
     minWidth: 0,
   },
 };

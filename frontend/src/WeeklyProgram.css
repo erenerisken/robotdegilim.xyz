@@ -1,4 +1,6 @@
-/* Modern scheduler styles */
+/* ---------------------------------------------------------------------------
+   Weekly program
+--------------------------------------------------------------------------- */
 .weekly-program {
   max-width: 100%;
   overflow: hidden;
@@ -7,30 +9,67 @@
 .scheduler-card {
   max-width: 100%;
   overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background: var(--bg-card) !important;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
+/* --- Grid chrome ---------------------------------------------------------- */
 .responsive-day-cell {
-  height: 44px !important;
-  padding: 8px 4px !important;
-  color: var(--text-primary) !important;
-  background: var(--bg-page) !important;
+  height: 42px !important;
+  padding: 10px 4px !important;
+  color: var(--text-secondary) !important;
+  background: var(--bg-subtle) !important;
+  font-size: 0.75rem !important;
   font-weight: 600 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-align: center;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Top-left empty corner cell – match the day header row */
+[class*="DayScaleEmptyCell-emptyCell"] {
+  background: var(--bg-subtle) !important;
+  border-bottom: 1px solid var(--border) !important;
+  transition: background-color 0.25s ease;
+}
+
+/* The scheduler paints its own root surface; let the card's show through. */
+.scheduler-card [class*="Root-root"],
+.scheduler-card [class*="MainLayout-container"],
+.scheduler-card [class*="Layout-timeScaleContainer"],
+.scheduler-card [class*="Cell-cell"],
+.scheduler-card [class*="Cell-emptyCell"] {
+  background-color: transparent !important;
+}
+
+/* Hairline grid instead of the default heavier rules */
+.scheduler-card [class*="Cell-cell"],
+.scheduler-card [class*="Cell-dayScaleCell"] {
+  border-color: var(--border) !important;
+}
+
+/* Hour labels in the left gutter */
+.scheduler-card [class*="Label-label"] {
+  color: var(--text-muted) !important;
+  font-size: 0.7rem !important;
+  font-weight: 500 !important;
+}
+
+/* An empty cell invites a Don't Fill block, so show it is clickable. */
+.scheduler-card [class*="Cell-cell"]:hover {
+  background: var(--bg-subtle);
 }
 
 .dayscale-row {
   display: flex;
   flex-direction: row;
-  background: var(--bg-page);
+  background: var(--bg-subtle);
   padding: 8px 0;
-  transition: background 0.3s ease;
-}
-
-/* Top-left empty corner cell – match the day header row */
-[class*="DayScaleEmptyCell-emptyCell"] {
-  background: var(--bg-page) !important;
-  transition: background 0.3s ease;
+  transition: background-color 0.25s ease;
 }
 
 .dayscale-label {
@@ -39,32 +78,70 @@
   padding: 4px;
 }
 
+/* --- Appointments --------------------------------------------------------- */
 .custom-appointment {
-  margin: 2px;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.2s ease-in-out;
+  margin: 1px;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+  transition: none;
   background: transparent !important;
-}
-
-.custom-appointment:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 .program-appointment {
   height: 100%;
   text-align: center;
-  border-radius: 8px;
-  padding: 4px;
+  border-radius: var(--radius-sm);
+  padding: 3px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
+  transition: filter 0.15s ease;
 }
 
-/* DontFill Block Styles */
+.program-appointment:hover {
+  filter: brightness(1.06);
+}
+
+.program-text-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.program-title {
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-align: center;
+  /* The scheduler sets nowrap, and a centred flex item sizes to its content,
+     so a course code spills out of the narrow day column. Bound it and let it
+     wrap instead. */
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.program-title-bottom {
+  font-size: 0.68rem;
+  font-weight: 500;
+  opacity: 0.88;
+  line-height: 1.15;
+  text-align: center;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------------------------
+   Don't Fill blocks (drawn inside an appointment)
+--------------------------------------------------------------------------- */
 .program-text-container-df {
   width: 100%;
   height: 100%;
@@ -74,7 +151,6 @@
   background: transparent !important;
   padding: 2px;
   box-sizing: border-box;
-  transition: all 0.2s ease;
 }
 
 .program-text-container-df.expanded-layout {
@@ -87,48 +163,50 @@
   gap: 0;
 }
 
-.df-controls-row {
+.df-controls-row,
+.df-title-row,
+.program-row-df,
+.df-single-row {
   display: flex;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.df-controls-row {
   justify-content: center;
   gap: 6px;
-  width: 100%;
   padding: 3px 6px;
-  border-radius: 6px 6px 0 0;
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(2px);
-  min-height: 32px;
-  box-sizing: border-box;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 30px;
 }
 
 .df-title-row {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  width: 100%;
   padding: 3px 6px;
-  border-radius: 0 0 6px 6px;
-  background: rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(1px);
-  min-height: 24px;
-  box-sizing: border-box;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: rgba(0, 0, 0, 0.04);
+  min-height: 22px;
 }
 
 .program-row-df {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 4px;
-  width: 100%;
   padding: 4px 6px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(2px);
+  border-radius: var(--radius-sm);
   min-height: 24px;
-  box-sizing: border-box;
 }
 
-/* DontFill Controls */
+.df-single-row {
+  justify-content: space-between;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  min-height: 26px;
+}
+
+/* Controls */
 .df-controls {
   display: flex;
   align-items: center;
@@ -136,426 +214,283 @@
 }
 
 .df-control-button {
-  min-width: 28px !important;
-  width: 28px !important;
-  height: 28px !important;
-  padding: 6px !important;
-  border-radius: 6px !important;
-  background: rgba(0, 0, 0, 0.3) !important;
-  backdrop-filter: blur(4px);
-  transition: all 0.2s ease;
+  min-width: 26px !important;
+  width: 26px !important;
+  height: 26px !important;
+  padding: 5px !important;
+  border-radius: var(--radius-sm) !important;
+  background: rgba(0, 0, 0, 0.26) !important;
+  transition: background-color 0.15s ease;
   border: none !important;
   outline: none !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: none !important;
 }
 
 .df-control-button:hover {
-  background: rgba(0, 0, 0, 0.5) !important;
-  transform: scale(1.05);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+  background: rgba(0, 0, 0, 0.42) !important;
 }
 
-.df-control-button:focus {
-  outline: none !important;
-  border: none !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-  background: rgba(0, 0, 0, 0.4) !important;
-}
-
-.df-control-button:active {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
+.df-control-button:focus-visible {
+  outline: 2px solid #ffffff !important;
+  outline-offset: 1px;
 }
 
 .df-control-button svg {
-  font-size: 18px !important;
+  font-size: 16px !important;
 }
 
-/* Specific styles for delete button */
 .df-delete-button {
-  background: rgba(239, 68, 68, 0.8) !important;
+  background: rgba(224, 82, 74, 0.85) !important;
 }
 
 .df-delete-button:hover {
-  background: rgba(239, 68, 68, 0.9) !important;
-  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.4) !important;
+  background: rgba(224, 82, 74, 1) !important;
 }
 
-.df-delete-button:focus {
-  background: rgba(239, 68, 68, 0.85) !important;
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3) !important;
-}
-
-/* Specific styles for palette button */
 .df-palette-button {
-  background: rgba(59, 130, 246, 0.8) !important;
+  background: rgba(37, 99, 235, 0.85) !important;
 }
 
 .df-palette-button:hover {
-  background: rgba(59, 130, 246, 0.9) !important;
-  box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4) !important;
+  background: rgba(37, 99, 235, 1) !important;
 }
 
-.df-palette-button:focus {
-  background: rgba(59, 130, 246, 0.85) !important;
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
-}
-
-/* DontFill Text Field */
-.df-description-text-field {
-  flex: 1;
-  min-width: 0;
-  margin: 0 2px;
-}
-
-.df-description-text-field input {
-  padding: 6px 8px !important;
-  font-size: 0.875rem !important;
-  text-align: center !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-radius: 4px !important;
-  border: none !important;
-}
-
-.df-description-text-field .MuiOutlinedInput-notchedOutline {
-  border: none !important;
-}
-
-.df-description-text-field .MuiOutlinedInput-root {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.df-description-text-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border: none !important;
-}
-
-.df-description-text-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border: none !important;
-  outline: none !important;
-}
-
-/* DontFill Title */
-.program-title-dont-fill {
-  flex: 1;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 6px 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.15);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0 2px;
-  min-width: 40px;
-}
-
-.program-title-dont-fill:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.02);
-}
-
-/* Expanded DontFill Title */
-.program-title-dont-fill-expanded {
-  width: 100%;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.15);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 60px;
-  max-width: 100%;
-}
-
-.program-title-dont-fill-expanded:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.02);
-}
-
-/* Expanded DontFill Text Field */
-.df-description-text-field-expanded {
-  width: 100%;
-  min-width: 0;
-}
-
-.df-description-text-field-expanded input {
-  padding: 4px 8px !important;
-  font-size: 0.875rem !important;
-  text-align: center !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-radius: 4px !important;
-  border: none !important;
-}
-
-.df-description-text-field-expanded .MuiOutlinedInput-notchedOutline {
-  border: none !important;
-}
-
-.df-description-text-field-expanded .MuiOutlinedInput-root {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.df-description-text-field-expanded .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border: none !important;
-}
-
-.df-description-text-field-expanded .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border: none !important;
-  outline: none !important;
-}
-
-/* Compact Single Row Layout */
-.df-single-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  width: 100%;
-  padding: 2px 4px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(2px);
-  min-height: 28px;
-  box-sizing: border-box;
-}
-
-/* Compact Control Buttons */
-.df-control-button.compact {
-  min-width: 22px !important;
-  width: 22px !important;
-  height: 22px !important;
-  padding: 4px !important;
-  border-radius: 4px !important;
-}
-
-.df-control-button.compact svg {
-  font-size: 14px !important;
-}
-
-/* Compact Title */
-.program-title-dont-fill-compact {
-  flex: 1;
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 4px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.15);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0 2px;
-  min-width: 30px;
-}
-
-.program-title-dont-fill-compact:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.02);
-}
-
-/* Compact Text Field */
+/* Text fields inside a block */
+.df-description-text-field,
+.df-description-text-field-expanded,
 .df-description-text-field-compact {
   flex: 1;
   min-width: 0;
   margin: 0 2px;
 }
 
+.df-description-text-field-expanded {
+  width: 100%;
+  margin: 0;
+}
+
+.df-description-text-field input,
+.df-description-text-field-expanded input,
 .df-description-text-field-compact input {
-  padding: 4px 6px !important;
-  font-size: 0.8rem !important;
+  padding: 5px 8px !important;
+  font-size: 0.82rem !important;
   text-align: center !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: var(--radius-sm) !important;
   border: none !important;
 }
 
+.df-description-text-field .MuiOutlinedInput-notchedOutline,
+.df-description-text-field-expanded .MuiOutlinedInput-notchedOutline,
 .df-description-text-field-compact .MuiOutlinedInput-notchedOutline {
   border: none !important;
 }
 
+.df-description-text-field .MuiOutlinedInput-root,
+.df-description-text-field-expanded .MuiOutlinedInput-root,
 .df-description-text-field-compact .MuiOutlinedInput-root {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-.df-description-text-field-compact .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border: none !important;
+/* Titles */
+.program-title-dont-fill,
+.program-title-dont-fill-expanded,
+.program-title-dont-fill-compact {
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.18);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.df-description-text-field-compact .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border: none !important;
-  outline: none !important;
+.program-title-dont-fill {
+  flex: 1;
+  margin: 0 2px;
+  min-width: 40px;
 }
 
-/* Color Palette Menu */
+.program-title-dont-fill-expanded {
+  width: 100%;
+  max-width: 100%;
+  min-width: 60px;
+}
+
+.program-title-dont-fill-compact {
+  flex: 1;
+  margin: 0 2px;
+  min-width: 30px;
+  font-size: 0.78rem;
+  padding: 4px 6px;
+}
+
+.program-title-dont-fill:hover,
+.program-title-dont-fill-expanded:hover,
+.program-title-dont-fill-compact:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Compact control buttons */
+.df-control-button.compact {
+  min-width: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+  padding: 4px !important;
+}
+
+.df-control-button.compact svg {
+  font-size: 13px !important;
+}
+
+/* Colour palette menu */
 .df-color-palette {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  padding: 8px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 10px;
   background: var(--bg-card);
-  border-radius: 8px;
-  min-width: 120px;
-}
-
-html[data-theme="dark"] .df-color-palette {
-  background: #334155;
+  border-radius: var(--radius);
+  min-width: 140px;
 }
 
 .df-color-option {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
+  transition: transform 0.15s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .df-color-option:hover {
   transform: scale(1.1);
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Regular Program Styles */
-.program-text-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-
-.program-title {
-  font-family: 'Inter', 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  font-weight: 600;
-  font-size: 0.8rem;
-  line-height: 1.2;
-  text-align: center;
-  /* The scheduler sets nowrap, and a centred flex item sizes to its content,
-     so a course code spills out of the narrow day column. Bound it and let it
-     wrap instead. */
-  max-width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.program-title-bottom {
-  font-size: 0.7rem;
-  opacity: 0.9;
-  line-height: 1.1;
-  text-align: center;
-  max-width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-/* Scenario Navigation Styles */
+/* ---------------------------------------------------------------------------
+   Scenario navigation
+--------------------------------------------------------------------------- */
 .program-vertical {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 16px 0 0;
 }
 
 .program-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 2px;
+  padding: 6px 10px;
   background: var(--bg-card);
-  border-radius: 12px;
-  box-shadow: 0 2px 4px var(--shadow);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-xs);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.program-row .MuiIconButton-root {
+  padding: 6px;
+  color: var(--text-secondary);
+}
+
+.program-row .MuiIconButton-root:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .program-typo-wrapper {
   display: flex;
   align-items: center;
   margin: 0 4px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.program-typo-wrapper .MuiTypography-root {
+  font-size: 0.85rem;
 }
 
 .program-textfield-wrapper {
-  width: 60px;
-  margin: 0 4px;
+  width: 58px;
+  margin: 0 2px;
 }
 
 .program-textfield {
   width: 100%;
 }
 
-.program-textfield input {
-  text-align: center;
-  padding: 6px 0;
+.program-textfield .MuiInput-root:before,
+.program-textfield .MuiInput-root:after {
+  display: none;
 }
 
-/* Save Image Button styles */
+.program-textfield input {
+  text-align: center;
+  padding: 5px 0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* Hide the number spinners: the arrows beside them already step the value. */
+.program-textfield input::-webkit-outer-spin-button,
+.program-textfield input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.program-textfield input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.program-calendar-wrapper {
+  margin: 0;
+}
+
+/* Save Image Button */
 .save-image-button {
   display: flex;
   justify-content: center;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
-.save-image-button button {
-  padding: 8px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  text-transform: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.save-image-button button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Calendar wrapper styles */
-.program-calendar-wrapper {
-  margin-top: 16px;
-}
-
-/* Mobile responsive adjustments */
+/* ---------------------------------------------------------------------------
+   Responsive
+--------------------------------------------------------------------------- */
 @media (max-width: 768px) {
   .responsive-day-cell {
-    height: 36px !important;
-    padding: 5px 2px !important;
-    font-size: 0.75rem !important;
+    height: 34px !important;
+    padding: 6px 2px !important;
+    font-size: 0.65rem !important;
   }
 
   .scheduler-card {
-    border-radius: 8px;
+    border-radius: var(--radius) !important;
   }
 
   /* The hour gutter takes 80px of a 390px phone and leaves each day 57px, which
      is not enough for a course code. Hand most of that width to the days. */
   [class*="MainLayout-leftPanel"],
   [class*="Layout-timeScaleContainer"] {
-    width: 44px !important;
-    min-width: 44px !important;
+    width: 42px !important;
+    min-width: 42px !important;
   }
 
   [class*="Layout-timeScaleContainer"] [class*="Label-label"] {
     width: auto !important;
-    font-size: 0.6rem !important;
+    font-size: 0.58rem !important;
     padding-right: 2px !important;
   }
 
@@ -569,7 +504,8 @@ html[data-theme="dark"] .df-color-palette {
 
   .program-row {
     flex-wrap: wrap;
-    padding: 12px;
+    border-radius: var(--radius);
+    padding: 6px;
   }
 
   .program-textfield-wrapper {
@@ -577,152 +513,25 @@ html[data-theme="dark"] .df-color-palette {
   }
 
   .program-vertical {
-    padding: 8px;
+    padding: 12px 0 0;
   }
 
-  .program-row-df {
-    padding: 3px 4px;
+  .program-row-df,
+  .df-single-row {
+    padding: 2px 4px;
     gap: 3px;
-    min-height: 28px;
+    min-height: 24px;
   }
 
   .df-controls-row {
     padding: 2px 4px;
     gap: 4px;
-    min-height: 28px;
-    border-radius: 4px 4px 0 0;
+    min-height: 26px;
   }
 
   .df-title-row {
     padding: 2px 4px;
     min-height: 20px;
-    border-radius: 0 0 4px 4px;
-  }
-
-  .program-title-dont-fill-expanded {
-    font-size: 0.8rem;
-    padding: 3px 6px;
-    min-width: 50px;
-  }
-
-  .df-description-text-field-expanded input {
-    padding: 3px 6px !important;
-    font-size: 0.8rem !important;
-  }
-
-  .df-single-row {
-    padding: 1px 3px;
-    gap: 3px;
-    min-height: 24px;
-  }
-
-  .df-control-button.compact {
-    min-width: 20px !important;
-    width: 20px !important;
-    height: 20px !important;
-    padding: 3px !important;
-  }
-
-  .df-control-button.compact svg {
-    font-size: 12px !important;
-  }
-
-  .program-title-dont-fill-compact {
-    font-size: 0.75rem;
-    padding: 3px 4px;
-    min-width: 25px;
-  }
-
-  .df-description-text-field-compact input {
-    padding: 3px 4px !important;
-    font-size: 0.75rem !important;
-  }
-
-  .df-control-button {
-    min-width: 24px !important;
-    width: 24px !important;
-    height: 24px !important;
-    padding: 4px !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
-    border-radius: 4px !important;
-  }
-
-  .df-control-button svg {
-    font-size: 16px !important;
-  }
-
-  .program-title-dont-fill {
-    font-size: 0.8rem;
-    padding: 4px 6px;
-    min-width: 30px;
-  }
-
-  .df-description-text-field input {
-    padding: 4px 6px !important;
-    font-size: 0.8rem !important;
-  }
-}
-
-/* Small screen adjustments */
-@media (max-width: 480px) {
-  .program-row-df {
-    padding: 2px 3px;
-    gap: 2px;
-    min-height: 26px;
-  }
-
-  .df-controls-row {
-    padding: 1px 3px;
-    gap: 3px;
-    min-height: 26px;
-    border-radius: 3px 3px 0 0;
-  }
-
-  .df-title-row {
-    padding: 1px 3px;
-    min-height: 18px;
-    border-radius: 0 0 3px 3px;
-  }
-
-  .program-title-dont-fill-expanded {
-    font-size: 0.75rem;
-    padding: 2px 4px;
-    min-width: 40px;
-  }
-
-  .df-description-text-field-expanded input {
-    padding: 2px 4px !important;
-    font-size: 0.75rem !important;
-  }
-
-  .df-single-row {
-    padding: 1px 2px;
-    gap: 2px;
-    min-height: 22px;
-  }
-
-  .df-control-button.compact {
-    min-width: 18px !important;
-    width: 18px !important;
-    height: 18px !important;
-    padding: 2px !important;
-  }
-
-  .df-control-button.compact svg {
-    font-size: 11px !important;
-  }
-
-  .program-title-dont-fill-compact {
-    font-size: 0.7rem;
-    padding: 2px 3px;
-    min-width: 20px;
-  }
-
-  .df-description-text-field-compact input {
-    padding: 2px 3px !important;
-    font-size: 0.7rem !important;
   }
 
   .df-control-button {
@@ -730,24 +539,87 @@ html[data-theme="dark"] .df-color-palette {
     width: 22px !important;
     height: 22px !important;
     padding: 3px !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
-    border-radius: 3px !important;
   }
 
   .df-control-button svg {
     font-size: 14px !important;
   }
 
-  .program-title-dont-fill {
-    font-size: 0.75rem;
-    padding: 3px 4px;
-    min-width: 25px;
+  .df-control-button.compact {
+    min-width: 19px !important;
+    width: 19px !important;
+    height: 19px !important;
+    padding: 3px !important;
   }
 
-  .df-description-text-field input {
-    padding: 3px 4px !important;
-    font-size: 0.75rem !important;
+  .df-control-button.compact svg {
+    font-size: 12px !important;
+  }
+
+  .program-title-dont-fill,
+  .program-title-dont-fill-expanded,
+  .program-title-dont-fill-compact {
+    font-size: 0.72rem;
+    padding: 3px 5px;
+    min-width: 28px;
+  }
+
+  .df-description-text-field input,
+  .df-description-text-field-expanded input,
+  .df-description-text-field-compact input {
+    padding: 3px 5px !important;
+    font-size: 0.72rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .program-row-df,
+  .df-single-row,
+  .df-controls-row {
+    padding: 1px 3px;
+    gap: 2px;
+    min-height: 22px;
+  }
+
+  .df-title-row {
+    padding: 1px 3px;
+    min-height: 18px;
+  }
+
+  .df-control-button {
+    min-width: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+    padding: 2px !important;
+  }
+
+  .df-control-button svg {
+    font-size: 13px !important;
+  }
+
+  .df-control-button.compact {
+    min-width: 17px !important;
+    width: 17px !important;
+    height: 17px !important;
+    padding: 2px !important;
+  }
+
+  .df-control-button.compact svg {
+    font-size: 11px !important;
+  }
+
+  .program-title-dont-fill,
+  .program-title-dont-fill-expanded,
+  .program-title-dont-fill-compact {
+    font-size: 0.68rem;
+    padding: 2px 3px;
+    min-width: 22px;
+  }
+
+  .df-description-text-field input,
+  .df-description-text-field-expanded input,
+  .df-description-text-field-compact input {
+    padding: 2px 3px !important;
+    font-size: 0.68rem !important;
   }
 }

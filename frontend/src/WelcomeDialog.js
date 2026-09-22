@@ -21,17 +21,12 @@ import "./WelcomeDialog.css";
 
 const ModernDialog = withStyles((theme) => ({
   paper: {
-    borderRadius: '20px',
-    background: theme.palette.background.paper,
-    backdropFilter: 'blur(20px)',
-    border: theme.palette.mode === 'dark'
-      ? '1px solid rgba(255, 255, 255, 0.1)'
-      : '1px solid rgba(0, 0, 0, 0.1)',
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
-      : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    borderRadius: 'var(--radius-lg)',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--shadow-lg)',
     padding: theme.spacing(2),
-    maxWidth: 500,
+    maxWidth: 460,
     maxHeight: '90vh',
     margin: theme.spacing(2),
     overflow: 'hidden',
@@ -40,31 +35,18 @@ const ModernDialog = withStyles((theme) => ({
 
 const ModernDialogTitle = withStyles((theme) => ({
   root: {
-    background: theme.palette.mode === 'dark'
-      ? 'linear-gradient(135deg, #374151 0%, #1f2937 100%)'
-      : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-    color: theme.palette.text.primary,
-    borderRadius: '12px 12px 0 0',
+    background: 'var(--bg-subtle)',
+    color: 'var(--text-primary)',
+    borderRadius: 'var(--radius) var(--radius) 0 0',
+    borderBottom: '1px solid var(--border)',
     margin: theme.spacing(-2, -2, 2, -2),
-    padding: theme.spacing(3, 3, 2, 3),
+    padding: theme.spacing(2.25, 3, 2.25, 2.5),
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    fontSize: '1.5rem',
+    fontSize: '1.15rem',
     fontWeight: 700,
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: theme.palette.mode === 'dark'
-        ? 'radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 70%)'
-        : 'radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 70%)',
-      borderRadius: '12px 12px 0 0',
-    },
   },
 }))(DialogTitle);
 
@@ -82,38 +64,38 @@ const WelcomeContent = withStyles((theme) => ({
 
 const EmailButton = withStyles((theme) => ({
   root: {
-    borderRadius: '12px',
-    padding: theme.spacing(1.5, 3),
-    background: theme.palette.primary.main,
-    color: 'white',
+    borderRadius: 'var(--radius)',
+    padding: theme.spacing(1.25, 2.5),
+    background: 'var(--bg-subtle)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
     fontWeight: 600,
     textTransform: 'none',
-    fontSize: '1rem',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    transition: 'all 0.3s ease',
+    fontSize: '0.95rem',
+    boxShadow: 'none',
+    transition: 'background-color 0.16s ease, border-color 0.16s ease',
     '&:hover': {
-      background: theme.palette.primary.dark,
-      transform: 'translateY(-2px)',
-      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      background: 'var(--bg-hover)',
+      borderColor: 'var(--border-strong)',
+      boxShadow: 'none',
     },
   },
 }))(Button);
 
 const CloseButton = withStyles((theme) => ({
   root: {
-    borderRadius: '12px',
-    padding: theme.spacing(1.5, 3),
-    background: theme.palette.primary.dark,
-    color: 'white',
+    borderRadius: 'var(--radius)',
+    padding: theme.spacing(1.1, 2.75),
+    background: 'var(--accent)',
+    color: '#ffffff',
     fontWeight: 600,
     textTransform: 'none',
-    fontSize: '1rem',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    transition: 'all 0.3s ease',
+    fontSize: '0.95rem',
+    boxShadow: 'var(--shadow-xs)',
+    transition: 'background-color 0.16s ease',
     '&:hover': {
-      background: theme.palette.primary.main,
-      transform: 'translateY(-2px)',
-      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      background: 'var(--accent-hover)',
+      boxShadow: 'var(--shadow-sm)',
     },
   },
 }))(Button);
@@ -148,14 +130,18 @@ export const WelcomeDialog = () => {
         </Box>
         <IconButton
           onClick={handleClose}
-          style={{ color: 'inherit', zIndex: 1, position: 'absolute', right: 12, top: 12 }}
+          size="small"
+          style={{ color: 'var(--text-secondary)', zIndex: 1, position: 'absolute', right: 10, top: 10 }}
         >
           <CloseIcon />
         </IconButton>
       </ModernDialogTitle>
 
       <WelcomeContent>
-        <Typography variant="h6" style={{ color: '#6b7280', marginBottom: 6, fontSize: 18 }}>
+        <Typography
+          variant="body2"
+          style={{ color: 'var(--text-secondary)', marginBottom: 10 }}
+        >
           You can reach us via:
         </Typography>
 
@@ -175,7 +161,7 @@ export const WelcomeDialog = () => {
         </Tooltip>
       </WelcomeContent>
 
-      <DialogActions style={{ padding: 16, justifyContent: 'center' }}>
+      <DialogActions style={{ padding: '8px 8px 4px', justifyContent: 'center' }}>
         <CloseButton
           onClick={handleClose}
           variant="contained"
