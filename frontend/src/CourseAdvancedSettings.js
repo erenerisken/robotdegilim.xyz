@@ -113,21 +113,15 @@ export const CourseAdvancedSettings = ({
               className="settings-row"
             >
               <IconButton
-                style={{
-                  marginTop: "5px",
-                  backgroundColor: "#1976d2",
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
-                }}
+                className="course-color-button"
                 id="palette-button"
                 aria-controls={open ? "palette-menu" : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? "true" : undefined}
                 onClick={handleOpenColorPalette}
               >
-                <PaletteIcon fontSize="20" style={{ color: "white" }} />
-                <Typography style={{ color: "white" }}>Change Color</Typography>
+                <PaletteIcon fontSize="small" />
+                <Typography component="span">Change Color</Typography>
               </IconButton>
               <Menu
                 id="palette-menu"
@@ -146,37 +140,19 @@ export const CourseAdvancedSettings = ({
                 MenuListProps={{
                   "aria-labelledby": "palette-button",
                 }}
-                PaperProps={{
-                  style: {
-                    backgroundColor: "black",
-                  },
-                }}
+                PaperProps={{ className: "course-palette-paper" }}
               >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
-                    gap: "5px",
-                    padding: "5px",
-                    paddingTop: "0px",
-                    paddingBottom: "0px",
-                    backgroundColor: "black",
-                  }}
-                >
+                <div className="course-palette-grid">
                   {colors.map((color) => (
                     <MenuItem
                       key={color.main}
                       onClick={() => handleColorChange(color)}
-                      style={{ padding: 0 }}
+                      className="course-palette-item"
                     >
-                      <div
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          backgroundColor: color.main,
-                          borderRadius: "4px",
-                        }}
-                      ></div>
+                      <span
+                        className="course-palette-swatch"
+                        style={{ backgroundColor: color.main }}
+                      />
                     </MenuItem>
                   ))}
                 </div>

@@ -1,35 +1,89 @@
-/* Modern banner styles are now handled by styled components */
+/* A slim, sticky header: one surface, one hairline, no gradients competing
+   with the page below it. */
 .banner-wrapper {
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
-/* Animation utilities for banner */
-.banner-fade-in {
-  opacity: 0;
-  animation: bannerFadeIn 0.8s ease-out forwards;
+.banner-inner {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-@keyframes bannerFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.banner-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
-/* Mobile specific adjustments */
+.banner-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+}
+
+.banner-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.banner-title {
+  height: 46px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
 @media (max-width: 768px) {
-  .banner-wrapper {
-    padding: 16px 0;
+  .banner-inner {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .banner-logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .banner-title {
+    height: 34px;
   }
 }
 
-@media (max-width: 480px) {
-  .banner-wrapper {
-    padding: 12px 0;
+@media (max-width: 380px) {
+  .banner-logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .banner-title {
+    height: 27px;
   }
 }

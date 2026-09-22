@@ -1,40 +1,164 @@
-.course-settings-wrapper {
-    margin: 6pt;
+.course-adv-settings.course-settings-wrapper {
+    margin: 0;
 }
 
-/* Dark mode: course card inner accordion (Advanced Settings + checkboxes + Change Color) */
+/* The course card's own settings strip: same flat treatment as the panel-level
+   Advanced Settings, so the two read as the same control. */
+.course-adv-settings .MuiAccordion-root {
+  border: 1px solid var(--border);
+  border-radius: var(--radius) !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+
+.course-adv-settings .MuiAccordion-root:before {
+  display: none;
+}
+
 html[data-theme="dark"] .course-adv-settings .MuiAccordion-root,
 html[data-theme="dark"] .course-adv-settings .MuiAccordionSummary-root,
 html[data-theme="dark"] .course-adv-settings .MuiAccordionDetails-root {
-  background: var(--bg-card) !important;
+  background: var(--bg-subtle) !important;
   color: var(--text-primary);
 }
 
-html[data-theme="dark"] .course-adv-settings .MuiAccordionSummary-expandIcon {
-  color: var(--text-primary);
+.course-adv-settings .MuiAccordionSummary-root {
+  padding: 0 14px;
+  min-height: 46px;
 }
 
-.course-settings-row {
-    display: inline-flex;
+.course-adv-settings .MuiAccordionSummary-root.Mui-expanded {
+  min-height: 46px;
+}
+
+.course-adv-settings .MuiAccordionSummary-content,
+.course-adv-settings .MuiAccordionSummary-content.Mui-expanded {
+  margin: 9px 0;
+}
+
+.course-adv-settings .MuiAccordionSummary-expandIconWrapper,
+.course-adv-settings .MuiAccordionSummary-expandIcon {
+  color: var(--text-secondary);
+}
+
+.course-adv-settings .MuiAccordionSummary-content .MuiSvgIcon-root {
+  font-size: 20px;
+}
+
+.course-adv-settings .MuiAccordionDetails-root {
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.course-adv-settings .MuiAccordionDetails-root > .settings-accordion > .MuiDivider-root:first-child {
+  display: none;
+}
+
+.course-adv-settings .course-settings-row,
+.course-adv-settings .settings-row {
+    display: flex;
     width: 100%;
     flex-wrap: wrap;
-}
-.course-settings-accordion {
-    width: 100%;
-}
-.course-settings-typo {
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: 6pt;
+    align-items: center;
+    gap: 0 10px;
 }
 
-/* Mobile responsive adjustments */
-@media (max-width: 768px) {
-  .course-settings-row {
-    flex-direction: column;
-    gap: 6pt;
-  }
-  .course-settings-accordion {
+.course-adv-settings .course-settings-accordion,
+.course-adv-settings .settings-accordion {
     width: 100%;
+}
+
+.course-adv-settings .course-settings-typo,
+.course-adv-settings .settings-typo {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    font-weight: 600;
+}
+
+.course-adv-settings .MuiFormControlLabel-label {
+  font-size: 0.875rem;
+}
+
+.course-adv-settings .settings-row > .MuiDivider-root {
+  width: 100%;
+}
+
+/* --- "Change Color" -------------------------------------------------------
+   Was an IconButton painted with inline hex; now it matches the app's buttons. */
+.course-color-button.MuiIconButton-root {
+  margin-top: 10px;
+  padding: 8px 14px;
+  gap: 8px;
+  border-radius: var(--radius) !important;
+  background-color: var(--accent);
+  color: #ffffff;
+  box-shadow: var(--shadow-xs);
+  transition: background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.course-color-button.MuiIconButton-root:hover {
+  background-color: var(--accent-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.course-color-button .MuiTypography-root {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  color: inherit;
+}
+
+/* --- Colour palette menu -------------------------------------------------- */
+.course-palette-paper.MuiPaper-root {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.course-palette-paper .MuiList-root {
+  padding: 0;
+}
+
+.course-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 10px;
+}
+
+.course-palette-item.MuiMenuItem-root {
+  padding: 0;
+  min-height: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+}
+
+.course-palette-swatch {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s ease;
+}
+
+.course-palette-item.MuiMenuItem-root:hover .course-palette-swatch {
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .course-adv-settings .course-settings-row,
+  .course-adv-settings .settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .course-adv-settings .MuiAccordionSummary-content .course-settings-row {
+    flex-direction: row;
+    align-items: center;
   }
 }

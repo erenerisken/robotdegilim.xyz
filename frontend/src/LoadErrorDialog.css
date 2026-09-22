@@ -2,20 +2,22 @@
   min-width: 250px;
   max-width: 340px;
   text-align: center;
+  padding-top: 8px !important;
 }
 
 .load-error-icon {
-  color: #ef4444;
-  font-size: 40px !important;
-  margin-bottom: 8px;
+  color: #e0524a;
+  font-size: 38px !important;
+  margin-bottom: 10px;
 }
 
 .load-error-title {
   margin-bottom: 8px !important;
+  font-weight: 600 !important;
 }
 
 /* MUI's own DialogActions rule pushes its content to the end. */
 .load-error-actions {
   justify-content: center !important;
-  padding-bottom: 16px;
+  padding: 0 16px 16px !important;
 }

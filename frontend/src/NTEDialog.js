@@ -26,44 +26,43 @@ import { getElectives } from './data/Course';
 // Styled Components
 const StyledDialog = withStyles((theme) => ({
     paper: {
-        borderRadius: '16px',
+        borderRadius: 'var(--radius-lg)',
         maxHeight: '90vh',
     },
 }))(Dialog);
 
 const CourseCard = withStyles((theme) => ({
     root: {
-        borderRadius: '12px',
-        marginBottom: theme.spacing(2),
+        borderRadius: 'var(--radius)',
+        marginBottom: theme.spacing(1.5),
         border: '1px solid var(--border)',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        transition: 'all 0.2s ease',
+        boxShadow: 'none',
+        transition: 'border-color 0.16s ease, box-shadow 0.16s ease',
         '&:hover': {
-            boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-            transform: 'translateY(-1px)',
+            borderColor: 'var(--border-strong)',
+            boxShadow: 'var(--shadow-sm)',
         },
     },
 }))(Card);
 
 const ModernButton = withStyles((theme) => ({
     root: {
-        borderRadius: '8px',
+        borderRadius: 'var(--radius)',
         fontWeight: 600,
         textTransform: 'none',
-        padding: theme.spacing(1, 2),
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        padding: theme.spacing(0.85, 2),
+        boxShadow: 'none',
         '&:hover': {
-            transform: 'translateY(-1px)',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+            boxShadow: 'var(--shadow-xs)',
         },
-        transition: 'all 0.2s ease',
+        transition: 'background-color 0.16s ease, box-shadow 0.16s ease',
         margin: theme.spacing(0.5),
     },
 }))(Button);
 
 const filterBarSx = {
     border: '1px solid var(--border)',
-    borderRadius: '12px',
+    borderRadius: 'var(--radius)',
     padding: (theme) => theme.spacing(1.5, 2),
     marginBottom: 1,
     // A department can list hundreds of electives, so the filter has to stay
@@ -90,17 +89,18 @@ const conflictsWithSchedule = (section, occupiedSlots) =>
         })
     );
 
-const HeaderBox = withStyles((theme) => ({
-    root: {
-        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-        color: 'white',
-        padding: theme.spacing(2, 3, 3, 3),
-        borderRadius: '16px 16px 0 0',
-        margin: '-24px 0 24px 0',
-        width: '100%',
-        boxSizing: 'border-box',
-    },
-}))(Box);
+// Box ignores a `classes` prop in MUI v5, so this header is styled inline.
+const headerBoxStyle = {
+    background: 'var(--bg-subtle)',
+    color: 'var(--text-primary)',
+    borderBottom: '1px solid var(--border)',
+    padding: '18px 24px',
+    borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+    width: '100%',
+    boxSizing: 'border-box',
+};
+
+const HeaderBox = ({ children }) => <div style={headerBoxStyle}>{children}</div>;
 
 const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allCourses }) => {
     const [electivesData, setElectivesData] = useState([]);
@@ -269,7 +269,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
     const renderElectivesList = () => {
         if (electivesData.length === 0) {
             return (
-                <Alert severity="info" style={{ borderRadius: '12px' }}>
+                <Alert severity="info" style={{ borderRadius: 'var(--radius)' }}>
                     None of {department}'s electives are open to it this semester.
                 </Alert>
             );
@@ -277,7 +277,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
 
         if (visibleElectives.length === 0) {
             return (
-                <Alert severity="info" style={{ borderRadius: '12px' }}>
+                <Alert severity="info" style={{ borderRadius: 'var(--radius)' }}>
                     {selectedCategories.length === 0
                         ? 'Tick an elective type to see courses.'
                         : 'Every elective of the ticked types clashes with your schedule.'}
@@ -296,7 +296,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
             return (
                 <Box key={`${course.code}-${categoryOf(course)}`}>
                     {isNewGroup && (
-                        <Typography variant="h6" style={{ marginTop: 24, marginBottom: 12, fontWeight: 700, color: '#1d4ed8' }}>
+                        <Typography variant="subtitle1" style={{ marginTop: 20, marginBottom: 10, fontWeight: 700, color: 'var(--accent)' }}>
                             {currentCategory}
                         </Typography>
                     )}
@@ -305,7 +305,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                         <CardContent>
                             <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                                 <Box>
-                                    <Typography variant="h6" style={{ fontWeight: 600, marginBottom: 8 }}>
+                                    <Typography variant="subtitle1" style={{ fontWeight: 600, marginBottom: 6 }}>
                                         {course.stringCode}
                                     </Typography>
                                     <Typography variant="body1" color="textSecondary" style={{ marginBottom: 8 }}>
@@ -340,9 +340,9 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                                                 <Grid item xs={12} sm={6} md={4} key={sectionIndex}>
                                                     <Box
                                                         p={2}
-                                                        borderRadius="8px"
+                                                        borderRadius="var(--radius-sm)"
                                                         style={{
-                                                            backgroundColor: isConflict ? '#fee2e2' : 'var(--bg-page)',
+                                                            backgroundColor: isConflict ? 'rgba(224, 82, 74, 0.12)' : 'var(--bg-subtle)',
                                                             border: '1px solid var(--border)'
                                                         }}
                                                     >
@@ -395,14 +395,14 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
         <StyledDialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
             <DialogContent style={{ padding: 0 }}>
                 <HeaderBox>
-                    <Box display="flex" justifyContent="center" alignItems="center" style={{ paddingTop: '16px' }}>
+                    <Box display="flex" justifyContent="center" alignItems="center">
                         <Box display="flex" alignItems="center" gap={2}>
-                            <SchoolIcon fontSize="large" />
+                            <SchoolIcon style={{ color: 'var(--accent)' }} />
                             <Box textAlign="center">
-                                <Typography variant="h5" style={{ fontWeight: 600, marginBottom: '8px' }}>
+                                <Typography variant="h6" style={{ fontWeight: 700, marginBottom: '4px' }}>
                                     Available Electives for {department}
                                 </Typography>
-                                <Typography variant="body2" style={{ opacity: 0.9 }}>
+                                <Typography variant="body2" style={{ color: 'var(--text-secondary)' }}>
                                     Offered this semester and open to your department
                                 </Typography>
                             </Box>
@@ -410,10 +410,10 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                     </Box>
                 </HeaderBox>
 
-                <Box p={3}>
+                <Box p={{ xs: 2, sm: 3 }}>
                     {loading ? (
                         <Box display="flex" justifyContent="center" p={3}>
-                            <CircularProgress size={60} />
+                            <CircularProgress size={44} />
                         </Box>
                     ) : error ? (
                         <Alert severity="error">{error}</Alert>
@@ -426,7 +426,7 @@ const NTEDialog = ({ open, onClose, occupiedSlots, onAddCourse, department, allC
                 </Box>
             </DialogContent>
 
-            <DialogActions style={{ padding: '16px 24px' }}>
+            <DialogActions style={{ padding: '12px 24px', borderTop: '1px solid var(--border)' }}>
                 <ModernButton onClick={onClose} variant="outlined" color="primary">
                     Close
                 </ModernButton>

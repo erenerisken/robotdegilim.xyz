@@ -1,8 +1,38 @@
-/* Controls panel - respects dark mode */
+/* ---------------------------------------------------------------------------
+   Controls panel
+--------------------------------------------------------------------------- */
 .controls-paper {
   background: var(--bg-card) !important;
-  transition: background 0.3s ease;
-  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 20px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+/* A quiet, consistent label above each group of controls. */
+.controls-section {
+  margin: 0 0 18px 0;
+}
+
+.controls-section:last-child {
+  margin-bottom: 0;
+}
+
+.controls-section-header,
+.centered-row {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  margin: 0 0 10px 0;
+}
+
+.centered-row {
+  text-align: center;
+  margin: 0;
 }
 
 .controls-select-label {
@@ -10,15 +40,21 @@
   padding: 0 4px;
 }
 
-/* Modern controls styles */
+/* --- Rows and grids ------------------------------------------------------ */
 .control-row {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;  /* Changed to flex-start to align from top */
-  flex-wrap: nowrap;
-  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   justify-content: center;
-  padding: 6px;
+  padding: 0;
+}
+
+/* MUI's own negative-margin spacing is left alone here; the wrapping
+   .controls-section supplies the rhythm between groups. */
+.button-grid {
+  padding: 0;
 }
 
 .textfield-wrapper {
@@ -27,58 +63,57 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  height: auto;
 }
 
 .form-control {
   width: 100%;
 }
 
-/* Pretty inputs */
+.controls-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* --- Inputs -------------------------------------------------------------- */
 .pretty-textfield .MuiOutlinedInput-root,
 .pretty-select .MuiOutlinedInput-root {
-  border-radius: 10px !important;
+  border-radius: var(--radius) !important;
   background: var(--input-bg);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.pretty-textfield .MuiOutlinedInput-notchedOutline,
-.pretty-select .MuiOutlinedInput-notchedOutline {
-  border-color: var(--border);
-}
-
-.pretty-textfield:hover .MuiOutlinedInput-notchedOutline,
-.pretty-select:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255,255,255,0.25);
-}
-
-.pretty-textfield.Mui-focused .MuiOutlinedInput-root,
-.pretty-select .MuiOutlinedInput-root.Mui-focused {
-  box-shadow: 0 0 0 3px rgba(13, 174, 238, 0.15);
 }
 
 .pretty-textfield .MuiInputAdornment-positionStart,
 .pretty-select .MuiInputAdornment-positionStart {
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
-html[data-theme="dark"] .pretty-textfield:hover .MuiOutlinedInput-notchedOutline,
-html[data-theme="dark"] .pretty-select:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255,255,255,0.35);
+.pretty-select .MuiInputLabel-outlined {
+  background: var(--input-bg);
+  padding: 0 4px;
 }
 
-/* Make the inputs more compact and aligned */
-.MuiOutlinedInput-root {
+/* The Semester hint is longer than its field; let it shrink and trail off
+   rather than run under the dropdown arrow. */
+.controls-paper .MuiSelect-select .MuiTypography-root {
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* One height for every field inside the panel, so the three-up row lines up.
+   Scoped to the panel: dialogs keep MUI's own sizing. */
+.controls-paper .MuiOutlinedInput-root {
   margin: 0 !important;
-  height: 40px !important; /* Fixed height for all inputs */
+  height: 44px !important;
 }
 
-.MuiFormControl-root {
+.controls-paper .MuiFormControl-root {
   margin: 0 !important;
 }
 
-/* Align FormHelperText */
-.MuiFormHelperText-root {
+.controls-paper .MuiFormHelperText-root {
   margin: 0 !important;
   padding-top: 4px !important;
   white-space: nowrap;
@@ -86,170 +121,121 @@ html[data-theme="dark"] .pretty-select:hover .MuiOutlinedInput-notchedOutline {
   text-overflow: ellipsis;
 }
 
-/* Better label look on white backgrounds */
-.pretty-select .MuiInputLabel-outlined {
-  background: var(--input-bg);
-  padding: 0 4px;
+/* --- Buttons ------------------------------------------------------------- */
+/* The old 180px floor pushed buttons past the panel on narrow screens. */
+.control-row .pretty-button,
+.button-grid .pretty-button {
+  min-width: 0;
+  height: 44px !important;
+  width: 100%;
 }
 
-/* Use default Material-UI label transforms to avoid layout jumps on small screens */
-
-.centered-row {
-  color: var(--text-primary);
-  font-weight: 600;
+.control-row .pretty-button {
+  width: auto;
+  min-width: 140px;
 }
 
 .control-button {
-  margin: 8px 4px;
-}
-
-/* Standardize pretty button sizes to align evenly */
-.pretty-button {
-  min-width: 180px;
-  font-weight: 700 !important; /* Strong label weight for new styling */
-}
-
-.control-row .pretty-button,
-.button-grid .pretty-button {
-  height: 44px !important;
-  font-weight: 700 !important;
-}
-
-.button-grid {
-  padding: 6px;
-}
-
-/* Modern utility classes for controls */
-.controls-container {
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 24px;
-  margin: 16px;
-  box-shadow: 0 8px 32px 0 var(--shadow);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.controls-section {
-  margin-bottom: 32px;
-}
-
-.controls-section-header {
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: var(--text-primary);
+  margin: 0;
 }
 
 .controls-button-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 24px 0;
+  gap: 10px;
+  margin: 0;
   justify-content: center;
 }
 
-/* Save Image Button styles */
-.save-image-button {
+/* --- Dividers and meta --------------------------------------------------- */
+.section-divider,
+.controls-paper > .MuiDivider-root {
+  margin: 18px 0 !important;
+}
+
+.control-courses {
   display: flex;
-  justify-content: center;
-  margin: 24px 0;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.save-image-button button {
-  padding: 12px 24px !important;
-  border-radius: 8px !important;
-  font-weight: 600 !important;
-  text-transform: none !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.3s ease !important;
+.controls-paper > .MuiTypography-root {
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 4px;
 }
 
-.save-image-button button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-}
-
-/* Update info styles */
 .update-info {
   text-align: center;
-  margin: 24px 0;
-  padding: 16px;
+  margin: 16px 0;
+  padding: 12px;
   color: var(--text-secondary);
+  font-size: 0.8rem;
 }
 
-/* Divider spacing */
-.section-divider {
-  margin: 32px 0;
-}
-
-/* Course section header */
 .course-section-header {
   text-align: center;
-  padding: 16px 0;
-  font-weight: 500;
+  padding: 12px 0;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
-.controls-form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-/* Mobile responsive adjustments */
+/* --- Responsive ---------------------------------------------------------- */
 @media (max-width: 768px) {
   .controls-paper {
-    padding: 12px;
+    padding: 14px;
   }
 
-  .controls-container {
-    margin: 8px;
-    padding: 16px;
+  .controls-section {
+    margin-bottom: 14px;
   }
-  
-  .controls-button-group {
-    flex-direction: column;
+
+  .control-row {
     gap: 8px;
   }
-  
+
+  .control-row .pretty-button {
+    width: 100%;
+    min-width: 0;
+  }
+
   .controls-form-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
 
   .textfield-wrapper {
-    margin-right: 0;
-    margin-bottom: 8px;
     flex: 1 1 100%;
     min-width: 0;
     max-width: 100%;
     width: 100%;
-    height: auto; /* allow taller container if helper text wraps */
   }
 
-  .control-row {
-    gap: 4px;
-    flex-wrap: wrap;
-    justify-content: stretch;
+  .section-divider,
+  .controls-paper > .MuiDivider-root {
+    margin: 14px 0 !important;
   }
+}
 
-  /* keep outlined inputs compact on small screens */
-  .MuiOutlinedInput-root {
-    height: 40px !important;
+@media (max-width: 480px) {
+  .controls-paper {
+    padding: 12px;
+    border-radius: var(--radius) !important;
   }
 }
 
 /* Animation for controls */
 .controls-fade-in {
-  animation: controlsFadeIn 0.6s ease-out;
+  animation: controlsFadeIn 0.4s ease-out;
 }
 
 @keyframes controlsFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;

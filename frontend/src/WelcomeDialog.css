@@ -1,9 +1,5 @@
-.dialog-wrapper {
-
-}
-
 .welcome-dialog {
-  border-radius: 16px !important;
+  border-radius: var(--radius-lg) !important;
   overflow: hidden;
 }
 
@@ -12,32 +8,27 @@
 }
 
 @keyframes colorChange {
-  0%   { color: #be0000; } /* pink */
-  50%  { color: #1100ff; } /* indigo */
-  100% { color: #00b406; } /* green */
+  0%   { color: #be0000; }
+  50%  { color: #1100ff; }
+  100% { color: #00b406; }
 }
-
 
 .welcome-title {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(90deg, #e0f2ff, #f5faff);
-  transition: background 0.3s ease;
-}
-
-html[data-theme="dark"] .welcome-title {
-  background: linear-gradient(90deg, #1e3a5f, #1e293b);
+  background: var(--bg-subtle);
+  transition: background-color 0.25s ease;
 }
 
 .welcome-hero {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
 }
 
 .welcome-heading {
   font-weight: 700;
-  font-size: 18px;
+  font-size: 17px;
   color: var(--text-primary);
 }
 

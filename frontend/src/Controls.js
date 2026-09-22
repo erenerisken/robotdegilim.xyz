@@ -21,7 +21,6 @@ import ImportContactsIcon from "@mui/icons-material/ImportContacts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
-import AssignmentIcon from "@mui/icons-material/Assignment";
 import { isMobile } from "react-device-detect";
 import ls from "./utils/storage";
 import { resetScenarios, setScenarios } from "./slices/scenariosSlice";
@@ -714,6 +713,8 @@ export const Controls = (props) => {
                     {alertMsg}
                 </MuiAlert>
             </Snackbar>
+            <div className="controls-section">
+            <div className="controls-section-header">Your Details</div>
             <Grid container spacing={2} className="button-grid">
                 <Grid item xs={12} md={12} lg={4}>
                     <TextField
@@ -799,6 +800,9 @@ export const Controls = (props) => {
                     </TextField>
                 </Grid>
             </Grid>
+            </div>
+            <div className="controls-section">
+            <div className="controls-section-header">Actions</div>
             <Grid container spacing={2} className="button-grid">
                 <Grid item xs={12} sm={12} md={12} lg={4}>
                     <Button
@@ -882,6 +886,7 @@ export const Controls = (props) => {
                     </Button>
                 </Grid>
             </Grid>
+            </div>
             <AdvancedSettings
                 settings={settings}
                 onSettingsChange={handleChangeSettings}
@@ -962,41 +967,6 @@ export const Controls = (props) => {
                     {"   Last added Semester: " + lastUpdated.t.split(":")[1]}
                 </Typography>
             ) : null}
-            <Divider />
-            <div className="controls-section">
-                <div className="controls-section-header">Free Electives</div>
-                <div
-                    className="control-row"
-                    style={{ justifyContent: "center" }}
-                >
-                    <Typography
-                        variant="body2"
-                        color="textSecondary"
-                        style={{ maxWidth: 720 }}
-                    >
-                        Help us crowdsource Free Elective courses. Share the
-                        elective courses you have taken or know about. We will
-                        use these submissions to build an upcoming Free
-                        Electives section for everyone.
-                    </Typography>
-                </div>
-                <div className="control-row">
-                    <div className="control-button">
-                        <Button
-                            variant="contained"
-                            className="pretty-button pretty-secondary"
-                            startIcon={<AssignmentIcon />}
-                            onClick={() =>
-                                openInNewTab(
-                                    "https://forms.gle/RgpEk9vETPKZUGXt5",
-                                )
-                            }
-                        >
-                            Free Elective Form
-                        </Button>
-                    </div>
-                </div>
-            </div>
 
             <DepartmentsDialog
                 open={departmentsDialogOpen}
@@ -1017,17 +987,13 @@ export const Controls = (props) => {
 
 const styles = {
     mobile: {
-        margin: 12,
-        width: "calc(100% - 24px)",
+        width: "100%",
         minWidth: 0,
-        paddingBottom: 12,
     },
     desktop: {
-        margin: 12,
         flex: "1 1 480px",
         minWidth: 0,
         height: "fit-content",
-        paddingBottom: 12,
     },
 };
 

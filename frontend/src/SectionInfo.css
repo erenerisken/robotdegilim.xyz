@@ -1,44 +1,58 @@
 .section-info {
     text-align: left;
-    padding: 12px;
-    margin: 6px 3pt;
+    padding: 12px 14px;
+    margin: 0;
     border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--bg-card);
-    box-shadow: 0 1px 2px var(--shadow);
-    transition: background 0.3s ease, border-color 0.3s ease;
-}
-
-.section-row {
-    margin: 3pt;
-    display: inline-flex;
-    width: 100%;
-    flex-wrap: wrap;
-}
-.time-row {
-    margin: 3pt;
-    width: fit-content;
-}
-.section-date {
-    margin: 4px 3pt;
-    padding: 6px 8px;
-    width: fit-content;
-    background: var(--bg-page);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius);
+    background: var(--bg-subtle);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .section-title {
     font-weight: 600;
-    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 8px;
 }
 
-/* Classroom editing styles */
+.section-info .MuiDivider-root {
+    margin-bottom: 8px;
+}
+
+.section-row {
+    margin: 4px 0;
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.time-row {
+    margin: 0;
+    width: fit-content;
+}
+
+.section-date {
+    margin: 0;
+    padding: 8px 10px;
+    width: fit-content;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+/* Classroom editing */
 .classroom-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
+  margin-top: 2px;
+  color: var(--text-secondary);
 }
 
 .classroom-edit {
@@ -52,31 +66,39 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .classroom-edit .MuiTextField-root {
   min-width: 120px;
 }
 
-/* Mobile responsive adjustments */
+.classroom-row .MuiIconButton-root {
+  padding: 4px;
+}
+
 @media (max-width: 768px) {
   .section-row {
     flex-direction: column;
-    gap: 4pt;
+    gap: 6px;
   }
+
   .time-row,
   .section-date {
     width: 100%;
   }
-  
+
   .classroom-edit {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+    width: 100%;
   }
-  
+
   .classroom-edit .MuiTextField-root {
     width: 100%;
     min-width: unset;
+    margin: 0 !important;
   }
 }
